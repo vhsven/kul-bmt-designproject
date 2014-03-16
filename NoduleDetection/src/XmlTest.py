@@ -19,7 +19,7 @@ if nbSessions > 0:
         nodule = Nodule.fromXML(noduleNode)
         #print("\tSubtlety={0}".format(nodule.subtlety))
         print("\tFound {0} regions for nodule {1}.".format(nodule.getNbRegions(), nodule.ID))
-        for worldZ in nodule.regions.keys():
+        for worldZ in sorted(nodule.regions.iterkeys()):
             coords = nodule.getRegionCoords(worldZ)
             nbCoords = len(coords)
             print("\t\tFound {0} coordinates for region with worldZ={1}:".format(nbCoords, worldZ))

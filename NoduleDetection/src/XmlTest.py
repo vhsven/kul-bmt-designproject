@@ -17,6 +17,12 @@ if nbSessions > 0:
     print("First session contains {0} nodules:".format(nbNoduleNodes))
     for noduleNode in noduleNodes:
         nodule = Nodule.fromXML(noduleNode)
-        print("\tID={0}".format(nodule.ID))
-        print("\tSubtlety={0}".format(nodule.subtlety))
+        #print("\tSubtlety={0}".format(nodule.subtlety))
+        print("\tFound {0} regions for nodule {1}.".format(nodule.getNbRegions(), nodule.ID))
+        for worldZ in nodule.regions.keys():
+            coords = nodule.getRegionCoords(worldZ)
+            nbCoords = len(coords)
+            print("\t\tFound {0} coordinates for region with worldZ={1}:".format(nbCoords, worldZ))
+            for coord in coords:
+                print("\t\t\t{0}".format(coord))
     

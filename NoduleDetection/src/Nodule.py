@@ -10,14 +10,24 @@ class Nodule:
         self.spiculation = -1
         self.texture = -1
         self.malignancy = -1
-        #TODO add ROIs
+        self.regions = {}
       
+    def addRegion(self, worldZ, coordinates):
+        self.regions[worldZ] = coordinates
+        
+    def getRegionCoords(self, worldZ):
+        return self.regions[worldZ]
+        
+    def getNbRegions(self): 
+        return len(self.regions.keys())
+        
     @staticmethod
     def fromXML(xml):
         noduleID = xml.find("{http://www.nih.gov}noduleID").text
         chars = xml.find("{http://www.nih.gov}characteristics")
         nodule = Nodule(noduleID)
         
+        #parse characterists
         if chars is not None:
             nodule.subtlety = int(chars.find("{http://www.nih.gov}subtlety").text)
             nodule.internalStructure = int(chars.find("{http://www.nih.gov}internalStructure").text)
@@ -28,5 +38,21 @@ class Nodule:
             nodule.spiculation = int(chars.find("{http://www.nih.gov}spiculation").text)
             nodule.texture = int(chars.find("{http://www.nih.gov}texture").text)
             nodule.malignancy = int(chars.find("{http://www.nih.gov}malignancy").text)
-            
+        
+        #parse regions of interest    
+        regionList = xml.findall("{http://www.nih.gov}roi")
+        nbRegions = len(regionList)
+        if nbRegions > 0:
+            for roi in regionList:
+                worldZ = float(roi.find("{http://www.nih.gov}imageZposition").text)
+                edgeMapList = roi.findall("{http://www.nih.gov}edgeMap")
+                coordList = []
+                for edgeMap in edgeMapList:
+                    voxelX = int(edgeMap.find("{http://www.nih.gov}xCoord").text)
+                    voxelY = int(edgeMap.find("{http://www.nih.gov}yCoord").text)
+                    coord = voxelX, voxelY #tuple
+                    coordList.append(coord)
+                    
+                nodule.addRegion(worldZ, coordList)
+        
         return nodule

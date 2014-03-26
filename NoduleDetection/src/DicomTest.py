@@ -13,7 +13,7 @@ from os.path import isfile, join
 # voxel(i,j) = pixel_data[j, i]
 
 #ds = dicom.read_file("../data/000000.dcm")
-myPath = "C:\\Users\\Sven\\Desktop\\LIDC-IDRI\\LIDC-IDRI-0001\\1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178\\000000"
+myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
 myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".dcm") ]
 slices = []
 try:

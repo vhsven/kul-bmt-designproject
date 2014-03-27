@@ -8,10 +8,10 @@ import pylab
 
 # get image slice
 ds=dicom.read_file("../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000/000000.dcm")
-print(ds)
+#print(ds)
 # get pixel values
 data=ds.pixel_array
-print(data)
+#print(data)
 #show image
 #pylab.imshow(ds.pixel_array, cmap=pylab.gray())
 #pylab.show()
@@ -46,27 +46,47 @@ for i in range(minI, maxI):
     Tlow[i]=0
         
     for k in range(i,maxI):
-            Mhigh[i]=k*p[k]+Mhigh[i]
-            Thigh[i]=p[k]+Thigh[i]
+        Mhigh[i]=k*p[k]+Mhigh[i]
+        Thigh[i]=p[k]+Thigh[i]
             
     for k in range(minI,i):
         Mlow[i]=k*p[k]+Mlow[i]
-        Tlow[i]=p[k]+Thigh[i]
+        Tlow[i]=p[k]+Tlow[i]
         
 print("Mhigh = {0}".format(Mhigh))
-print(Mlow)
-print(Thigh)
-print(Tlow)
+print("Mlow = {0}".format(Mlow))
+print("Thigh = {0}".format(Thigh))
+print("Tlow = {0}".format(Tlow))
 
+# step 2: calculate the mean values of both regions
 
-        
-            
-        
-        
-  
+mulow={}
+muhigh={}
+
+for i in range(minI, maxI):
+    if Tlow == 0:
+        mulow[i]=0
+    else:
+        mulow[i]=Mlow[i]/Tlow[i]
+    
+    if Thigh == 0:
+        muhigh[i]=0
+    else:
+        muhigh[i]=Mhigh[i]/Thigh[i]
+    
+# step 3: membership measurement
+def distance(t, muHigh_i, muLow_i, i):
+    if t <= i:
+        return abs(t-muLow_i)
+    else:
+        return abs(t-muHigh_i)
+
+member={}
+for i in range(minI, maxI):
+    for t in range(minI, maxI):
+        member[t]=0
+        member[t]= 1/(1 + distance(t, muhigh[i], mulow[i], i) / (maxI - 1))
    
-   
-
 
 
 

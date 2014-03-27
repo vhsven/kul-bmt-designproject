@@ -12,17 +12,35 @@ class Nodule:
         self.malignancy = -1
         self.regions = {}
       
-    def addRegion(self, worldZ, coordinates):
-        self.regions[worldZ] = coordinates
+    def addRegion(self, pixelZ, coordinates):
+        self.regions[pixelZ] = coordinates
         
-    def getRegionCoords(self, worldZ):
-        return self.regions[worldZ]
+    def getRegionCoords(self, pixelZ):
+        return self.regions[pixelZ]
         
     def getNbRegions(self): 
         return len(self.regions.keys())
+    
+    def getSortedSlicePositions(self):
+        return sorted(self.regions.iterkeys())
         
+    def getRegionsSorted(self):
+        allRegions = {}
+        for pixelZ in sorted(self.regions.iterkeys()):
+            allRegions[pixelZ] = self.getRegionCoords(pixelZ)
+        
+        return allRegions
+        
+    def printRegions(self):
+        print("Found {0} regions for nodule {1}.".format(self.getNbRegions(), self.ID))
+        for pixelZ in self.getSortedSlicePositions():
+            coords = self.getRegionCoords(pixelZ)
+            #print("\t\tFound {0} coordinates for region with pixelZ={1}:".format(len(coords), pixelZ))
+            for coord in coords:
+                print("{0} {1} {2}".format(coord[0], coord[1], coord[2]))
+                
     @staticmethod
-    def fromXML(xml):
+    def fromXML(xml, cc):
         noduleID = xml.find("{http://www.nih.gov}noduleID").text
         chars = xml.find("{http://www.nih.gov}characteristics")
         nodule = Nodule(noduleID)
@@ -45,14 +63,16 @@ class Nodule:
         if nbRegions > 0:
             for roi in regionList:
                 worldZ = float(roi.find("{http://www.nih.gov}imageZposition").text)
+                pixelZ = cc.getPixelZ(worldZ)
+                #pizelZ = int(round(pizelZ))
                 edgeMapList = roi.findall("{http://www.nih.gov}edgeMap")
                 coordList = []
                 for edgeMap in edgeMapList:
                     voxelX = int(edgeMap.find("{http://www.nih.gov}xCoord").text)
                     voxelY = int(edgeMap.find("{http://www.nih.gov}yCoord").text)
-                    coord = voxelX, voxelY #tuple
+                    coord = voxelX, voxelY, pixelZ #tuple
                     coordList.append(coord)
                     
-                nodule.addRegion(worldZ, coordList)
+                nodule.addRegion(pixelZ, coordList)
         
         return nodule

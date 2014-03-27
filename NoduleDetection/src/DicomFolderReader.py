@@ -1,5 +1,5 @@
 import dicom
-import numpy
+import numpy as np
 #import matplotlib.pylab as plot
 #import matplotlib.cm as cm
 #plot.imshow(ds.pixel_array, cmap=plot.gray())
@@ -46,30 +46,8 @@ class DicomFolderReader:
     #world = M * voxel
     def getWorldMatrix(self):
         ds = self.Slices[0];
-        return numpy.matrix([[ds.PixelSpacing[0], 0, 0, ds.ImagePositionPatient[0] - ds.PixelSpacing[0]/2],
+        return np.matrix([[ds.PixelSpacing[0], 0, 0, ds.ImagePositionPatient[0] - ds.PixelSpacing[0]/2],
                              [0, ds.PixelSpacing[1], 0, ds.ImagePositionPatient[1] - ds.PixelSpacing[1]/2],
                              [0, 0, ds.SliceThickness,  self.getMinZ() - ds.SliceThickness/2],
                              [0, 0, 0, 1]])
 #</class>
-class CoordinateConverter:
-    def __init__(self, matrix): 
-        self.Matrix = matrix;
-    
-    #TODO remove references to self.Slices 
-    def getPixelZ(self, worldZ):
-        dz = self.Slices[0].SliceThickness;
-        return (worldZ - self.getMinZ() + dz/2) / dz
-
-    def getWorldZ(self, pixelZ):
-        dz = self.Slices[0].SliceThickness;
-        return pixelZ * dz + self.getMinZ() - dz/2
-       
-    #TODO implement using matrix
-    def getPixelVector(self, worldVector):
-        pass
-    
-    def getWorldVector(self, pixelVector):
-        pass
-
-#myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
-#dfr = DicomFolderReader(myPath)

@@ -64,12 +64,12 @@ mulow={}
 muhigh={}
 
 for i in range(minI, maxI):
-    if Tlow == 0:
+    if Tlow[i] == 0:
         mulow[i]=0
     else:
         mulow[i]=Mlow[i]/Tlow[i]
     
-    if Thigh == 0:
+    if Thigh[i] == 0:
         muhigh[i]=0
     else:
         muhigh[i]=Mhigh[i]/Thigh[i]

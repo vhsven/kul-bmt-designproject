@@ -5,6 +5,7 @@ Created on 27-mrt.-2014
 '''
 import dicom
 import pylab
+import numpy
 
 # get image slice
 ds=dicom.read_file("../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000/000000.dcm")
@@ -28,7 +29,7 @@ minI=int(HU.min())
 assert minI==0
 datavector=HU.reshape(512*512,1)
 print(datavector.shape)
-(p, bins, patches)=pylab.hist(datavector,maxI)
+(p, _, _)=pylab.hist(datavector,maxI)
 # #pylab.show()
 print(p)
 
@@ -81,12 +82,15 @@ def distance(t, muHigh_i, muLow_i, i):
     else:
         return abs(t-muHigh_i)
 
-member={}
+delta = maxI - minI
+print("delta: {0}".format(delta))
+member = numpy.zeros((maxI - minI)**2).reshape(maxI - minI, maxI - minI)
+C = {}
 for i in range(minI, maxI):
     for t in range(minI, maxI):
-        member[t]=0
-        member[t]= 1/(1 + distance(t, muhigh[i], mulow[i], i) / (maxI - 1))
+        member[i,t]= 1/(1 + distance(t, muhigh[i], mulow[i], i) / (maxI - 1))
    
-
-
+    C[i] = 0
+    for t in range(minI, maxI-1):
+        C[i] += (member[i,t] * (1 - member[i,t]))**2
 

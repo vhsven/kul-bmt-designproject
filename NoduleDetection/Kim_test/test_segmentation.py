@@ -1,8 +1,3 @@
-'''
-Created on 27-mrt.-2014
-
-@author: Eigenaar
-'''
 import dicom
 import pylab
 import numpy
@@ -28,7 +23,6 @@ minI=int(HU.min())
 
 assert minI==0
 datavector=HU.reshape(512*512,1)
-print(datavector.shape)
 (p, _, _)=pylab.hist(datavector,maxI)
 # #pylab.show()
 print(p)

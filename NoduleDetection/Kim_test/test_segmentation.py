@@ -17,126 +17,112 @@ data=ds.pixel_array
 # STEP A
 ######################################################################################################### 
 # apply a mask to the image to exclude the pixels outside the thorax in the image
-#transform the pixel grey values to HU units: HU = pixel_value*slope - intercept
-intercept = ds.RescaleIntercept # found in dicom header at (0028,1052)
-slope = ds.RescaleSlope # found in dicom header at (0028,1053)
-HU=data*slope - intercept
-HU = HU / 3
-maxI=int(HU.max())
-minI=int(HU.min())
+# transform the pixel grey values to HU units: HU = pixel_value*slope - intercept
+intercept = int(ds.RescaleIntercept) # found in dicom header at (0028,1052)
+slope = int(ds.RescaleSlope) # found in dicom header at (0028,1053)
+HU = data * slope - intercept
+#HU = HU // 10
+maxI = HU.max()
+minI = HU.min()
+delta = maxI - minI + 1
 # kom max waarde 3195 uit en min 0??? long zou normaal -500 moeten zijn
 
 assert minI==0
-datavector=HU.reshape(512*512,1)
-(p, _, _)=pylab.hist(datavector,maxI)
-pylab.show()
+
+def getIntensityCounts(matrix):
+    counts = numpy.zeros(maxI+1, dtype=numpy.int)
+    for i in range(0, matrix.shape[0]):
+        for j in range(0, matrix.shape[1]):
+            counts[matrix[i,j]] += 1
+    return counts
+
+p = getIntensityCounts(HU)
 print(p)
 
-# get rid of grey values with zero intensities
-myset=[]
-for i in range(0,len(p)):
-    if p[i] !=0:
-        myset.append(i)
+# create list of all intensities that occur in the image
+# better than looping over all minI -- maxI
+myset=set(HU.flatten())
         
 print(myset)
 
-## step 1: calculate T and M for every grey value
 millis1=int(round(time.time()*1000))
-Mhigh=numpy.zeros(maxI - minI)
-Thigh=numpy.zeros(maxI - minI)
-Mlow=numpy.zeros(maxI - minI)
-Tlow=numpy.zeros(maxI - minI)
-for i in myset:
-    Mhigh[i]=0
-    Mlow[i]=0
-    
-    Thigh[i]=0
-    Tlow[i]=0
-        
-    for k in myset:
-        if k <= i:
-            Mlow[i]=k*p[k]+Mlow[i]
-            Tlow[i]=p[k]+Tlow[i]
-            
-        if k >= i:
-            Mhigh[i]=k*p[k]+Mhigh[i]
-            Thigh[i]=p[k]+Thigh[i]
-        
-    #for k in range(i,maxI):
-            
-    #for k in range(minI,i):
 
-print("Mhigh = %s" % Mhigh )  
-print("Thigh = %s" % Thigh )
+Mlow=numpy.zeros(delta, dtype=numpy.int)
+Mhigh=numpy.zeros(delta, dtype=numpy.int)
+Tlow=numpy.zeros(delta, dtype=numpy.int)
+Thigh=numpy.zeros(delta, dtype=numpy.int)
+muLow=numpy.zeros(delta)
+muHigh=numpy.zeros(delta)
+for i in myset:  
+    # step 1: calculate T and M for every grey value      
+    for k in myset:
+        if k < i:
+            Mlow[i] += k*p[k]
+            Tlow[i] += p[k]
+        elif k > i:
+            Mhigh[i] += k*p[k]
+            Thigh[i] += p[k]
+        else: # k == i, calc both
+            Mlow[i] += k*p[k]
+            Tlow[i] += p[k]
+            Mhigh[i] += k*p[k]
+            Thigh[i] += p[k]
+
+    # step 2: calculate the mean values of both regions       
+    muLow[i] = Mlow[i] / Tlow[i]
+    muHigh[i] = Mhigh[i] / Thigh[i]
+
 print("Mlow = %s" % Mlow)
+print("Mhigh = %s" % Mhigh )  
 print("Tlow = %s" % Tlow )
+print("Thigh = %s" % Thigh )
+print("mulow = %s" % muLow )
+print("muHigh = %s" % muHigh )
 # print("Mhigh = {0}".format(Mhigh))
 # print("Mlow = {0}".format(Mlow))
 # print("Thigh = {0}".format(Thigh))
 # print("Tlow = {0}".format(Tlow))
 
 millis2=int(round(time.time()*1000))
-# step 2: calculate the mean values of both regions
-
-mulow={}
-muhigh={}
-
-for i in range(minI, maxI):
-    if Tlow[i] == 0:
-        mulow[i]=0
-    else:
-        mulow[i]=Mlow[i]/Tlow[i]
-    
-    if Thigh[i] == 0:
-        muhigh[i]=0
-    else:
-        muhigh[i]=Mhigh[i]/Thigh[i]
-
-millis3=int(round(time.time()*1000))    
+  
 # step 3: membership measurement
-def distance(t, muHigh_i, muLow_i, i):
+def calcDistance(t, muHigh_i, muLow_i, i):
     if t <= i:
         return abs(t-muLow_i)
     else:
         return abs(t-muHigh_i)
 
-delta = maxI - minI
-print("delta: {0}".format(delta))
-member = numpy.zeros((maxI - minI)**2).reshape(maxI - minI, maxI - minI)
-
-millis4=int(round(time.time()*1000))
 # step 4: determine cost function to find optimal threshold Io
-# C = {}
-# for i in range(minI, maxI):
-#     for t in range(minI, maxI):
-#         member[i,t]= 1/(1 + distance(t, muhigh[i], mulow[i], i) / (maxI - 1))
-#    
-#     C[i] = 0
-#     for t in range(minI, maxI-1):
-#         C[i] += (member[i,t] * (1 - member[i,t]))**2
-#         
-#         if i>1 and C[i] < C[i-1]:
-#             Io=i # minimal cost function determines grey level for threshold
-# print(Io)
-# 
-# millis5=int(round(time.time()*1000))
-# 
-# # step 5: binarization image
-# n,m=HU.shape
-# for i in range(0,n-1):
-#     for j in range(0,m-1):
-#         if HU[i,j] < Io:
-#             HU[i,j]=0
-#         else:
-#             HU[i,j]=1
-# 
-# pylab.imshow(HU, cmap=pylab.gray())
-# pylab.show()
+C = numpy.zeros(delta)
+prevC = 999999999
+threshold = -1
+for i in myset:
+    for t in myset:
+        d = calcDistance(t, muHigh[i], muLow[i], i)
+        m = 1 / (1 + (d / (maxI - 1)))
+        C[i] += (m * (1 - m))**2 #t in [minI, maxI-1]
+    
+    #print("C[%d] = %d" % (i, C[i]))     
+    if C[i] < prevC:
+        threshold=i # minimal cost function determines grey level for threshold
+            
+    prevC = C[i]
 
-print(millis2-millis1)
-print(millis3-millis2)
-print(millis4-millis3)
-#print(millis5-millis4)
+#threshold = 210   
+print("Optimal threshold: %d" % threshold)
+ 
+millis3=int(round(time.time()*1000))
+
+# step 5: binarization image
+for index,value in numpy.ndenumerate(HU):
+    HU[index] = 0 if value < threshold else 1
+
+print("Step A1-2: %dms" % (millis2-millis1))
+print("Step A3-4: %dms" % (millis3-millis2))
+
+pylab.imshow(HU, cmap=pylab.gray())
+pylab.show()
+
 ################################################################################
 # STEP B
 ################################################################################

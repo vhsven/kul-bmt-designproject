@@ -5,12 +5,16 @@ import numpy.ma as ma
 import time
 from scipy import ndimage
 
-def getIntensityCounts(matrix, delta): #like a histogram with bin size=1
-    counts = np.zeros(delta, dtype=np.int)
-    for value in matrix:
-        counts[value] += 1
-    
-    return counts
+def getIntensityCounts(matrix, delta, amountI): #like a histogram with adaptable bin size (depending on amountI in bin)
+    bins=delta//amountI + 1
+    print(bins)
+    counts = np.zeros(bins, dtype=np.int)
+    for value in ma.compressed(matrix):
+        assert value >= 0
+        myBin = value // amountI
+        counts[myBin] += 1
+        
+    return counts, bins
 
 def binarizeImage(image, threshold):
     result = np.zeros(image.shape)
@@ -39,7 +43,6 @@ data=ds.pixel_array
 intercept = int(ds.RescaleIntercept) # found in dicom header at (0028,1052)
 slope = int(ds.RescaleSlope) # found in dicom header at (0028,1053)
 HU = data * slope - intercept
-HU = HU // 10
 
 # apply a mask to the image to exclude the pixels outside the thorax in the image
 minI = HU.min()
@@ -56,25 +59,24 @@ delta = maxI - minI + 1
 
 print("grey levels: {} - {}".format(minI, maxI))
 
-p = getIntensityCounts(thoraxMask, delta)
-
+p, bins = getIntensityCounts(thoraxMask, delta, 10) # amountI arbitrair op 10 bepaald
 millis1=int(round(time.time()*1000))
 
-Mlow=np.zeros(delta, dtype=np.int)
-Mhigh=np.zeros(delta, dtype=np.int)
-Tlow=np.zeros(delta, dtype=np.int)
-Thigh=np.zeros(delta, dtype=np.int)
-muLow=np.zeros(delta)
-muHigh=np.zeros(delta)
+Mlow=np.zeros(bins, dtype=np.int)
+Mhigh=np.zeros(bins, dtype=np.int)
+Tlow=np.zeros(bins, dtype=np.int)
+Thigh=np.zeros(bins, dtype=np.int)
+muLow=np.zeros(bins)
+muHigh=np.zeros(bins)
 
 sumT = p.sum()
 sumM = 0
-for i in range(delta):
+for i in range(bins):
     sumM += i*p[i]
     
-for i in range(delta):  
+for i in range(bins):  
     # step 1: calculate T and M for every grey value      
-    for k in range(delta):
+    for k in range(bins):
 #         if k < i:
 #             Mlow[i] += k*p[k]
 #             Tlow[i] += p[k]
@@ -101,7 +103,7 @@ for i in range(delta):
     muLow[i] = Mlow[i] / Tlow[i]
     muHigh[i] = Mhigh[i] / Thigh[i]
 
-if False:
+if True:
     pylab.subplot(221)
     pylab.title("$M_{low}$ (red) and $M_{high}$ (green)")
     pylab.xlabel("Grey Level")
@@ -120,7 +122,7 @@ if False:
     pylab.title("Histogram")
     pylab.xlabel("Grey Level")
     pylab.ylabel("Count")
-    pylab.bar(np.arange(delta), p, 0.35)
+    pylab.bar(np.arange(bins), p, 0.35)
     
     pylab.subplot(224)
     pylab.title("$\mu_{low}$ (red) and $\mu_{high}$ (green)")
@@ -139,11 +141,11 @@ millis2=int(round(time.time()*1000))
   
 # step 3: membership measurement
 # step 4: determine cost function to find optimal threshold
-C = np.zeros(delta)
+C = np.zeros(bins)
 prevC = 999999999
 threshold = -1
-for i in range(delta):
-    for t in range(delta):
+for i in range(bins):
+    for t in range(bins):
         d = calcDistance(t, muHigh[i], muLow[i], i)
         m = 1 / (1 + (d / (maxI - 1)))
         C[i] += (m * (1 - m))**2 #t in [minI, maxI-1]
@@ -154,6 +156,7 @@ for i in range(delta):
         prevC = C[i]
 
 #threshold = 153 
+threshold *= 10 #convert bin back to intensity
 print("Optimal threshold: %d" % threshold)
  
 millis3=int(round(time.time()*1000))

@@ -40,7 +40,7 @@ data=ds.pixel_array
 intercept = int(ds.RescaleIntercept) # found in dicom header at (0028,1052)
 slope = int(ds.RescaleSlope) # found in dicom header at (0028,1053)
 HU = data * slope - intercept
-HU = HU // 10
+HU = HU // 10 #integer division
 
 # apply a mask to the image to exclude the pixels outside the thorax in the image
 minI = HU.min()
@@ -141,7 +141,7 @@ millis2=int(round(time.time()*1000))
 # step 3: membership measurement
 # step 4: determine cost function to find optimal threshold
 C = np.zeros(delta)
-prevC = 999999999
+prevC = 999999999999
 threshold = -1
 for i in range(delta):
     for t in range(delta):

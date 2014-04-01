@@ -7,7 +7,6 @@ from scipy import ndimage
 
 def getIntensityCounts(matrix, delta, amountI): #like a histogram with adaptable bin size (depending on amountI in bin)
     bins=delta//amountI + 1
-    print(bins)
     counts = np.zeros(bins, dtype=np.int)
     for value in ma.compressed(matrix):
         assert value >= 0
@@ -101,37 +100,36 @@ for i in range(bins):
     Mlow[i] = sumM + i*p[i] - Mhigh[i]
     
     # step 2: calculate the mean values of both regions        
-    muLow[i] = Mlow[i] / Tlow[i]
+    muLow[i] = Mlow[i] / Tlow[i] #TODO check division by zero
     muHigh[i] = Mhigh[i] / Thigh[i]
 
 if True:
-    pylab.subplot(221)
+    pylab.subplot(231)
     pylab.title("$M_{low}$ (red) and $M_{high}$ (green)")
     pylab.xlabel("Grey Level")
     pylab.ylabel("M")
     pylab.plot(Mlow, 'r+')
     pylab.plot(Mhigh, 'g+')
     
-    pylab.subplot(222)
+    pylab.subplot(232)
     pylab.title("$T_{low}$ (red) and $T_{high}$ (green)")
     pylab.xlabel("Grey Level")
     pylab.ylabel("T")
     pylab.plot(Tlow, 'r+')
     pylab.plot(Thigh, 'g+')
     
-    pylab.subplot(223)
+    pylab.subplot(234)
     pylab.title("Histogram")
     pylab.xlabel("Grey Level")
     pylab.ylabel("Count")
     pylab.bar(np.arange(bins), p, 0.35)
     
-    pylab.subplot(224)
+    pylab.subplot(235)
     pylab.title("$\mu_{low}$ (red) and $\mu_{high}$ (green)")
     pylab.xlabel("Grey Level")
     pylab.ylabel("$\mu$")
     pylab.plot(muLow, 'r+')
     pylab.plot(muHigh, 'g+')
-    pylab.show()
 
 # print("Mhigh = {0}".format(Mhigh))
 # print("Mlow = {0}".format(Mlow))
@@ -143,12 +141,14 @@ millis2=int(round(time.time()*1000))
 # step 3: membership measurement
 # step 4: determine cost function to find optimal threshold
 C = np.zeros(bins)
+Member = np.zeros(bins ** 2).reshape(bins, bins)
 prevC = 999999999999
 threshold = -1
 for i in range(bins):
     for t in range(bins):
         d = calcDistance(t, muHigh[i], muLow[i], i)
         m = 1 / (1 + (d / (maxI - 1)))
+        Member[t][i] = m
         C[i] += (m * (1 - m))**2 #t in [minI, maxI-1]
     
     #print("C[%d] = %d" % (i, C[i]))     
@@ -156,7 +156,21 @@ for i in range(bins):
         threshold=i # minimal cost function determines grey level for threshold
         prevC = C[i]
 
-#threshold = 153 
+pylab.subplot(233)
+pylab.title("Membership Measurement")
+pylab.xlabel("Grey Level t")
+pylab.ylabel("Grey level i")
+pylab.imshow(Member, origin='lower')
+pylab.colorbar()
+
+pylab.subplot(236)
+pylab.title("Cost Function")
+pylab.xlabel("Grey Level")
+pylab.ylabel("C")
+pylab.plot(C, 'k+')
+pylab.show()
+
+#threshold = 135 
 threshold *= 10 #convert bin back to intensity
 print("Optimal threshold: %d" % threshold)
  

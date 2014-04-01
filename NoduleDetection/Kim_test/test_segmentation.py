@@ -36,6 +36,7 @@ data=ds.pixel_array
 #pylab.imshow(ds.pixel_array, cmap=pylab.gray())
 #pylab.show()
 
+
 #########################################################################################################
 # STEP A
 #########################################################################################################
@@ -142,7 +143,7 @@ millis2=int(round(time.time()*1000))
 # step 3: membership measurement
 # step 4: determine cost function to find optimal threshold
 C = np.zeros(bins)
-prevC = 999999999
+prevC = 999999999999
 threshold = -1
 for i in range(bins):
     for t in range(bins):

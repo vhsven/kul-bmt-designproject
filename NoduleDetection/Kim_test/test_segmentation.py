@@ -4,6 +4,7 @@ import numpy as np
 import numpy.ma as ma
 import time
 from scipy import ndimage
+from DicomFolderReader import DicomFolderReader 
 
 def getIntensityCounts(matrix, delta, amountI): #like a histogram with adaptable bin size (depending on amountI in bin)
     bins=delta//amountI + 1
@@ -27,10 +28,20 @@ def calcDistance(t, muHigh_i, muLow_i, i):
         return abs(t-muLow_i)
     else:
         return abs(t-muHigh_i)
-    
-#ds=dicom.read_file("../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000/000000.dcm")
-ds=dicom.read_file("../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000/000007.dcm")
+
+SHOW_PLOTS = False
+
+myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
+dfr = DicomFolderReader(myPath)
+ds = dfr.Slices[50]
+
+#ds=dicom.read_file("../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000/000078.dcm")
+#ds=dicom.read_file("../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000/000007.dcm")
 data=ds.pixel_array
+minI = data.min()
+maxI = data.max()
+print("raw grey levels: {} - {}".format(minI, maxI))
+
 #show image
 #pylab.imshow(ds.pixel_array, cmap=pylab.gray())
 #pylab.show()
@@ -47,6 +58,7 @@ HU = data * slope - intercept
 # apply a mask to the image to exclude the pixels outside the thorax in the image
 minI = HU.min()
 maxI = HU.max()
+print("rescaled grey levels: {} - {}".format(minI, maxI))
 thoraxMask = ma.masked_equal(HU, minI)
 minI = thoraxMask.min() # find the new minimum inside mask region
 
@@ -57,7 +69,7 @@ if minI != 0: #shift intensities so that minI = 0
 
 delta = maxI - minI + 1
 
-print("grey levels: {} - {}".format(minI, maxI))
+print("masked/shifted grey levels: {} - {}".format(minI, maxI))
 
 p, bins = getIntensityCounts(thoraxMask, delta, 10) # amountI arbitrair op 10 bepaald
 millis1=int(round(time.time()*1000))
@@ -103,7 +115,7 @@ for i in range(bins):
     muLow[i] = Mlow[i] / Tlow[i] #TODO check division by zero
     muHigh[i] = Mhigh[i] / Thigh[i]
 
-if True:
+if SHOW_PLOTS:
     pylab.subplot(231)
     pylab.title("$M_{low}$ (red) and $M_{high}$ (green)")
     pylab.xlabel("Grey Level")
@@ -156,21 +168,22 @@ for i in range(bins):
         threshold=i # minimal cost function determines grey level for threshold
         prevC = C[i]
 
-pylab.subplot(233)
-pylab.title("Membership Measurement")
-pylab.xlabel("Grey Level t")
-pylab.ylabel("Grey level i")
-pylab.imshow(Member, origin='lower')
-pylab.colorbar()
+if SHOW_PLOTS:
+    pylab.subplot(233)
+    pylab.title("Membership Measurement")
+    pylab.xlabel("Grey Level t")
+    pylab.ylabel("Grey level i")
+    pylab.imshow(Member, origin='lower')
+    pylab.colorbar()
+    
+    pylab.subplot(236)
+    pylab.title("Cost Function")
+    pylab.xlabel("Grey Level")
+    pylab.ylabel("C")
+    pylab.plot(C, 'k+')
+    pylab.show()
 
-pylab.subplot(236)
-pylab.title("Cost Function")
-pylab.xlabel("Grey Level")
-pylab.ylabel("C")
-pylab.plot(C, 'k+')
-pylab.show()
-
-#threshold = 135 
+#threshold = 150
 threshold *= 10 #convert bin back to intensity
 print("Optimal threshold: %d" % threshold)
  

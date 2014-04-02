@@ -25,7 +25,10 @@ class DicomFolderReader:
             exit(1)
                 
         self.Slices = sorted(self.Slices, key=lambda s: s.SliceLocation) #silly slices are not sorted yet
-
+        self.NbSlices = len(self.Slices)
+        self.RescaleSlope = self.Slices[0].RescaleSlope
+        self.RescaleIntercept = self.Slices[0].RescaleIntercept
+        
         #assuming properties are the same for all slices
         if self.Slices[0].ImageOrientationPatient != [1, 0, 0, 0, 1, 0]:
             raise Exception("Unsupported image orientation")
@@ -60,4 +63,6 @@ class DicomFolderReader:
     
     def getSlicePixels(self, index):
         return self.Slices[index].pixel_array
-#</class>
+    
+    def getSlicePixelsRescaled(self, index):
+        return self.Slices[index].pixel_array * self.RescaleSlope - self.RescaleIntercept

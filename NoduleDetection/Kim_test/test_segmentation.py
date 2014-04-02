@@ -1,20 +1,9 @@
-import dicom
 import pylab
 import numpy as np
 import numpy.ma as ma
 import time
 from scipy import ndimage
 from DicomFolderReader import DicomFolderReader 
-
-def getIntensityCounts(matrix, delta, amountI): #like a histogram with adaptable bin size (depending on amountI in bin)
-    bins=delta//amountI + 1
-    counts = np.zeros(bins, dtype=np.int)
-    for value in ma.compressed(matrix):
-        assert value >= 0
-        myBin = value // amountI
-        counts[myBin] += 1
-        
-    return counts, bins
 
 def binarizeImage(image, threshold):
     result = np.zeros(image.shape)
@@ -29,15 +18,13 @@ def calcDistance(t, muHigh_i, muLow_i, i):
     else:
         return abs(t-muHigh_i)
 
-SHOW_PLOTS = False
+SHOW_PLOTS = True
+BIN_SIZE = 16
 
 myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
 dfr = DicomFolderReader(myPath)
 ds = dfr.Slices[50]
-
-#ds=dicom.read_file("../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000/000078.dcm")
-#ds=dicom.read_file("../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000/000007.dcm")
-data=ds.pixel_array
+data = ds.pixel_array
 minI = data.min()
 maxI = data.max()
 print("raw grey levels: {} - {}".format(minI, maxI))
@@ -71,7 +58,10 @@ delta = maxI - minI + 1
 
 print("masked/shifted grey levels: {} - {}".format(minI, maxI))
 
-p, bins = getIntensityCounts(thoraxMask, delta, 10) # amountI arbitrair op 10 bepaald
+
+binEdges = np.arange(minI, maxI + BIN_SIZE, BIN_SIZE)
+bins = len(binEdges) - 1
+p, _ = np.histogram(thoraxMask, binEdges)
 millis1=int(round(time.time()*1000))
 
 Mlow=np.zeros(bins, dtype=np.int)
@@ -81,33 +71,18 @@ Thigh=np.zeros(bins, dtype=np.int)
 muLow=np.zeros(bins)
 muHigh=np.zeros(bins)
 
-sumT = p.sum()
-sumM = 0
-for i in range(bins):
-    sumM += i*p[i]
+sumT = sum(p)
+sumM = sum(range(bins) * p)
     
 for i in range(bins):  
     # step 1: calculate T and M for every grey value      
-    for k in range(bins):
-#         if k < i:
-#             Mlow[i] += k*p[k]
-#             Tlow[i] += p[k]
-#         elif k > i:
-#             Mhigh[i] += k*p[k]
-#             Thigh[i] += p[k]
-#         else: # k == i, calc both
-#             Mlow[i] += k*p[k]
-#             Tlow[i] += p[k]
-#             Mhigh[i] += k*p[k]
-#             Thigh[i] += p[k]
-
-        if k >= i:
-            Mhigh[i] += k*p[k]
-            Thigh[i] += p[k]
-             
+    k = range(i, bins)
+    Mhigh[i] = sum(k * p[i:])
+    Thigh[i] = sum(p[i:])
+    
     #assert sumT + p[i] == Tlow[i] + Thigh[i]
     Tlow[i] = sumT + p[i] - Thigh[i]
-     
+    
     #assert sumM + i*p[i] == Mlow[i] + Mhigh[i]
     Mlow[i] = sumM + i*p[i] - Mhigh[i]
     
@@ -154,19 +129,14 @@ millis2=int(round(time.time()*1000))
 # step 4: determine cost function to find optimal threshold
 C = np.zeros(bins)
 Member = np.zeros(bins ** 2).reshape(bins, bins)
-prevC = 999999999999
-threshold = -1
 for i in range(bins):
     for t in range(bins):
         d = calcDistance(t, muHigh[i], muLow[i], i)
         m = 1 / (1 + (d / (maxI - 1)))
         Member[t][i] = m
         C[i] += (m * (1 - m))**2 #t in [minI, maxI-1]
-    
-    #print("C[%d] = %d" % (i, C[i]))     
-    if C[i] < prevC:
-        threshold=i # minimal cost function determines grey level for threshold
-        prevC = C[i]
+
+threshold = C.argmin() # minimal cost function index determines grey level for threshold
 
 if SHOW_PLOTS:
     pylab.subplot(233)
@@ -184,7 +154,7 @@ if SHOW_PLOTS:
     pylab.show()
 
 #threshold = 150
-threshold *= 10 #convert bin back to intensity
+threshold *= BIN_SIZE #convert bin back to intensity
 print("Optimal threshold: %d" % threshold)
  
 millis3=int(round(time.time()*1000))
@@ -196,15 +166,15 @@ nonLungMask = ma.masked_greater(HU, threshold)
 combinedMask = ma.mask_or(ma.getmask(thoraxMask), ma.getmask(nonLungMask))
 combinedMask = ma.array(HU, mask=combinedMask) #apply on matrix
 
+print("Step A1-2: %dms" % (millis2-millis1))
+print("Step A3-4: %dms" % (millis3-millis2))
+
 pylab.subplot(1, 2, 1)
 pylab.imshow(thoraxMask, cmap=pylab.gray())
 
 pylab.subplot(1, 2, 2)
 pylab.imshow(combinedMask, cmap=pylab.gray())
 pylab.show()
-
-print("Step A1-2: %dms" % (millis2-millis1))
-print("Step A3-4: %dms" % (millis3-millis2))
 
 ################################################################################
 # STEP B

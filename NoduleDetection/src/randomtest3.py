@@ -41,6 +41,7 @@ for pair in ([0, 1], [0, 2], [2, 3]):
         # We only take the two corresponding features
         X = iris.data[:, pair]
         y = iris.target
+        print(X,y)
 
         # Shuffle
         idx = np.arange(X.shape[0])

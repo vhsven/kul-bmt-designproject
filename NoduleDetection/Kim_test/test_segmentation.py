@@ -50,6 +50,7 @@ print("raw grey levels: {} - {}".format(minI, maxI))
 #########################################################################################################
 # STEP A
 #########################################################################################################
+
 # transform the pixel grey values to HU units
 intercept = int(ds.RescaleIntercept) # found in dicom header at (0028,1052)
 slope = int(ds.RescaleSlope) # found in dicom header at (0028,1053)

@@ -25,7 +25,10 @@ class DicomFolderReader:
             exit(1)
                 
         self.Slices = sorted(self.Slices, key=lambda s: s.SliceLocation) #silly slices are not sorted yet
-
+        self.NbSlices = len(self.Slices)
+        self.RescaleSlope = self.Slices[0].RescaleSlope
+        self.RescaleIntercept = self.Slices[0].RescaleIntercept
+        
         #assuming properties are the same for all slices
         if self.Slices[0].ImageOrientationPatient != [1, 0, 0, 0, 1, 0]:
             raise Exception("Unsupported image orientation")
@@ -36,12 +39,16 @@ class DicomFolderReader:
         
         if self.Slices[0].SliceLocation != self.Slices[0].ImagePositionPatient[2]:
             raise Exception("SliceLocation != ImagePositionZ")
+        
+        # check whether all slices have the same transform params
+        #assert sum([s.RescaleSlope for s in self.Slices]) == self.Slices[0].RescaleSlope * len(self.Slices)
+        #assert sum([s.RescaleIntercept for s in self.Slices]) == self.Slices[0].RescaleIntercept * len(self.Slices)
 
     def getMinZ(self):
-        return min([ s.ImagePositionPatient[2] for s in self.Slices])
+        return min([s.ImagePositionPatient[2] for s in self.Slices])
     
     def getMaxZ(self):
-        return max([ s.ImagePositionPatient[2] for s in self.Slices])
+        return max([s.ImagePositionPatient[2] for s in self.Slices])
 
     #world = M * voxel
     def getWorldMatrix(self):
@@ -50,4 +57,12 @@ class DicomFolderReader:
                              [0, ds.PixelSpacing[1], 0, ds.ImagePositionPatient[1] - ds.PixelSpacing[1]/2],
                              [0, 0, ds.SliceThickness,  self.getMinZ() - ds.SliceThickness/2],
                              [0, 0, 0, 1]])
-#</class>
+        
+    def getSliceData(self, index):
+        return self.Slices[index]
+    
+    def getSlicePixels(self, index):
+        return self.Slices[index].pixel_array
+    
+    def getSlicePixelsRescaled(self, index):
+        return self.Slices[index].pixel_array * self.RescaleSlope - self.RescaleIntercept

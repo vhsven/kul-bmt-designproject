@@ -58,6 +58,30 @@ delta = maxI - minI + 1
 
 print("masked/shifted grey levels: {} - {}".format(minI, maxI))
 
+peak1Mask = ma.masked_outside(thoraxMask, BIN_SIZE*0 ,  BIN_SIZE*5)  #  0 -   80
+peak2Mask = ma.masked_outside(thoraxMask, BIN_SIZE*5 ,  BIN_SIZE*15) # 80 -  240
+peak3Mask = ma.masked_outside(thoraxMask, BIN_SIZE*50 , BIN_SIZE*60) #800 -  960
+peak4Mask = ma.masked_outside(thoraxMask, BIN_SIZE*60 , BIN_SIZE*75) #960 - 1200
+fixedMask = ma.masked_greater(HU, 1500)
+
+pylab.subplot(231)
+pylab.title("Peak 1")
+pylab.imshow(peak1Mask, cmap=pylab.gray())
+pylab.subplot(232)
+pylab.title("Peak 2")
+pylab.imshow(peak2Mask, cmap=pylab.gray())
+pylab.subplot(234)
+pylab.title("Peak 3")
+pylab.imshow(peak3Mask, cmap=pylab.gray())
+pylab.subplot(235)
+pylab.title("Peak 4")
+pylab.imshow(peak4Mask, cmap=pylab.gray())
+pylab.subplot(236)
+pylab.title("> 1500")
+pylab.imshow(fixedMask, cmap=pylab.gray())
+pylab.show()
+
+#exit(0)
 
 binEdges = np.arange(minI, maxI + BIN_SIZE, BIN_SIZE)
 bins = len(binEdges) - 1
@@ -159,12 +183,11 @@ print("Optimal threshold: %d" % threshold)
  
 millis3=int(round(time.time()*1000))
 
-# step 5: binarization image        
-result = binarizeImage(HU, threshold)
-
-nonLungMask = ma.masked_greater(HU, threshold)
-combinedMask = ma.mask_or(ma.getmask(thoraxMask), ma.getmask(nonLungMask))
-combinedMask = ma.array(HU, mask=combinedMask) #apply on matrix
+# step 5: binarization image
+#nonLungMask = ma.masked_greater(HU, threshold) #threshold is in non-shifted waarden???
+#combinedMask = ma.mask_or(ma.getmask(thoraxMask), ma.getmask(nonLungMask))
+#combinedMask = ma.array(HU, mask=combinedMask) #apply on matrix
+combinedMask = ma.masked_greater(thoraxMask, threshold)
 
 print("Step A1-2: %dms" % (millis2-millis1))
 print("Step A3-4: %dms" % (millis3-millis2))

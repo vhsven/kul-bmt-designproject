@@ -58,6 +58,9 @@ class DicomFolderReader:
                              [0, 0, ds.SliceThickness,  self.getMinZ() - ds.SliceThickness/2],
                              [0, 0, 0, 1]])
         
+    def getNbSlices(self):
+        return len(self.Slices)
+    
     def getSliceData(self, index):
         return self.Slices[index]
     

@@ -46,24 +46,28 @@ if minI != 0: #shift intensities so that minI = 0
 getthorax = ma.masked_outside(HUshift, BIN_SIZE*0 ,  BIN_SIZE*5)  #  0 -   80
 pylab.plot()
 pylab.imshow(getthorax, cmap=pylab.gray())
+pylab.title("get thorax")
 pylab.show()
 
 # get inverse of mask
 getthoraxI=~getthorax.mask
 pylab.plot()
 pylab.imshow(getthoraxI, cmap=pylab.gray())
+pylab.title("inverse mask")
 pylab.show()
 
 # apply again thoraxMask
 combinedMask1 = ma.mask_or(ma.getmask(thoraxMask), ma.getmask(getthorax))
 pylab.plot()
 pylab.imshow(combinedMask1, cmap=pylab.gray())
+pylab.title("combined mask")
 pylab.show()
 
 combinedMask1 = ma.array(HU, mask=combinedMask1) #apply on matrix
 
 pylab.plot()
 pylab.imshow(combinedMask1, cmap=pylab.gray())
+pylab.title("combined mask on image")
 pylab.show()
 
 nonLungMask = ma.masked_greater(HU, threshold)

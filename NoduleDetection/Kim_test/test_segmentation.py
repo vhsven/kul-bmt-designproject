@@ -191,10 +191,10 @@ print("Optimal threshold: %d" % threshold)
 millis3=int(round(time.time()*1000))
 
 # step 5: binarization image
-#nonLungMask = ma.masked_greater(HU, threshold) #threshold is in non-shifted waarden???
-#combinedMask = ma.mask_or(ma.getmask(thoraxMask), ma.getmask(nonLungMask))
-#combinedMask = ma.array(HU, mask=combinedMask) #apply on matrix
-combinedMask = ma.masked_greater(thoraxMask, threshold)
+nonLungMask = ma.masked_greater(HU, threshold) #threshold is in non-shifted waarden???
+combinedMask = ma.mask_or(ma.getmask(thoraxMask), ma.getmask(nonLungMask))
+combinedMask = ma.array(HU, mask=combinedMask) #apply on matrix
+#combinedMask = ma.masked_greater(thoraxMask, threshold)
 
 print("Step A1-2: %dms" % (millis2-millis1))
 print("Step A3-4: %dms" % (millis3-millis2))

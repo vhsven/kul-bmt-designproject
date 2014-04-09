@@ -26,8 +26,8 @@ class DicomFolderReader:
                 
         self.Slices = sorted(self.Slices, key=lambda s: s.SliceLocation) #silly slices are not sorted yet
         self.NbSlices = len(self.Slices)
-        self.RescaleSlope = self.Slices[0].RescaleSlope
-        self.RescaleIntercept = self.Slices[0].RescaleIntercept
+        self.RescaleSlope = int(self.Slices[0].RescaleSlope)
+        self.RescaleIntercept = int(self.Slices[0].RescaleIntercept)
         
         #assuming properties are the same for all slices
         if self.Slices[0].ImageOrientationPatient != [1, 0, 0, 0, 1, 0]:
@@ -58,6 +58,9 @@ class DicomFolderReader:
                              [0, 0, ds.SliceThickness,  self.getMinZ() - ds.SliceThickness/2],
                              [0, 0, 0, 1]])
         
+    def getNbSlices(self):
+        return len(self.Slices)
+    
     def getSliceData(self, index):
         return self.Slices[index]
     

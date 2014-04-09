@@ -25,9 +25,7 @@ myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490
 dfr = DicomFolderReader(myPath)
 ds = dfr.Slices[50]
 data = ds.pixel_array
-minI = data.min()
-maxI = data.max()
-print("raw grey levels: {} - {}".format(minI, maxI))
+print("raw grey levels: {} - {}".format(data.min(), data.max()))
 
 #show image
 #pylab.imshow(ds.pixel_array, cmap=pylab.gray())
@@ -50,6 +48,7 @@ print("rescaled grey levels: {} - {}".format(minI, maxI))
 thoraxMask = ma.masked_equal(HU, minI)
 minI = thoraxMask.min() # find the new minimum inside mask region
 
+shift = minI
 if minI != 0: #shift intensities so that minI = 0
     thoraxMask -= minI
     maxI -= minI
@@ -59,11 +58,20 @@ delta = maxI - minI + 1
 
 print("masked/shifted grey levels: {} - {}".format(minI, maxI))
 
+binEdges = np.arange(minI, maxI + BIN_SIZE, BIN_SIZE)
+bins = len(binEdges) - 1
+p, _ = np.histogram(thoraxMask, binEdges)
+millis1=int(round(time.time()*1000))
+
 peak1Mask = ma.masked_outside(thoraxMask, BIN_SIZE*0 ,  BIN_SIZE*5)  #  0 -   80
 peak2Mask = ma.masked_outside(thoraxMask, BIN_SIZE*5 ,  BIN_SIZE*15) # 80 -  240
-peak3Mask = ma.masked_outside(thoraxMask, BIN_SIZE*50 , BIN_SIZE*60) #800 -  960
-peak4Mask = ma.masked_outside(thoraxMask, BIN_SIZE*60 , BIN_SIZE*75) #960 - 1200
-fixedMask = ma.masked_greater(HU, 1500)
+peak34Mask = ma.masked_outside(thoraxMask, BIN_SIZE*50 , BIN_SIZE*75) #800 -  1200
+restMask = ma.masked_less(thoraxMask, BIN_SIZE*75) #1200+
+
+huThreshold = 1500
+shiftedThreshold = huThreshold - shift
+fixedMask = ma.masked_greater(thoraxMask, shiftedThreshold)
+#fixedMask = ma.masked_greater(HU, huThreshold)
 
 pylab.subplot(231)
 pylab.title("Peak 1")
@@ -71,23 +79,21 @@ pylab.imshow(peak1Mask, cmap=pylab.gray())
 pylab.subplot(232)
 pylab.title("Peak 2")
 pylab.imshow(peak2Mask, cmap=pylab.gray())
+pylab.subplot(233)
+pylab.title("Histogram")
+pylab.bar(np.arange(bins) * BIN_SIZE, p, 0.35)
 pylab.subplot(234)
-pylab.title("Peak 3")
-pylab.imshow(peak3Mask, cmap=pylab.gray())
+pylab.title("Peak 3 + 4")
+pylab.imshow(peak34Mask, cmap=pylab.gray())
 pylab.subplot(235)
-pylab.title("Peak 4")
-pylab.imshow(peak4Mask, cmap=pylab.gray())
+pylab.title("> 1200")
+pylab.imshow(restMask, cmap=pylab.gray())
 pylab.subplot(236)
-pylab.title("> 1500")
+pylab.title("> {0}".format(shiftedThreshold))
 pylab.imshow(fixedMask, cmap=pylab.gray())
 pylab.show()
 
-#exit(0)
-
-binEdges = np.arange(minI, maxI + BIN_SIZE, BIN_SIZE)
-bins = len(binEdges) - 1
-p, _ = np.histogram(thoraxMask, binEdges)
-millis1=int(round(time.time()*1000))
+exit(0)
 
 Mlow=np.zeros(bins, dtype=np.int)
 Mhigh=np.zeros(bins, dtype=np.int)

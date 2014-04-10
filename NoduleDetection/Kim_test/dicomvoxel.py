@@ -89,7 +89,7 @@ featurevector=[]
 # grey value
 
     
-#featurevector[2]=intensity of that grey value
+#featurevector[2]=prevalence of that grey value
 
 #featurevector[3]= 3D averaging (Keshani et al)
 
@@ -125,3 +125,4 @@ featurevector=[]
 # featurevector[10]= texture analysis -> statistical (mean, variance, skewness, kurtosis) (slide 28 van feature selection pdf)
     # autocorrelations
     
+# afstand tot middelpunt scan

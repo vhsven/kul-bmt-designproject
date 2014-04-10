@@ -29,7 +29,7 @@ def processSlice(mySlice, threshold):
     newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
     
     # erode thorax walls slightly (no nodules in there)
-    newmask = binary_erosion(newmask, selem=np.ones((39,39))).astype(np.int)
+    newmask = binary_erosion(newmask, selem=np.ones((29,29))).astype(np.int)
     
     masked2 = ma.array(HU, mask=np.logical_not(newmask))
     

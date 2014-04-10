@@ -1,3 +1,5 @@
+from NoduleRegions import NoduleRegions
+
 class Nodule:
     def __init__(self, noduleID):
         self.ID = noduleID
@@ -10,34 +12,7 @@ class Nodule:
         self.spiculation = -1
         self.texture = -1
         self.malignancy = -1
-        self.regions = {}
-      
-    def addRegion(self, pixelZ, coordinates):
-        self.regions[pixelZ] = coordinates
-        
-    def getRegionCoords(self, pixelZ):
-        return self.regions[pixelZ]
-        
-    def getNbRegions(self): 
-        return len(self.regions.keys())
-    
-    def getSortedSlicePositions(self):
-        return sorted(self.regions.iterkeys())
-        
-    def getRegionsSorted(self):
-        allRegions = {}
-        for pixelZ in sorted(self.regions.iterkeys()):
-            allRegions[pixelZ] = self.getRegionCoords(pixelZ)
-        
-        return allRegions
-        
-    def printRegions(self):
-        print("Found {0} regions for nodule {1}.".format(self.getNbRegions(), self.ID))
-        for pixelZ in self.getSortedSlicePositions():
-            coords = self.getRegionCoords(pixelZ)
-            #print("\t\tFound {0} coordinates for region with pixelZ={1}:".format(len(coords), pixelZ))
-            for coord in coords:
-                print("{0} {1} {2}".format(coord[0], coord[1], coord[2]))
+        self.regions = NoduleRegions()
                 
     @staticmethod
     def fromXML(xml, cc):
@@ -73,6 +48,6 @@ class Nodule:
                     coord = voxelX, voxelY, pixelZ #tuple
                     coordList.append(coord)
                     
-                nodule.addRegion(pixelZ, coordList)
+                nodule.regions.addRegion(pixelZ, coordList)
         
         return nodule

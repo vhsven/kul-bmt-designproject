@@ -1,5 +1,5 @@
 from lxml import etree
-from Nodule import *
+from Nodule import Nodule
 from CoordinateConverter import CoordinateConverter
 from DicomFolderReader import DicomFolderReader 
 from os import listdir
@@ -10,8 +10,8 @@ class XmlAnnotationReader:
         myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".xml") ]
         assert len(myFiles) == 1 #there must be only 1 XML file is this directory
         myFile = myFiles[0]
-        dfr = DicomFolderReader(myPath)
-        matrix = dfr.getWorldMatrix()
+        self.dfr = DicomFolderReader(myPath)
+        matrix = self.dfr.getWorldMatrix()
         cc = CoordinateConverter(matrix)
         tree = etree.parse(myFile)
         root = tree.getroot()
@@ -37,9 +37,3 @@ class XmlAnnotationReader:
             nodules.append(nodule)
             
         return nodules 
-                        
-myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
-#myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
-reader = XmlAnnotationReader(myPath)
-for nodule in reader.Nodules:
-    nodule.printRegions()

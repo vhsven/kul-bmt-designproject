@@ -10,7 +10,7 @@ from DicomFolderReader import DicomFolderReader
 import collections
 from numpy import linalg
 import math
-import runstats
+
 
 
 
@@ -50,7 +50,7 @@ def greyvaluecharateristic(x,y,windowrowvalue,data):
     # grey value
     greyvalue=data[x,y]
     
-    # mean value (square windowrowvalue x windowrowvalue)
+    # square windowrowvalue x windowrowvalue
     valup=math.ceil(windowrowvalue/2)
     valdown=math.floor(windowrowvalue/2)
     

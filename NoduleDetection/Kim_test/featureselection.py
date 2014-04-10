@@ -10,6 +10,9 @@ from DicomFolderReader import DicomFolderReader
 import collections
 from numpy import linalg
 import math
+import runstats
+
+
 
 
 
@@ -36,8 +39,8 @@ featurevector=[]
 
 #featurevector[1]= position of pixel in 2D slice
 # x and y are the pixelcoordinates of certain position in image
-x=5
-y=5
+#x
+#y
 
 
 #featurevector[2]=greyvalue
@@ -51,16 +54,56 @@ def greyvaluecharateristic(x,y,windowrowvalue,data):
     valup=math.ceil(windowrowvalue/2)
     valdown=math.floor(windowrowvalue/2)
     
-    D=data[x-valdown:x+valup,y-valdown:y+valup]
-    Dsom1=sum(D[:,:])
-    Dsom2=sum(Dsom1[:])
-    M=Dsom2/(windowrowvalue**2)
+    windowD=data[x-valdown:x+valup,y-valdown:y+valup]
     
-    # standard deviation
-    V=D.std()
+    #reshape window into array
+    h,w=windowD.shape()
+    arrayD = np.reshape(windowD, (h*w))
     
-    return greyvalue, M, V
+    # mean and variance
+    M=arrayD.mean()
+    V=arrayD.var()
+        
+    x = range(w)
+    y = range(h)
 
+
+    #calculate projections along the x and y axes
+    yp = np.sum(windowD,axis=1)
+    xp = np.sum(windowD,axis=0)
+
+    #centroid
+    cx = np.sum(x*xp)/np.sum(xp)
+    cy = np.sum(y*yp)/np.sum(yp)
+
+    #standard deviation
+    x2 = (x-cx)**2
+    y2 = (y-cy)**2
+
+    sx = np.sqrt( np.sum(x2*xp)/np.sum(xp) )
+    sy = np.sqrt( np.sum(y2*yp)/np.sum(yp) )
+
+    #skewness
+    x3 = (x-cx)**3
+    y3 = (y-cy)**3
+
+    skx = np.sum(xp*x3)/(np.sum(xp) * sx**3)
+    sky = np.sum(yp*y3)/(np.sum(yp) * sy**3)
+
+    #Kurtosis
+    x4 = (x-cx)**4
+    y4 = (y-cy)**4
+    kx = np.sum(xp*x4)/(np.sum(xp) * sx**4)
+    ky = np.sum(yp*y4)/(np.sum(yp) * sy**4)
+    
+    #autocorrelation
+    result = np.correlate(arrayD, arrayD, mode='full')
+    autocorr=result[result.size/2:]
+
+
+    return greyvalue,M,V,cx,cy,sx,sy,skx,sky,kx,ky,autocorr
+    
+   
  
 #featurevector[3]= prevalence of that grey value
 def greyvaluefrequency (x,y,data):
@@ -88,7 +131,7 @@ def forbeniusnorm (x,y):
 
 
 #featurevector[5]= window: substraction L R
-def substractwindowLR(x,y,windowrowvalue,data):
+def windowLR(x,y,windowrowvalue,data):
     valup=math.ceil(windowrowvalue/2)
     valdown=math.floor(windowrowvalue/2)
     
@@ -97,30 +140,17 @@ def substractwindowLR(x,y,windowrowvalue,data):
     # calculate 'gradients' by substraction 
     leftrow=windowD[:,0]
     rightrow=windowD[:,(windowrowvalue-1)]
+    meanL=leftrow.mean()
+    meanR=rightrow.mean()
     gradLR=rightrow-leftrow
+    gradmeanLR=meanR-meanL
     
-    # calculate 'gradients' by substraction 
-    gradRL=leftrow-rightrow
-    
-    return gradLR, gradRL
-
-
-#featurevector[6]= window: divide left/R by right/L
-def dividewindowLR(x,y,windowrowvalue,data):
-    valup=math.ceil(windowrowvalue/2)
-    valdown=math.floor(windowrowvalue/2)
-    
-    windowD=data[x-valdown:x+valup,y-valdown:y+valup]
-    
-    # calculate 'gradients' by division 
-    leftrow=windowD[:,0]
-    rightrow=windowD[:,(windowrowvalue-1)]
+    # calculate 'gradients' by division
+    divmeanLR=meanR/meanL    
     divLR=leftrow/rightrow
     
-    # calculate 'gradients'
-    divRL=rightrow/leftrow
-    
-    return divLR, divRL   
+       
+    return gradLR, gradmeanLR, divLR, divmeanLR
 
 
 #featurevector[7]= window: substraction Up Down
@@ -158,15 +188,19 @@ def dividewindowUD(x,y,windowrowvalue,data):
     
     return divUD, divDU
 
-#featurevector[9]= features Ozekes and Osman (2010)
+#featurevector[9]= 3Dfeatures Ozekes and Osman (2010)
 
 #featurevector[10]= edges
 
 #featurevector[11]=uitgerektheid/compact
 
-#featurevector[12]=convolution filters (filter banks): law filters (p296 ev), gabor filters, eigenfilters
+#featurevector[12]=convolution filters (filter banks)
 
-# featurevector[13]= afstand tot andere nodules (lichte pixels)
+#law filters (p296 ev)
+#gabor filters
+#eigenfilters
+
+# featurevector[13]= 
 
 #featurevector[14]= Canny edge detection
 
@@ -177,8 +211,7 @@ def dividewindowUD(x,y,windowrowvalue,data):
 # featurevector[10]= histogram distances (Manhattan distance, eucledian distance, max distance)
     # deel tekening op in kleine gebieden/ histogrammen en bekijk daar histogram distances ofzo
     
-# featurevector[10]= texture analysis -> statistical (mean, variance, skewness, kurtosis) (slide 28 van feature selection pdf)
-    # autocorrelations
+
     
 #featurevector[3]= 3D averaging (Keshani et al)
 

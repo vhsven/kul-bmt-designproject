@@ -10,40 +10,43 @@ from DicomFolderReader import DicomFolderReader
 import collections
 from numpy import linalg
 import math
+import matplotlib.pyplot as plt
+from skimage.filter.rank import entropy
+from skimage.morphology import disk
+from skimage.util import img_as_ubyte
 
 
 
 
 
-
-###########################################
+###############################################################################
 ### step 1: import data
 
 myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
 dfr = DicomFolderReader(myPath)
-ds = dfr.Slices[50]
-data = ds.pixel_array #voxel(i,j) is pixel(j,i) -> so one voxel is one pixel (http://nipy.org/nibabel/dicom/dicom_orientation.html)
-numberz = dfr.getNbSlices()
-print(data)
-#show image
-pylab.imshow(ds.pixel_array, cmap=pylab.gray())
-pylab.show()
+data = dfr.getVolumeData() #voxel(i,j) is pixel(j,i) -> so one voxel is one pixel (http://nipy.org/nibabel/dicom/dicom_orientation.html)
+X,Y,Z = dfr.getVolumeShape()
 
-############################################
+
+###############################################################################
 #### step 2: prepare data
 
 # select thorax
 
-###########################################
+###############################################################################
 #### step 3: make 2D feature vector
 featurevector = []
 
+############################################################
 #featurevector[1]= position of pixel in 2D slice
+############################################################
 # x and y are the pixelcoordinates of certain position in image
 #position=[x,y,z]
 
 
+############################################################
 #featurevector[2]=greyvalue
+############################################################
 def greyvaluecharateristic(x,y,z,windowrowvalue,data):
     # windowrowvalue should be odd number (3,5,7...)
     
@@ -113,8 +116,9 @@ def greyvaluecharateristic(x,y,z,windowrowvalue,data):
     return greyvalue,M,V,cx,cy,cz,sx,sy,sz,skx,sky,skz,kx,ky,kz,autocorr
     
    
- 
+############################################################
 #featurevector[3]= prevalence of that grey value
+############################################################
 def greyvaluefrequency (x,y,z,data):
     m,n,d = data.shape
     mydata = np.reshape(data, (m*n*d))
@@ -125,12 +129,14 @@ def greyvaluefrequency (x,y,z,data):
     return freqvalue
 
 
+############################################################
 #featurevector[4]=  frobenius norm pixel to center 2D image
+############################################################
 def forbeniusnorm (x,y,z):
     # slice is 512 by 512 by numberz: b is center
     xb = 256
     yb = 256
-    zb = int[numberz/2]
+    zb = int[Z/2]
     a = np.array((x,y,z))
     b = np.array((xb,yb,zb))
     dist = np.linalg.norm(a-b)
@@ -138,7 +144,9 @@ def forbeniusnorm (x,y,z):
     return dist
 
 
+############################################################
 #featurevector[5]= window: substraction L R
+############################################################
 def windowLR(x,y,z,windowrowvalue,data):
     valup=math.ceil(windowrowvalue/2)
     valdown=math.floor(windowrowvalue/2)
@@ -161,7 +169,9 @@ def windowLR(x,y,z,windowrowvalue,data):
     return gradLR, gradmeanLR, divLR, divmeanLR
 
 
-#featurevector[7]= window: substraction Up Down
+############################################################
+#featurevector[6]= window: substraction Up Down
+############################################################
 def substractwindowUD(x, y, z, windowrowvalue, data):
     valup = math.ceil(windowrowvalue/2)
     valdown = math.floor(windowrowvalue/2)
@@ -184,6 +194,41 @@ def substractwindowUD(x, y, z, windowrowvalue, data):
     return gradUD, gradmeanUD, divmeanUD, divmeanUD
 
 
+############################################################
+# feature[7]= entropy calculation (disk window or entire image)
+############################################################
+def pixelentropy(x,y,z):
+    image=data[:,:,z].view('uint8')
+#     fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 4))
+    
+#     img0 = ax0.imshow(image, cmap=plt.cm.gray)
+#     ax0.set_title('Image')
+#     ax0.axis('off')
+#     plt.colorbar(img0, ax=ax0)
+    
+    pixel_entropy=entropy(image, disk(5))
+#     print(imentropy)
+#     img1 = ax1.imshow(imentropy, cmap=plt.cm.jet)
+#     ax1.set_title('Entropy')
+#     ax1.axis('off')
+#     plt.colorbar(img1, ax=ax1)
+#     plt.show()
+    return pixel_entropy #returns a matrix with entropy values for each pixel
+
+
+
+def image_entropy(z):
+    """calculate the entropy of an image"""
+    img=data[:,:,z]
+    histogram,_ = np.histogram(img,100)
+    histogram_length = sum(histogram)
+
+    samples_probability = [float(h) / histogram_length for h in histogram]
+    image_entropy=-sum([p * math.log(p, 2) for p in samples_probability if p != 0])
+
+    return image_entropy
+
+
 #featurevector[9]= 3Dfeatures Ozekes and Osman (2010)
 
 #featurevector[10]= edges
@@ -196,7 +241,6 @@ def substractwindowUD(x, y, z, windowrowvalue, data):
 #gabor filters
 #eigenfilters
 
-# featurevector[13]= 
 
 #featurevector[14]= Canny edge detection
 

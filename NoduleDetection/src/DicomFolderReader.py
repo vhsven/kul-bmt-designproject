@@ -1,17 +1,11 @@
 import dicom
 import numpy as np
-#import matplotlib.pylab as plot
-#import matplotlib.cm as cm
-#plot.imshow(ds.pixel_array, cmap=plot.gray())
-#plot.show()
+import numpy.ma as ma
+from skimage.morphology import reconstruction, binary_opening, binary_erosion
 from os import listdir
 from os.path import isfile, join
+from Constants import *
 
-# to find current working directory:
-# os.getcwd()
-# voxel(i,j) = pixel_data[j, i]
-
-#TODO split coordinate conversion functions from reader functions
 class DicomFolderReader:
     Slices = []
     
@@ -26,6 +20,7 @@ class DicomFolderReader:
                 
         self.Slices = sorted(self.Slices, key=lambda s: s.SliceLocation) #silly slices are not sorted yet
         self.NbSlices = len(self.Slices)
+        self.Masks = [None] * self.NbSlices
         self.RescaleSlope = int(self.Slices[0].RescaleSlope)
         self.RescaleIntercept = int(self.Slices[0].RescaleIntercept)
         
@@ -69,3 +64,30 @@ class DicomFolderReader:
     
     def getSlicePixelsRescaled(self, index):
         return self.Slices[index].pixel_array * self.RescaleSlope - self.RescaleIntercept
+    
+    def processSlice(self, index, threshold, erosionWindow):
+        HU = self.getSlicePixelsRescaled(index)
+        
+        # select pixels in thorax wall
+        masked = ma.masked_greater(HU, threshold)
+        
+        # opening to remove small structures
+        newmask = binary_opening(masked.mask, selem=np.ones((9,9)))
+    
+        # reconstruction to fill lungs (figure out how this works) 
+        seed = np.copy(newmask)
+        seed[1:-1, 1:-1] = newmask.max()
+        newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
+        
+        # erode thorax walls slightly (no nodules in there)
+        newmask = binary_erosion(newmask, selem=np.ones((erosionWindow,erosionWindow))).astype(np.int)
+        
+        masked = ma.array(HU, mask=np.logical_not(newmask))
+        
+        return masked
+    
+    def getMaskedSlice(self, index):
+        if self.Masks[index] == None:
+            self.Masks[index] = self.processSlice(index, DEFAULT_THRESHOLD, DEFAULT_WINDOW_SIZE)
+        
+        return self.Masks[index]

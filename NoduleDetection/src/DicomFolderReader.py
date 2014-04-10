@@ -56,6 +56,12 @@ class DicomFolderReader:
     def getNbSlices(self):
         return len(self.Slices)
     
+    def getSliceShape(self):
+        return self.getSlicePixels(0).shape
+    
+    def getVolumeShape(self):
+        return self.getSlicePixels(0).shape + (self.getNbSlices(),)
+        
     def getSliceData(self, index):
         return self.Slices[index]
     
@@ -64,6 +70,12 @@ class DicomFolderReader:
     
     def getSlicePixelsRescaled(self, index):
         return self.Slices[index].pixel_array * self.RescaleSlope - self.RescaleIntercept
+    
+    def getVolumeData(self):
+        voxels = np.zeros(self.getVolumeShape())
+        for index in range(0, self.getNbSlices()):
+            data = self.getSlicePixelsRescaled(index)
+            voxels[:,:,index] = data
     
     def processSlice(self, index, threshold, erosionWindow):
         HU = self.getSlicePixelsRescaled(index)

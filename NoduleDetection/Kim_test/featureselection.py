@@ -1,4 +1,4 @@
-#import pylab
+import pylab
 #import scipy as sp
 import numpy as np
 #import numpy.ma as ma
@@ -14,6 +14,9 @@ class FeatureSelection:
         self.Data = data
         self.VoxelShape = vshape
         
+    def getSlice(self, z):
+        return self.Data[:,:,int(z)]
+    
     ###############################################################################
     ### step 1: import data
     
@@ -300,7 +303,10 @@ class FeatureSelection:
     ############################################################
     def pixelentropy(self, z):
         # calculates the sliceEntropy of each pixel in the slice in comparison to its surroundings
-        image=self.Data[:,:,z].view('uint8')
+        image = self.getSlice(z)
+        pylab.imshow(image, cmap=pylab.gray())
+        pylab.show()
+        image = image.view('uint8')
     #     fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 4))
         
     #     img0 = ax0.imshow(image, cmap=plt.cm.gray)
@@ -321,7 +327,7 @@ class FeatureSelection:
     
     def image_entropy(self, z):
         # calculates the sliceEntropy of the entire slice
-        img=self.Data[:,:,z]
+        img=self.getSlice(z)
         histogram,_ = np.histogram(img,100)
         histogram_length = sum(histogram)
     
@@ -406,7 +412,7 @@ class FeatureSelection:
     # feature[9]= blob detection with laplacian of gaussian
     ############################################################
     def blobdetection(self, z):
-        image=self.Data[:,:,z]
+        image=self.getSlice(z)
         returnValue = []
         for sigma in np.arange(1.9,2.1,0.1):
             LoG = nd.gaussian_laplace(image, sigma) # scalar: standard deviations of the Gaussian filter

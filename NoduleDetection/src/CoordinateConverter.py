@@ -11,10 +11,10 @@ class CoordinateConverter:
         #return (worldZ - self.getMinZ() + dz/2) / dz
         return self.getPixelVector([0, 0, worldZ, 1])[2]
 
-    def getWorldZ(self, pixelZ):
+    def getWorldZ(self, z):
         #dz = self.Slices[0].SliceThickness;
-        #return pixelZ * dz + self.getMinZ() - dz/2
-        return self.getWorldVector([0, 0, pixelZ, 1])[2]
+        #return z * dz + self.getMinZ() - dz/2
+        return self.getWorldVector([0, 0, z, 1])[2]
 
     def getPixelVector(self, worldVector):
         if len(worldVector) == 3:

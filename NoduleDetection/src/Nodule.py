@@ -38,16 +38,16 @@ class Nodule:
         if nbRegions > 0:
             for roi in regionList:
                 worldZ = float(roi.find("{http://www.nih.gov}imageZposition").text)
-                pixelZ = cc.getPixelZ(worldZ)
+                z = cc.getPixelZ(worldZ)
                 #pizelZ = int(round(pizelZ))
                 edgeMapList = roi.findall("{http://www.nih.gov}edgeMap")
                 coordList = []
                 for edgeMap in edgeMapList:
                     voxelX = int(edgeMap.find("{http://www.nih.gov}xCoord").text)
                     voxelY = int(edgeMap.find("{http://www.nih.gov}yCoord").text)
-                    coord = voxelX, voxelY, pixelZ #tuple
+                    coord = voxelX, voxelY, z #tuple
                     coordList.append(coord)
                     
-                nodule.regions.addRegion(pixelZ, coordList)
+                nodule.regions.addRegion(z, coordList)
         
         return nodule

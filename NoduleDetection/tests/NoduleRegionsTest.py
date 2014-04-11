@@ -13,18 +13,18 @@ for nodule in reader.Nodules:
     masks, c, r2 = nodule.regions.getRegionMasksCircle()
     #paths, masks = nodule.regions.getRegionMasksPolygon()
      
-    for pixelZ in masks.keys():
-        mask = masks[pixelZ]
-        mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
+    for z in masks.keys():
+        mask = masks[z]
+        mySlice = reader.dfr.getSlicePixelsRescaled(int(z))
         mask = np.logical_not(mask)
         maskedSlice = ma.array(mySlice, mask=mask)
         pylab.imshow(maskedSlice, cmap=pylab.gray())
         pylab.show()
     
 #     mask = nodule.regions.getRegionMasksSphere(cc)
-#     for pixelZ in range(0, mask.shape[2]):
-#         mask2D = mask[:,:,pixelZ]
-#         mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
+#     for z in range(0, mask.shape[2]):
+#         mask2D = mask[:,:,z]
+#         mySlice = reader.dfr.getSlicePixelsRescaled(int(z))
 #         mask2D = np.logical_not(mask2D)
 #         maskedSlice = ma.array(mySlice, mask=mask2D)
 #         pylab.imshow(maskedSlice, cmap=pylab.gray())

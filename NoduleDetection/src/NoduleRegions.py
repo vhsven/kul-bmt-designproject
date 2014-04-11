@@ -8,11 +8,11 @@ class NoduleRegions:
     def __init__(self):
         self.regions = {}
     
-    def addRegion(self, pixelZ, coords):
-        self.regions[pixelZ] = coords
+    def addRegion(self, z, coords):
+        self.regions[z] = coords
         
-    def getRegionCoords(self, pixelZ):
-        return self.regions[pixelZ]
+    def getRegionCoords(self, z):
+        return self.regions[z]
         
     def getNbRegions(self): 
         return len(self.regions.keys())
@@ -22,8 +22,8 @@ class NoduleRegions:
     
     def getRegionsSorted(self):
         allRegions = {}
-        for pixelZ in self.getSortedZIndices():
-            allRegions[pixelZ] = self.getRegionCoords(pixelZ)
+        for z in self.getSortedZIndices():
+            allRegions[z] = self.getRegionCoords(z)
         
         return allRegions
     
@@ -31,26 +31,26 @@ class NoduleRegions:
     def getRegionMasksPolygon(self):
         paths = {}
         masks = {}
-        for pixelZ in self.getSortedZIndices():
-            coords = self.getRegionCoords(pixelZ)
+        for z in self.getSortedZIndices():
+            coords = self.getRegionCoords(z)
             if len(coords) > 1:
                 verts = [(x,y) for (x,y,_) in coords]
                 codes = [Path.MOVETO] + [Path.LINETO] * (len(coords)-2) + [Path.CLOSEPOLY]
-                paths[pixelZ] = Path(verts, codes)
+                paths[z] = Path(verts, codes)
                 
                 x, y = np.meshgrid(np.arange(512), np.arange(512))
                 x, y = x.flatten(), y.flatten()
                 points = np.vstack((x,y)).T # array([[0, 0],[1, 0],[2, 0],[3, 0],...,[9, 0],[0, 1],[1, 1],...
                 
-                masks[pixelZ] = paths[pixelZ].contains_points(points)
-                masks[pixelZ] = masks[pixelZ].reshape(512,512)
+                masks[z] = paths[z].contains_points(points)
+                masks[z] = masks[z].reshape(512,512)
                 
         return paths, masks
     
     def getRegionCenters(self):
         centers = {}
-        for pixelZ in self.getSortedZIndices():
-            coords = self.getRegionCoords(pixelZ)
+        for z in self.getSortedZIndices():
+            coords = self.getRegionCoords(z)
             x,y,_ = zip(*coords)
             x = np.array(x)
             y = np.array(y)
@@ -61,7 +61,7 @@ class NoduleRegions:
             centerX = (maxX + minX) / 2
             centerY = (maxY + minY) / 2
             #centerZ = (maxZ + minZ) / 2
-            centers[pixelZ] = centerX, centerY
+            centers[z] = centerX, centerY
             
         return centers
         
@@ -69,8 +69,8 @@ class NoduleRegions:
         masks = {}
         c = {}
         r2 = {}
-        for pixelZ in self.getSortedZIndices():
-            coords =  self.getRegionCoords(pixelZ)
+        for z in self.getSortedZIndices():
+            coords =  self.getRegionCoords(z)
             x,y,_ = zip(*coords) 
             x = np.array(x)
             y = np.array(y)
@@ -78,15 +78,15 @@ class NoduleRegions:
             minY, maxY = min(y), max(y)
             centerX = (maxX + minX) / 2
             centerY = (maxY + minY) / 2
-            c[pixelZ] = centerX, centerY
+            c[z] = centerX, centerY
             rx = (x-centerX)**2
             ry = (y-centerY)**2
-            r2[pixelZ] = max(rx + ry)
-            if r2[pixelZ] < MIN_NODULE_RADIUS:
-                r2[pixelZ] = MIN_NODULE_RADIUS
+            r2[z] = max(rx + ry)
+            if r2[z] < MIN_NODULE_RADIUS:
+                r2[z] = MIN_NODULE_RADIUS
             
             # TODO get slice dimensions from somewhere
-            masks[pixelZ] = np.zeros(512**2).reshape(512,512).astype(np.bool)
+            masks[z] = np.zeros(512**2).reshape(512,512).astype(np.bool)
             x = np.arange(0, 512)
             y = np.arange(0, 512)
             dx = (x-centerX)**2
@@ -95,7 +95,7 @@ class NoduleRegions:
             # can we make this more efficient?
             for x in range(0, 512):
                 for y in range(0, 512):
-                    masks[pixelZ][y,x] = (dx[x] + dy[y] <= r2[pixelZ])            
+                    masks[z][y,x] = (dx[x] + dy[y] <= r2[z])            
         
         return masks, c, r2
     
@@ -104,8 +104,8 @@ class NoduleRegions:
         c = {}
         r2 = {}
         coords = []
-        for pixelZ in self.getSortedZIndices():
-            coords += self.getRegionCoords(pixelZ)
+        for z in self.getSortedZIndices():
+            coords += self.getRegionCoords(z)
         
         coords = [list(cc.getWorldVector(pixelVector)) for pixelVector in coords]
         x,y,z,_ = zip(*coords) 
@@ -139,8 +139,8 @@ class NoduleRegions:
     
     def printRegions(self):
         print("Found {0} regions.".format(self.getNbRegions()))
-        for pixelZ in self.getSortedZIndices():
-            coords = self.getRegionCoords(pixelZ)
-            #print("\t\tFound {0} coordinates for region with pixelZ={1}:".format(len(coords), pixelZ))
+        for z in self.getSortedZIndices():
+            coords = self.getRegionCoords(z)
+            #print("\t\tFound {0} coordinates for region with z={1}:".format(len(coords), z))
             for coord in coords:
                 print("{0} {1} {2}".format(coord[0], coord[1], coord[2]))

@@ -10,23 +10,24 @@ cc = reader.dfr.getCoordinateConverter()
 for nodule in reader.Nodules:
     print(nodule.ID)
     #nodule.regions.printRegions()
-#     paths, masks = nodule.regions.getRegionMasksPolygon()
-#     
-#     for pixelZ in masks.keys():
-#         mask = masks[pixelZ]
-#         mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
-#         mask = np.logical_not(mask)
-#         maskedSlice = ma.array(mySlice, mask=mask)
-#         pylab.imshow(maskedSlice, cmap=pylab.gray())
-#         pylab.show()
-    
-    mask = nodule.regions.getRegionMasksSphere(cc)
-    for pixelZ in range(0, mask.shape[2]):
-        mask2D = mask[:,:,pixelZ]
+    masks, c, r2 = nodule.regions.getRegionMasksCircle()
+    #paths, masks = nodule.regions.getRegionMasksPolygon()
+     
+    for pixelZ in masks.keys():
+        mask = masks[pixelZ]
         mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
-        mask2D = np.logical_not(mask2D)
-        maskedSlice = ma.array(mySlice, mask=mask2D)
+        mask = np.logical_not(mask)
+        maskedSlice = ma.array(mySlice, mask=mask)
         pylab.imshow(maskedSlice, cmap=pylab.gray())
         pylab.show()
+    
+#     mask = nodule.regions.getRegionMasksSphere(cc)
+#     for pixelZ in range(0, mask.shape[2]):
+#         mask2D = mask[:,:,pixelZ]
+#         mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
+#         mask2D = np.logical_not(mask2D)
+#         maskedSlice = ma.array(mySlice, mask=mask2D)
+#         pylab.imshow(maskedSlice, cmap=pylab.gray())
+#         pylab.show()
         
         

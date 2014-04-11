@@ -11,8 +11,9 @@ class XmlAnnotationReader:
         assert len(myFiles) == 1 #there must be only 1 XML file is this directory
         myFile = myFiles[0]
         self.dfr = DicomFolderReader(myPath)
-        matrix = self.dfr.getWorldMatrix()
-        cc = CoordinateConverter(matrix)
+        #matrix = self.dfr.getWorldMatrix()
+        #cc = CoordinateConverter(matrix)
+        cc = self.dfr.getCoordinateConverter()
         tree = etree.parse(myFile)
         root = tree.getroot()
         self.Nodules = self.parseRoot(root, cc)

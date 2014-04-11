@@ -1,18 +1,9 @@
-'''
-Created on 16-mrt.-2014
-
-@author: Eigenaar
-'''
 #http://scikit-learn.org/stable/auto_examples/
-print(__doc__)
-
 import numpy as np
 import pylab as pl
-
 from sklearn import clone
 from sklearn.datasets import load_iris
-from sklearn.ensemble import (RandomForestClassifier, ExtraTreesClassifier,
-                              AdaBoostClassifier)
+from sklearn.ensemble import (RandomForestClassifier, ExtraTreesClassifier, AdaBoostClassifier)
 from sklearn.externals.six.moves import xrange
 from sklearn.tree import DecisionTreeClassifier
 
@@ -36,12 +27,23 @@ models = [DecisionTreeClassifier(max_depth=None),
           AdaBoostClassifier(DecisionTreeClassifier(max_depth=3),
                              n_estimators=n_estimators)]
 
+#Columns:
+#0: Sepal Length
+#1: Sepal Width
+#2: Petal Length
+#3: Petal Width
+
+#Targets:
+#0: Setosa
+#1: Versicolour
+#2: Virginica
+
 for pair in ([0, 1], [0, 2], [2, 3]):
     for model in models:
         # We only take the two corresponding features
         X = iris.data[:, pair]
         y = iris.target
-        print(X,y)
+        #print(X,y)
 
         # Shuffle
         idx = np.arange(X.shape[0])

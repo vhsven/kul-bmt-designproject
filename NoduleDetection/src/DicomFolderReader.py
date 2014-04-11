@@ -4,6 +4,7 @@ import numpy.ma as ma
 from skimage.morphology import reconstruction, binary_opening, binary_erosion
 from os import listdir
 from os.path import isfile, join
+from CoordinateConverter import CoordinateConverter
 from Constants import *
 
 class DicomFolderReader:
@@ -53,6 +54,9 @@ class DicomFolderReader:
                              [0, 0, ds.SliceThickness,  self.getMinZ() - ds.SliceThickness/2],
                              [0, 0, 0, 1]])
         
+    def getCoordinateConverter(self):    
+        return CoordinateConverter(self.getWorldMatrix())
+    
     def getNbSlices(self):
         return len(self.Slices)
     

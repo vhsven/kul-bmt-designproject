@@ -17,7 +17,13 @@ class CoordinateConverter:
         return self.getWorldVector([0, 0, pixelZ, 1])[0,2]
 
     def getPixelVector(self, worldVector):
+        if len(worldVector) == 3:
+            worldVector = np.append(worldVector, 1)
+        assert len(worldVector) == 4
         return np.dot(self.Inverse, worldVector)
     
     def getWorldVector(self, pixelVector):
-        return np.dot(self.Matrix, pixelVector)
+        if len(pixelVector) == 3:
+            pixelVector = np.append(pixelVector, 1)
+        assert len(pixelVector) == 4
+        return np.dot(self.Matrix, pixelVector).A1

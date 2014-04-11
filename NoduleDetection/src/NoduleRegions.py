@@ -70,19 +70,18 @@ class NoduleRegions:
         c = {}
         r2 = {}
         for pixelZ in self.getSortedZIndices():
-            coords = self.getRegionCoords(pixelZ)
-            x,y,_ = zip(*coords)
+            coords =  self.getRegionCoords(pixelZ)
+            x,y,_ = zip(*coords) 
             x = np.array(x)
             y = np.array(y)
-            #z = np.array(z)
             minX, maxX = min(x), max(x)
             minY, maxY = min(y), max(y)
-            #minZ, maxZ = min(z), max(z)
             centerX = (maxX + minX) / 2
             centerY = (maxY + minY) / 2
-            #centerZ = (maxZ + minZ) / 2
             c[pixelZ] = centerX, centerY
-            r2[pixelZ] = max((x-centerX)**2 + (y-centerY)**2)
+            rx = (x-centerX)**2
+            ry = (y-centerY)**2
+            r2[pixelZ] = max(rx + ry)
             if r2[pixelZ] < MIN_NODULE_RADIUS:
                 r2[pixelZ] = MIN_NODULE_RADIUS
             
@@ -99,6 +98,44 @@ class NoduleRegions:
                     masks[pixelZ][y,x] = (dx[x] + dy[y] <= r2[pixelZ])            
         
         return masks, c, r2
+    
+    def getRegionMasksSphere(self, cc):
+        masks = {}
+        c = {}
+        r2 = {}
+        coords = []
+        for pixelZ in self.getSortedZIndices():
+            coords += self.getRegionCoords(pixelZ)
+        
+        coords = [list(cc.getWorldVector(pixelVector)) for pixelVector in coords]
+        x,y,z,_ = zip(*coords) 
+        minX, maxX = min(x), max(x)
+        minY, maxY = min(y), max(y)
+        minZ, maxZ = min(z), max(z)
+        centerX = (maxX + minX) / 2
+        centerY = (maxY + minY) / 2
+        centerZ = (maxZ + minZ) / 2
+        rx = (x-centerX)**2
+        ry = (y-centerY)**2
+        rz = (z-centerZ)**2
+        print max(rx), max(ry), max(rz)
+        r2 = max(rx + ry + rz)
+        if r2 < MIN_NODULE_RADIUS:
+            r2 = MIN_NODULE_RADIUS
+        
+        # TODO get slice dimensions from somewhere
+        h,w,d = 512,512,100
+        #h,w,d = 50,50,50
+        mask = np.zeros(h*w*d).reshape(h,w,d).astype(np.bool)
+        
+        # we hebben tijd...
+        for px in range(0, h):
+            for py in range(0, w):
+                for pz in range(0, d):
+                    worldVector = list(cc.getWorldVector([px, py, pz]))
+                    mask[px,py,pz] = ((worldVector[0]-centerX)**2 + (worldVector[1]-centerY)**2 + (worldVector[2]-centerZ)**2 <= r2)            
+        
+        return mask
     
     def printRegions(self):
         print("Found {0} regions.".format(self.getNbRegions()))

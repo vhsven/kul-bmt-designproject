@@ -9,13 +9,15 @@ reader = XmlAnnotationReader(myPath)
 for nodule in reader.Nodules:
     print(nodule.ID)
     #nodule.regions.printRegions()
-    masks, c, r2 = nodule.regions.getRegionMasks()
+    #masks, c, r2 = nodule.regions.getRegionMasksCircle()
+    paths, masks = nodule.regions.getRegionMasksPolygon()
     
     for pixelZ in masks.keys():
-        #mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
-        #mask = np.logical_not(masks[pixelZ])
-        #maskedSlice = ma.array(mySlice, mask=mask)
-        #pylab.imshow(maskedSlice, cmap=pylab.gray())
-        #pylab.show()
+        mask = masks[pixelZ]
+        mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
+        mask = np.logical_not(mask)
+        maskedSlice = ma.array(mySlice, mask=mask)
+        pylab.imshow(maskedSlice, cmap=pylab.gray())
+        pylab.show()
         
-        nodule.regions.getRegionPath(pixelZ)
+        

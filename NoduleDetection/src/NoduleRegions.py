@@ -27,30 +27,45 @@ class NoduleRegions:
         
         return allRegions
     
-    def getRegionPath(self, pixelZ):
-        coords = self.getRegionCoords(pixelZ)
-        if len(coords) > 1:
-            verts = [(x,y) for (x,y,_) in coords]
-            codes = [Path.MOVETO] + [Path.LINETO] * (len(coords)-2) + [Path.CLOSEPOLY]
-            path = Path(verts, codes)
-            
-            fig = pylab.figure()
-            ax = fig.add_subplot(111)
-            patch = patches.PathPatch(path, facecolor='black', lw=0)
-            ax.add_patch(patch)
-            ax.set_xlim(0,512)
-            ax.set_ylim(0,512)
-            pylab.show()
-            
-            x = np.arange(0, 512)
-            y = np.arange(0, 512)
-            path.contains_points()
-            
-            return path
-        else:
-            return None
+    # doesn't work yet
+    def getRegionMasksPolygon(self):
+        paths = {}
+        masks = {}
+        for pixelZ in self.getSortedZIndices():
+            coords = self.getRegionCoords(pixelZ)
+            if len(coords) > 1:
+                verts = [(x,y) for (x,y,_) in coords]
+                codes = [Path.MOVETO] + [Path.LINETO] * (len(coords)-2) + [Path.CLOSEPOLY]
+                paths[pixelZ] = Path(verts, codes)
+                
+                x, y = np.meshgrid(np.arange(512), np.arange(512))
+                x, y = x.flatten(), y.flatten()
+                points = np.vstack((x,y)).T # array([[0, 0],[1, 0],[2, 0],[3, 0],...,[9, 0],[0, 1],[1, 1],...
+                
+                masks[pixelZ] = paths[pixelZ].contains_points(points)
+                masks[pixelZ] = masks[pixelZ].reshape(512,512)
+                
+        return paths, masks
     
-    def getRegionMasks(self):
+    def getRegionCenters(self):
+        centers = {}
+        for pixelZ in self.getSortedZIndices():
+            coords = self.getRegionCoords(pixelZ)
+            x,y,_ = zip(*coords)
+            x = np.array(x)
+            y = np.array(y)
+            #z = np.array(z)
+            minX, maxX = min(x), max(x)
+            minY, maxY = min(y), max(y)
+            #minZ, maxZ = min(z), max(z)
+            centerX = (maxX + minX) / 2
+            centerY = (maxY + minY) / 2
+            #centerZ = (maxZ + minZ) / 2
+            centers[pixelZ] = centerX, centerY
+            
+        return centers
+        
+    def getRegionMasksCircle(self):
         masks = {}
         c = {}
         r2 = {}

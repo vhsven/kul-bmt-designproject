@@ -14,6 +14,10 @@ import matplotlib.pyplot as plt
 from skimage.filter.rank import entropy
 from skimage.morphology import disk
 from skimage.util import img_as_ubyte
+import scipy as sp
+import scipy.ndimage as nd
+from scipy.ndimage.filters import generic_gradient_magnitude, sobel
+
 
 
 
@@ -388,7 +392,7 @@ def averaging3D (x,y,z,windowrowvalue,data):
 def gradients(x,y,z,data):
     #import scipy
     #from scipy import ndimage
-    from scipy.ndimage.filters import generic_gradient_magnitude, sobel
+    #from scipy.ndimage.filters import generic_gradient_magnitude, sobel
                        
 #     dx = ndimage.sobel(data, 0)  # x derivative
 #     dy = ndimage.sobel(data, 1)  # y derivative
@@ -398,25 +402,25 @@ def gradients(x,y,z,data):
         
     return mag
 
-    
-    
-#featurevector[10]=convolution filters (filter banks)
+############################################################
+# feature[10]= blob detection with laplacian of gaussian
+############################################################
+def blobdetection(x,y,z,data):
+    # REMARK: DATA SHOULD BE 2D
+    #data = ds.pixel_array
+    LoG = nd.gaussian_laplace(data, 1.8) # scalar: standard deviations of the Gaussian filter
+    # sigma empirisch vastgesteld op 1.9/ 2/ 2.1
+    aLoG = abs(LoG)
+    output = np.copy(data)
+    output[aLoG > aLoG.max()-200] = 1
+    #pylab.imshow(output, cmap=pylab.gray())
+    #pylab.show()
+    return output
 
-#law filters (p296 ev)
-#gabor filters
-#eigenfilters
+############################################################  
+#featurevector[10]=haar features
+############################################################
 
 
-#featurevector[14]= Canny edge detection
-#from ._canny import canny
- #   from .edges import (sobel, hsobel, vsobel, scharr, hscharr, vscharr, prewitt, hprewitt, vprewitt)
-
-
-
-# featurevector[10]= Kadir and Brady algorithm (entropy)
-
-# featurevector[10]= histogram distances (Manhattan distance, eucledian distance, max distance)
-    # deel tekening op in kleine gebieden/ histogrammen en bekijk daar histogram distances ofzo
-    
 
     

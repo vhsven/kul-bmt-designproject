@@ -61,6 +61,10 @@ class DicomFolderReader:
     
     def getVolumeShape(self):
         return self.getSlicePixels(0).shape + (self.getNbSlices(),)
+    
+    def getVoxelShape(self):
+        ds = self.Slices[0]
+        return ds.PixelSpacing[0], ds.PixelSpacing[1], ds.SliceThickness
         
     def getSliceData(self, index):
         return self.Slices[index]

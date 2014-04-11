@@ -379,14 +379,28 @@ def averaging3D (x,y,z,windowrowvalue,data):
     Mplus = S2.mean()
     
     return Mz, Mpre, Mplus # REMARK: Mz is common mean (also in previous function)
+
+
+############################################################
+# feature[9]= gradients: sobel
+############################################################
+
+def gradients(x,y,z,data):
+    #import scipy
+    #from scipy import ndimage
+    from scipy.ndimage.filters import generic_gradient_magnitude, sobel
+                       
+#     dx = ndimage.sobel(data, 0)  # x derivative
+#     dy = ndimage.sobel(data, 1)  # y derivative
+#     dz = ndimage.sobel(data, 2)  # z derivative
+    
+    mag = generic_gradient_magnitude(data, sobel)
+        
+    return mag
+
     
     
-#sklearn: image feature 2
-#featurevector[10]= edges
-
-#featurevector[11]=uitgerektheid/compact
-
-#featurevector[12]=convolution filters (filter banks)
+#featurevector[10]=convolution filters (filter banks)
 
 #law filters (p296 ev)
 #gabor filters
@@ -394,8 +408,10 @@ def averaging3D (x,y,z,windowrowvalue,data):
 
 
 #featurevector[14]= Canny edge detection
+#from ._canny import canny
+ #   from .edges import (sobel, hsobel, vsobel, scharr, hscharr, vscharr, prewitt, hprewitt, vprewitt)
 
-# featurevector[10]= gradienten (slide 39 van feature selection pdf)
+
 
 # featurevector[10]= Kadir and Brady algorithm (entropy)
 

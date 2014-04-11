@@ -24,9 +24,14 @@ from skimage.util import img_as_ubyte
 
 myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
 dfr = DicomFolderReader(myPath)
-data = dfr.getVolumeData() #voxel(i,j) is pixel(j,i) -> so one voxel is one pixel (http://nipy.org/nibabel/dicom/dicom_orientation.html)
-X,Y,Z = dfr.getVolumeShape()
+data = dfr.getVolumeData() # 3D matrix with data
 
+Xsize, Ysize, Zsize = dfr.getVoxelShape() # size of voxel in mm
+
+X,Y,Z = dfr.getVolumeShape() # size of 3D datamatrix in 3D
+
+# REMARK: voxel(i,j) is pixel(j,i)
+# one voxel is one pixel (http://nipy.org/nibabel/dicom/dicom_orientation.html)
 
 ###############################################################################
 #### step 2: prepare data
@@ -66,7 +71,7 @@ def greyvaluecharateristic(x,y,z,windowrowvalue,data):
     # mean and variance
     M=arrayD.mean()
     V=arrayD.var()
-        
+    
     x = range(w)
     y = range(h)
     z= range(d)
@@ -254,5 +259,32 @@ def image_entropy(z):
 
     
 #featurevector[3]= 3D averaging (Keshani et al)
+def averaging3D (x,y,z,windowrowvalue,data):
+           
+    # square windowrowvalue x windowrowvalue
+    valdown = math.floor(windowrowvalue/2)
+    valup = valdown+1
+    
+    windowDz = data[x-valdown:x+valup,y-valdown:y+valup,z]
+    
+    #reshape window into array to calculate mean (and variance)
+    h,w,d = windowDz.shape()
+    arrayD = np.reshape(windowDz, (h*w*d))
+    
+    Mz = arrayD.mean()
+    
+    # nodules will continue in preceeding/succeeding slices but bronchioles will not
+    # assume: nodules have minimum length of 5 mm
+    c = 5   # 5 mm
+    T = Zsize   # thickness of slices
+    q = c / T
+    
+    # mean of same window in preceding slices
+    
+    # mean of samen window in succeeding slices
+    MzPlus = (1/z) * sum
+    
+    
+    
 
 #sklearn: image feature 2

@@ -409,6 +409,7 @@ def blobdetection(x,y,z,data):
     # REMARK: DATA SHOULD BE 2D
     #data = ds.pixel_array
     LoG = nd.gaussian_laplace(data, 1.8) # scalar: standard deviations of the Gaussian filter
+    # hoe bepaal je sigma? nodule_grootte_in_pixels = sqrt(2*sigma)
     # sigma empirisch vastgesteld op 1.9/ 2/ 2.1
     aLoG = abs(LoG)
     output = np.copy(data)
@@ -421,6 +422,5 @@ def blobdetection(x,y,z,data):
 #featurevector[10]=haar features
 ############################################################
 
-
-
+# problem with import SimpleCV???
     

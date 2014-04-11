@@ -8,12 +8,14 @@ myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298
 reader = XmlAnnotationReader(myPath)
 for nodule in reader.Nodules:
     print(nodule.ID)
-    nodule.regions.printRegions()
+    #nodule.regions.printRegions()
     masks, c, r2 = nodule.regions.getRegionMasks()
     
     for pixelZ in masks.keys():
-        mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
-        mask = np.logical_not(masks[pixelZ])
-        maskedSlice = ma.array(mySlice, mask=mask)
-        pylab.imshow(maskedSlice, cmap=pylab.gray())
-        pylab.show()
+        #mySlice = reader.dfr.getSlicePixelsRescaled(int(pixelZ))
+        #mask = np.logical_not(masks[pixelZ])
+        #maskedSlice = ma.array(mySlice, mask=mask)
+        #pylab.imshow(maskedSlice, cmap=pylab.gray())
+        #pylab.show()
+        
+        nodule.regions.getRegionPath(pixelZ)

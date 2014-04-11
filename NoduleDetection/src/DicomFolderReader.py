@@ -80,6 +80,8 @@ class DicomFolderReader:
         for index in range(0, self.getNbSlices()):
             data = self.getSlicePixelsRescaled(index)
             voxels[:,:,index] = data
+            
+        return voxels
     
     def processSlice(self, index, threshold, erosionWindow):
         HU = self.getSlicePixelsRescaled(index)

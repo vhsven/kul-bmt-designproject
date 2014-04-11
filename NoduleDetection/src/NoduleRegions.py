@@ -1,4 +1,7 @@
 import numpy as np
+import pylab
+from matplotlib.path import Path
+import matplotlib.patches as patches
 from Constants import MIN_NODULE_RADIUS
 
 class NoduleRegions:
@@ -23,6 +26,29 @@ class NoduleRegions:
             allRegions[pixelZ] = self.getRegionCoords(pixelZ)
         
         return allRegions
+    
+    def getRegionPath(self, pixelZ):
+        coords = self.getRegionCoords(pixelZ)
+        if len(coords) > 1:
+            verts = [(x,y) for (x,y,_) in coords]
+            codes = [Path.MOVETO] + [Path.LINETO] * (len(coords)-2) + [Path.CLOSEPOLY]
+            path = Path(verts, codes)
+            
+            fig = pylab.figure()
+            ax = fig.add_subplot(111)
+            patch = patches.PathPatch(path, facecolor='black', lw=0)
+            ax.add_patch(patch)
+            ax.set_xlim(0,512)
+            ax.set_ylim(0,512)
+            pylab.show()
+            
+            x = np.arange(0, 512)
+            y = np.arange(0, 512)
+            path.contains_points()
+            
+            return path
+        else:
+            return None
     
     def getRegionMasks(self):
         masks = {}

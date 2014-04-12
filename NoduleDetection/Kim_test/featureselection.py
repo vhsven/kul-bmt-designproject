@@ -1,5 +1,5 @@
 import pylab
-#import scipy as sp
+import scipy.stats
 import numpy as np
 #import numpy.ma as ma
 import math
@@ -48,7 +48,8 @@ class FeatureSelection:
     # x and y are the pixelcoordinates of certain position in image
     #position=[x,y,z]
     def trivialFeature(self, x, y, z):
-        return x, y, z
+        w,h,d = self.Data.shape
+        return x, y, z, x/w, y/h, z/d
     
     
     ############################################################
@@ -74,46 +75,54 @@ class FeatureSelection:
         M=arrayD.mean()
         V=arrayD.var()
         
-        rangex = range(w)
-        rangey = range(h)
-        rangez = range(d)
+#         rangex = range(w)
+#         rangey = range(h)
+#         rangez = range(d)
     
     
-        #calculate projections along the x and y axes
-        zp = np.sum(windowD,axis=2)
-        yp = np.sum(windowD,axis=1)
-        xp = np.sum(windowD,axis=0)
+        #calculate projections along the axes
+#         xp = np.sum(windowD,axis=0)
+#         yp = np.sum(windowD,axis=1)
+#         zp = np.sum(windowD,axis=2)
     
         #centroid
-        cx = np.sum(rangex*xp)/np.sum(xp)
-        cy = np.sum(rangey*yp)/np.sum(yp)
-        cz = np.sum(rangez*zp)/np.sum(zp)
+#         cx = np.sum(rangex*xp)/np.sum(xp)
+#         cy = np.sum(rangey*yp)/np.sum(yp)
+#         cz = np.sum(rangez*zp)/np.sum(zp)
     
         #standard deviation
-        x2 = (rangex-cx)**2
-        y2 = (rangey-cy)**2
-        z2 = (rangez-cz)**2
-    
-        sx = np.sqrt( np.sum(x2*xp)/np.sum(xp) )
-        sy = np.sqrt( np.sum(y2*yp)/np.sum(yp) )
-        sz = np.sqrt( np.sum(z2*zp)/np.sum(zp) )
+#         x2 = (rangex-cx)**2
+#         y2 = (rangey-cy)**2
+#         z2 = (rangez-cz)**2
+#     
+#         sx = np.sqrt( np.sum(x2*xp)/np.sum(xp) )
+#         sy = np.sqrt( np.sum(y2*yp)/np.sum(yp) )
+#         sz = np.sqrt( np.sum(z2*zp)/np.sum(zp) )
     
         #skewness
-        x3 = (rangex-cx)**3
-        y3 = (rangey-cy)**3
-        z3 = (rangez-cz)**3
+        skx = scipy.stats.skew(windowD, axis=0).mean()
+        sky = scipy.stats.skew(windowD, axis=1).mean()
+        skz = scipy.stats.skew(windowD, axis=2).mean()
+        
+        #x3 = (rangex-cx)**3
+        #y3 = (rangey-cy)**3
+        #z3 = (rangez-cz)**3
     
-        skx = np.sum(xp*x3)/(np.sum(xp) * sx**3)
-        sky = np.sum(yp*y3)/(np.sum(yp) * sy**3)
-        skz = np.sum(zp*z3)/(np.sum(zp) * sz**3)
+        #skx = np.sum(xp*x3)/(np.sum(xp) * sx**3)
+        #sky = np.sum(yp*y3)/(np.sum(yp) * sy**3)
+        #skz = np.sum(zp*z3)/(np.sum(zp) * sz**3)
     
         #Kurtosis
-        x4 = (rangex-cx)**4
-        y4 = (rangey-cy)**4
-        z4 = (rangez-cz)**4
-        kx = np.sum(xp*x4)/(np.sum(xp) * sx**4)
-        ky = np.sum(yp*y4)/(np.sum(yp) * sy**4)
-        kz = np.sum(zp*z4)/(np.sum(zp) * sz**4)
+        kx = scipy.stats.kurtosis(windowD, axis=0).mean()
+        ky = scipy.stats.kurtosis(windowD, axis=1).mean()
+        kz = scipy.stats.kurtosis(windowD, axis=2).mean()
+        
+        #x4 = (rangex-cx)**4
+        #y4 = (rangey-cy)**4
+        #z4 = (rangez-cz)**4
+        #kx = np.sum(xp*x4)/(np.sum(xp) * sx**4)
+        #ky = np.sum(yp*y4)/(np.sum(yp) * sy**4)
+        #kz = np.sum(zp*z4)/(np.sum(zp) * sz**4)
         
         #autocorrelation
         #result = np.correlate(arrayD, arrayD, mode='full')
@@ -142,14 +151,16 @@ class FeatureSelection:
         freq_max = counter[Max_greyvalue]
         freq_min = counter[Min_greyvalue]
         
-        return  greyvalue,M,V,cx,cy,cz,sx,sy,sz,skx,sky,skz,kx,ky,kz,\
+        return  greyvalue,M,V,skx,sky,skz,kx,ky,kz,\
                 Max_greyvalue,Min_greyvalue,maxdiff,mindiff,maxdiv,minplus,maxplus, mindiv,maxmindiff,\
-                freq_pixelvalue,freq_max,freq_min
+                freq_pixelvalue,freq_max,freq_min #cx,cy,cz,sx,sy,sz
     
     def neighbours(self, x,y,z): #TODO zoals windowFeatures?
         # top - bottom neighbours
-        Ptop = self.Data[x,y-1,z]
-        Pbottom = self.Data[x,y+1,z]
+        Ptop = self.Data[x,y-1,z].astype('int32')
+        Pbottom = self.Data[x,y+1,z].astype('int32')
+        #print(type(Ptop), type(Ptop * Pbottom))
+        #print(Ptop, Pbottom, Ptop*Pbottom)
         
         Ptbmin = Ptop - Pbottom
         Ptbdiv = Ptop*Pbottom
@@ -166,8 +177,8 @@ class FeatureSelection:
         
             
         # left - right neighbours
-        PL = self.Data[x-1,y,z]
-        PR = self.Data[x+1,y,z]
+        PL = self.Data[x-1,y,z].astype('int32')
+        PR = self.Data[x+1,y,z].astype('int32')
         
         PLRmin = PL - PR
         PLRdiv = PL*PR
@@ -184,8 +195,8 @@ class FeatureSelection:
         
             
         # front - back neighbours
-        Pf = self.Data[x,y,z-1]
-        Pb = self.Data[x,y,z+1]
+        Pf = self.Data[x,y,z-1].astype('int32')
+        Pb = self.Data[x,y,z+1].astype('int32')
         Pfbmin = Pf - Pb
         Pfbdiv = Pf*Pb
         Pfbplus = Pf + Pb

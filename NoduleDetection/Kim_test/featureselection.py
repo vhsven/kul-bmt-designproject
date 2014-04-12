@@ -2,8 +2,8 @@ import pylab
 #import scipy as sp
 import numpy as np
 #import numpy.ma as ma
-import collections
 import math
+import collections
 from skimage.filter.rank import entropy
 from skimage.morphology import disk
 import scipy.ndimage as nd
@@ -13,6 +13,9 @@ class FeatureSelection:
     def __init__(self, data, vshape):
         self.Data = data
         self.VoxelShape = vshape
+        print(self.Data.shape)
+        self.PixelCount = collections.Counter(self.Data.ravel())
+        print("Calculated counts")
         
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
@@ -58,8 +61,8 @@ class FeatureSelection:
         greyvalue=self.Data[x,y,z]
         
         # square windowrowvalue x windowrowvalue
-        valup=math.ceil(windowrowvalue/2)
-        valdown=math.floor(windowrowvalue/2)
+        valdown = windowrowvalue // 2
+        valup   = valdown + 1
         
         windowD=self.Data[x-valdown:x+valup,y-valdown:y+valup,z-valdown:z+valup]
         
@@ -149,7 +152,7 @@ class FeatureSelection:
         Pbottom = self.Data[x,y+1,z]
         
         Ptbmin = Ptop - Pbottom
-        Ptbdiv = Ptop/Pbottom
+        Ptbdiv = Ptop*Pbottom
         Ptbplus = Ptop + Pbottom
         
         Ppixeltopmin = self.Data[x,y,z] - Ptop
@@ -158,8 +161,8 @@ class FeatureSelection:
         Ppixeltopplus = self.Data[x,y,z] + Ptop
         Ppixelbottomplus = self.Data[x,y,z] + Pbottom
         
-        Ppixeltopdiv = self.Data[x,y,z] / Ptop
-        Ppixelbottomdiv = self.Data[x,y,z] / Pbottom
+        Ppixeltopdiv = self.Data[x,y,z] * Ptop
+        Ppixelbottomdiv = self.Data[x,y,z] * Pbottom
         
             
         # left - right neighbours
@@ -167,7 +170,7 @@ class FeatureSelection:
         PR = self.Data[x+1,y,z]
         
         PLRmin = PL - PR
-        PLRdiv = PL/PR
+        PLRdiv = PL*PR
         PLRplus = PL + PR
         
         PpixelLmin = self.Data[x,y,z] - PL
@@ -176,15 +179,15 @@ class FeatureSelection:
         PpixelLplus = self.Data[x,y,z] + PL
         PpixelRplus = self.Data[x,y,z] + PR
         
-        PpixelLdiv = self.Data[x,y,z] / PL
-        PpixelRdiv = self.Data[x,y,z] / PR
+        PpixelLdiv = self.Data[x,y,z] * PL
+        PpixelRdiv = self.Data[x,y,z] * PR
         
             
         # front - back neighbours
         Pf = self.Data[x,y,z-1]
         Pb = self.Data[x,y,z+1]
         Pfbmin = Pf - Pb
-        Pfbdiv = Pf/Pb
+        Pfbdiv = Pf*Pb
         Pfbplus = Pf + Pb
         
         Ppixelfmin = self.Data[x,y,z] - Pf
@@ -193,8 +196,8 @@ class FeatureSelection:
         Ppixelfplus = self.Data[x,y,z] + Pf
         Ppixelbplus = self.Data[x,y,z] + Pb
         
-        Ppixelfdiv = self.Data[x,y,z] / Pf
-        Ppixelbdiv = self.Data[x,y,z] / Pb
+        Ppixelfdiv = self.Data[x,y,z] * Pf
+        Ppixelbdiv = self.Data[x,y,z] * Pb
         
         return  Ptop, Pbottom, Ptbmin, Ptbdiv, Ptbplus, Ppixeltopmin, Ppixelbottommin, Ppixeltopplus, Ppixelbottomplus, Ppixeltopdiv, Ppixelbottomdiv, \
                 PL, PR, PLRmin, PLRdiv, PLRplus, PpixelLmin, PpixelRmin, PpixelLplus, PpixelRplus, PpixelLdiv, PpixelRdiv, \
@@ -206,20 +209,19 @@ class FeatureSelection:
     #featurevector[3]= prevalence of that grey value
     ############################################################
     def greyvaluefrequency(self, x,y,z):
-        m,n,d = self.Data.shape
-        mydata = np.reshape(self.Data, (m*n*d))
         #import collections
-        counter = collections.Counter(mydata)
-        freqvalue = counter[self.Data[x,y,z]] # prevalence of pixelvalue in image
+        z = int(z)
+        pixelValue = self.Data[x,y,z]
+        freqvalue = self.PixelCount[pixelValue] # prevalence of pixelvalue in image
         
         # prevalence maximum and minimum of pixels in image
         # max and min
-        Max_image = mydata.max()
-        Min_image = mydata.min()
+        Max_image = self.Data.max()
+        Min_image = self.Data.min()
         
         # prevalence max and min
-        freqmax = counter[Max_image]
-        freqmin = counter[Min_image]
+        freqmax = self.PixelCount[Max_image]
+        freqmin = self.PixelCount[Min_image]
         
         # compare (prevalence of) pixelvalue to min and max (prevalence)
         comfreq_max = freqvalue/freqmax
@@ -239,8 +241,7 @@ class FeatureSelection:
         # slice is 512 by 512 by numberz: b is center
         xb = 256
         yb = 256
-        Z = self.Data.shape[2]
-        zb = int[Z/2]
+        zb = self.Data.shape[2] // 2
         a = np.array((x,y,z))
         b = np.array((xb,yb,zb))
         dist = np.linalg.norm(a-b)
@@ -252,46 +253,46 @@ class FeatureSelection:
     #featurevector[5]= window: substraction L/R U/D F/B
     ############################################################
     def windowFeatures(self, x,y,z,windowrowvalue):
-        valup=math.ceil(windowrowvalue/2)
-        valdown=math.floor(windowrowvalue/2)
+        valdown = windowrowvalue // 2
+        valup   = valdown + 1
         
-        windowD=self.Data[x-valdown:x+valup,y-valdown:y+valup, z-valdown:z+valup]
+        windowD=self.Data[x-valdown:x+valup,y-valdown:y+valup,z-valdown:z+valup]
         
         # calculate 'edges' by substraction 
         leftrow=windowD[:,0,:]
-        rightrow=windowD[:,(windowrowvalue-1),:]
+        rightrow=windowD[:,windowrowvalue-1,:]
         meanL=leftrow.mean()
         meanR=rightrow.mean()
         gradLRmean=(rightrow-leftrow).mean()
         gradmeanLR=meanR-meanL
         
         # calculate 'edges' by division
-        divmeanLR=meanR/meanL
-        divLRmean=(leftrow/rightrow).mean()
+        divmeanLR=meanR*meanL
+        divLRmean=(leftrow*rightrow).mean()
         
         # calculate 'edges' by substraction 
         toprow=windowD[0,:,:]
-        bottomrow=windowD[(windowrowvalue-1), :, :]
+        bottomrow=windowD[windowrowvalue-1, :, :]
         Tmean=toprow.mean()
         Bmean=bottomrow.mean()
         gradmeanUD=Tmean-Bmean
         gradUDmean=(toprow-bottomrow).mean()
         
         # calculate 'edges' by division
-        divUDmean=(toprow/bottomrow).mean()
-        divmeanUD=Tmean/Bmean
+        divUDmean=(toprow*bottomrow).mean()
+        divmeanUD=Tmean*Bmean
               
         # calculate 'edges' by substraction 
         frontrow=windowD[:,:,0]
-        backrow=windowD[:, :, (windowrowvalue-1)]
+        backrow=windowD[:, :, windowrowvalue-1]
         Fmean=frontrow.mean()
         Bmean=backrow.mean()
         gradmeanFB=Fmean-Bmean
         gradFBmean=(frontrow-backrow).mean()
         
         # calculate 'edges' by division
-        divFBmean=(frontrow/backrow).mean()
-        divmeanFB=Fmean/Bmean
+        divFBmean=(frontrow*backrow).mean()
+        divmeanFB=Fmean*Bmean
         
         return  gradLRmean, gradmeanLR, divLRmean, divmeanLR, \
                 gradUDmean, gradmeanUD, divUDmean, divmeanUD, \
@@ -301,12 +302,13 @@ class FeatureSelection:
     ############################################################
     # feature[6]= sliceEntropy calculation (disk window or entire image)
     ############################################################
-    def pixelentropy(self, z):
+    def pixelentropy(self, z): #TODO fix this
         # calculates the sliceEntropy of each pixel in the slice in comparison to its surroundings
         image = self.getSlice(z)
-        pylab.imshow(image, cmap=pylab.gray())
-        pylab.show()
+        #pylab.imshow(image, cmap=pylab.gray())
+        #pylab.show()
         image = image.view('uint8')
+        image = image[:, 1::2]
     #     fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 4))
         
     #     img0 = ax0.imshow(image, cmap=plt.cm.gray)
@@ -314,14 +316,14 @@ class FeatureSelection:
     #     ax0.axis('off')
     #     plt.colorbar(img0, ax=ax0)
         
-        pixel_entropy=entropy(image, disk(5))
+        pixelentr=entropy(image, disk(5))
     #     print(imentropy)
     #     img1 = ax1.imshow(imentropy, cmap=plt.cm.jet)
     #     ax1.set_title('Entropy')
     #     ax1.axis('off')
     #     plt.colorbar(img1, ax=ax1)
     #     plt.show()
-        return pixel_entropy #returns a matrix with sliceEntropy values for each pixel
+        return pixelentr #returns a matrix with sliceEntropy values for each pixel
     
     
     
@@ -344,22 +346,20 @@ class FeatureSelection:
     def averaging3D (self, x,y,z,windowrowvalue):
                
         # square windowrowvalue x windowrowvalue
-        valdown = math.floor(windowrowvalue/2)
-        valup = valdown+1
+        valdown = windowrowvalue // 2
+        valup   = valdown + 1
         
         windowDz = self.Data[x-valdown:x+valup,y-valdown:y+valup,z]
         
         #reshape window into array to calculate mean (and variance)
-        h,w,d = windowDz.shape()
-        arrayD = np.reshape(windowDz, (h*w*d))
+        h,w = windowDz.shape
+        arrayD = np.reshape(windowDz, (h*w))
         
         Mz = arrayD.mean()
         
         # nodules will continue in preceeding/succeeding slices but bronchioles will not
         # assume: nodules have minimum length of 5 mm
-        c = 5   # 5 mm
-        T = self.VoxelShape[2]   # thickness of slices
-        Q = c / T
+        Q = int(5 // self.VoxelShape[2] + 1) # = c / T = 5mm / thickness of slices
            
         # mean of same window in preceding slices
         windowDzmin = self.Data[x-valdown:x+valup,y-valdown:y+valup,z-Q:z-1]

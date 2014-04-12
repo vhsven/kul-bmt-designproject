@@ -82,6 +82,7 @@ class NoduleRegions:
             rx = (x-centerX)**2
             ry = (y-centerY)**2
             r2[z] = max(rx + ry)
+            r2[z] //= 3
             if r2[z] < MIN_NODULE_RADIUS:
                 r2[z] = MIN_NODULE_RADIUS
             

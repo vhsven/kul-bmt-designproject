@@ -48,7 +48,8 @@ class FeatureSelection:
     # x and y are the pixelcoordinates of certain position in image
     #position=[x,y,z]
     def trivialFeature(self, x, y, z):
-        return x, y, z
+        w,h,d = self.Data.shape
+        return x, y, z, x/w, y/h, z/d
     
     
     ############################################################

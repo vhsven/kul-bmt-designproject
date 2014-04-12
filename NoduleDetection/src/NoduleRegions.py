@@ -65,6 +65,7 @@ class NoduleRegions:
             
         return centers
         
+    #returns r/3 instead of r
     def getRegionMasksCircle(self):
         masks = {}
         c = {}

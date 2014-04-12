@@ -7,13 +7,13 @@ from featureselection import FeatureSelection
 from XmlAnnotationReader import XmlAnnotationReader
 from Constants import *
 
-myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
-#myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
+#myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
+myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
 reader = XmlAnnotationReader(myPath)
 data = reader.dfr.getVolumeData()
 select = FeatureSelection(data, reader.dfr.getVoxelShape())
 
-features = []
+features = np.array([])
 
 #global 3D features
 edges = select.edges()
@@ -50,15 +50,19 @@ for nodule in reader.Nodules:
             pixelFeatures += select.greyvaluefrequency(x,y,zi)
             pixelFeatures += select.neighbours(x,y,zi)
             
-            for windowSize in np.arange(3,52,2):
+            for windowSize in np.arange(3,32,2):
                 pixelFeatures += select.averaging3D(x,y,zi, windowSize)
                 pixelFeatures += select.greyvaluecharateristic(x,y,zi, windowSize)
                 pixelFeatures += select.windowFeatures(x,y,zi, windowSize)
             
-            features += [pixelFeatures]
-        
+            if len(features) == 0:
+                features = np.array(pixelFeatures)
+                features = features.reshape(1, len(pixelFeatures)) #else shape = (n,)
+            else:
+                features = np.vstack([features, np.array(pixelFeatures)])
 
 n_estimators = 30
+
 #model = RandomForestClassifier(n_estimators=n_estimators)
 model = ExtraTreesClassifier(n_estimators=n_estimators)
 
@@ -68,26 +72,10 @@ y=np.ones(len(X)) #class per datapoint
 clf = clone(model)
 clf = model.fit(X, y)
 scores = clf.score(X, y)
+print(scores)
 
-#
-# x_min, x_max = X[:, 0].min() - 1, X[:, 0].max() + 1
-# y_min, y_max = X[:, 1].min() - 1, X[:, 1].max() + 1
-# xx, yy = np.meshgrid(np.arange(x_min, x_max, 0.02),
-#                      np.arange(y_min, y_max, 0.02))
-#         
-# estimator_alpha = 1.0 / len(model.estimators_)
-# for tree in model.estimators_:
-#     Z = tree.predict(np.c_[xx.ravel(), yy.ravel()])
-#     Z = Z.reshape(xx.shape)
-#     cs = pl.contourf(xx, yy, Z, alpha=estimator_alpha, cmap=pl.cm.RdYlBu)
-#                      
-# xx_coarser, yy_coarser = np.meshgrid(np.arange(x_min, x_max, 0.5),
-#                                      np.arange(y_min, y_max, 0.5))
-# Z_points_coarser = model.predict(np.c_[xx_coarser.ravel(), yy_coarser.ravel()]).reshape(xx_coarser.shape)
-# cs_points = pl.scatter(xx_coarser, yy_coarser, s=15, c=Z_points_coarser, cmap=pl.cm.RdYlBu, edgecolors="none"))
-# 
-# for i, c in zip(xrange(n_classes), plot_colors):
-#     idx = np.where(y == i)
-#     pl.scatter(X[idx, 0], X[idx, 1], c=c, label=iris.target_names[i], cmap=pl.cm.RdYlBu)
-            
+result = model.predict_proba(X[0,:])
+#result = model.predict(X[0,:])
+print(result)
+
 #TODO cascaded

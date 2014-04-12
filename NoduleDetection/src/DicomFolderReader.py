@@ -1,4 +1,5 @@
 import dicom
+import scipy
 import numpy as np
 import numpy.ma as ma
 from skimage.morphology import reconstruction, binary_opening, binary_erosion
@@ -80,9 +81,14 @@ class DicomFolderReader:
         return self.Slices[index].pixel_array * self.RescaleSlope - self.RescaleIntercept
     
     def getVolumeData(self):
-        voxels = np.zeros(self.getVolumeShape())
+        h,w,d = self.getVolumeShape()
+        h = int(h * ZOOM_FACTOR_3D)
+        w = int(w * ZOOM_FACTOR_3D)
+        voxels = np.zeros((h,w,d), dtype=np.int16)
         for index in range(0, self.getNbSlices()):
             data = self.getSlicePixelsRescaled(index)
+            data = scipy.ndimage.zoom(data, ZOOM_FACTOR_3D)
+            #data = imresize(data, (h,w,d))
             voxels[:,:,index] = data
             
         return voxels

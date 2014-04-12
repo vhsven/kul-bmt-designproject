@@ -49,21 +49,22 @@ class NoduleRegions:
     
     def getRegionCenters(self):
         centers = {}
+        r2 = {}
         for z in self.getSortedZIndices():
             coords = self.getRegionCoords(z)
             x,y,_ = zip(*coords)
             x = np.array(x)
             y = np.array(y)
-            #z = np.array(z)
             minX, maxX = min(x), max(x)
             minY, maxY = min(y), max(y)
-            #minZ, maxZ = min(z), max(z)
             centerX = (maxX + minX) / 2
             centerY = (maxY + minY) / 2
-            #centerZ = (maxZ + minZ) / 2
             centers[z] = centerX, centerY
+            rx = (x-centerX)**2
+            ry = (y-centerY)**2
+            r2[z] = max(rx + ry)
             
-        return centers
+        return centers, r2
         
     #returns r/3 instead of r
     def getRegionMasksCircle(self):

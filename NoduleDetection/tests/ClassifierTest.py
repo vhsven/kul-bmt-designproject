@@ -3,6 +3,7 @@ import numpy as np
 import pylab as pl
 from sklearn import clone
 from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
+from sklearn.externals import joblib
 from featureselection import FeatureSelection
 from XmlAnnotationReader import XmlAnnotationReader
 from Constants import *
@@ -74,8 +75,10 @@ clf = model.fit(X, y)
 scores = clf.score(X, y)
 print(scores)
 
-result = model.predict_proba(X[0,:])
-#result = model.predict(X[0,:])
+#joblib.dump(clf, 'model.pkl')
+#clf = joblib.load('model.pkl') 
+
+result = clf.predict_proba(X[0,:])
 print(result)
 
 #TODO cascaded

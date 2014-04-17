@@ -54,8 +54,8 @@ print(a)
         
 # store trainingsdata for further use
 import pickle
-pixelTraining001 = pixelTraining
-f = open('pixelTraining_LIDC001.pkl', 'wb')
+pixelTraining001 = pixelTraining # give specific name to trainingsset
+f = open('pixelTraining_LIDC001.pkl', 'wb') # give name to document
 pickle.dump(pixelTraining001, f, pickle.HIGHEST_PROTOCOL)
 f.close()
 

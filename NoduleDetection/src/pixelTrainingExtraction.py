@@ -65,18 +65,28 @@ import random
 
 def RandomPixelGenerator (NumberPixelNeeded, maxXsize, maxYsize, maxZsize):
     # we generate a random number for x,y,z depending on the scandimensions
-#     randNumberX = 1
-#     randNumberY = 1
-#     randNumberZ = 1
-    
-    for _ in range(NumberPixelNeeded):
-        randNumberX = random.randint(1,maxXsize)
-        randNumberY = random.randint(1,maxYsize)
-        randNumberZ = random.randint(1,maxZsize)
+    while NumberPixelNeeded > 0:
+        X = random.randint(1,maxXsize)
+        Y = random.randint(1,maxYsize)
+        Z = random.randint(1,maxZsize)
+        
+        IsGoodPixel = True
+        for cx,cy,cz,r2 in reader.getNodulePositions():
+            if (X-cx)**2 + (Y-cy)**2 + (Z-cz)**2 < 6*r2: # r2 is 1/3 van straal van nodule
+                # TODO Z nog omzetten naar wereldcoordinaten
+                IsGoodPixel = False
+                break
             
-        yield randNumberX, randNumberY, randNumberZ
-
-for x,y,z in RandomPixelGenerator(6,5,5,13):
+        if not IsGoodPixel:
+            continue
+        
+        NumberPixelNeeded -= 1
+        
+        yield X, Y, Z
+        
+            
+Xsize, Ysize, Zsize = reader.dfr.getVolumeShape()        
+for x,y,z in RandomPixelGenerator(50,Xsize,Ysize,Zsize):
     print(x,y,z)
 
 ############## STORAGE ########################        

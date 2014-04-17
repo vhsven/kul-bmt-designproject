@@ -38,3 +38,13 @@ class XmlAnnotationReader:
             nodules.append(nodule)
             
         return nodules 
+    
+    def getNodulePositions(self):
+        for nodule in self.Nodules:
+            regionCenters, regionR2s = nodule.regions.getRegionCenters()
+            for pixelZ in regionCenters.keys():
+                cx,cy = regionCenters[pixelZ]
+                r = regionR2s[pixelZ]
+                
+                yield (cx,cy,pixelZ,r) #fancy iterator stuff
+            

@@ -13,6 +13,22 @@ def getHistogram(img, minI, maxI):
     p, _ = np.histogram(img, binEdges)
     barX = np.arange(minI, maxI, BIN_SIZE)
     return p, barX
+
+def processVolume(threshold):
+    print("Generating Volume Data")
+    data = dfr.getVolumeData()
+    print("Applying threshold")
+    masked = ma.masked_greater(data, threshold)
+    print("Performing binary opening")
+    newmask = binary_opening(masked.mask, selem=np.ones((9,9,9)))
+    seed = np.copy(newmask)
+    seed[1:-1, 1:-1, 1:-1] = newmask.max()
+    print("Performing reconstruction")
+    newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
+    #newmask = binary_erosion(newmask, selem=np.ones((29,29,29))).astype(np.int)
+    masked2 = ma.array(data, mask=np.logical_not(newmask))
+    
+    return masked, masked2
     
 def processSlice(mySlice, threshold):
     HU = dfr.getSlicePixelsRescaled(mySlice)
@@ -38,6 +54,9 @@ def processSlice(mySlice, threshold):
 #myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
 myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
 dfr = DicomFolderReader(myPath)
+
+maskedV, maskedV2 = processVolume(DEFAULT_THRESHOLD)
+
 fig, ax = pylab.subplots()
 pylab.subplots_adjust(bottom=0.20)
 
@@ -52,7 +71,8 @@ def update(val):
     mySlice = int(sSlider.val)
     threshold = int(tSlider.val)
     
-    masked, masked2 = processSlice(mySlice, threshold)
+    #masked, masked2 = processSlice(mySlice, threshold)
+    masked, masked2 = maskedV[:,:,mySlice], maskedV2[:,:,mySlice]
     
     sp1.clear()
     sp2.clear()

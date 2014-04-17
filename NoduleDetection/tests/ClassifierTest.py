@@ -29,10 +29,10 @@ def calculatePixelFeatures(select, x,y,z,c, edges, sliceEntropy, blobs): #TODO u
     #pixel features
     pixelFeatures += select.trivialFeature(x,y,z)
     pixelFeatures += (select.forbeniusnorm(x,y,z),)
-    pixelFeatures += select.greyvaluefrequency(x,y,z)
     pixelFeatures += select.neighbours(x,y,z)
     
     for windowSize in np.arange(3,MAX_FEAT_WINDOW,2):
+        pixelFeatures += select.greyvaluefrequency(x,y,z, windowSize)
         pixelFeatures += select.averaging3D(x,y,z, windowSize)
         pixelFeatures += select.greyvaluecharateristic(x,y,z, windowSize)
         pixelFeatures += select.windowFeatures(x,y,z, windowSize)
@@ -67,7 +67,7 @@ for nodule in reader.Nodules:
         zi = int(z)
         mask = scipy.ndimage.zoom(mask, ZOOM_FACTOR_3D)
         print("\tSlice (z={})".format(z))
-        data = reader.dfr.getSlicePixelsRescaled(int(z))
+        data = reader.dfr.getSlicePixelsRescaled(zi)
         
         #2D slice features
         sliceEntropy = select.image_entropy(z)

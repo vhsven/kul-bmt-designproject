@@ -27,7 +27,7 @@ class NoduleRegions:
         
         return allRegions
     
-    # doesn't work yet
+    
     def getRegionMasksPolygon(self):
         paths = {}
         masks = {}
@@ -46,6 +46,7 @@ class NoduleRegions:
                 masks[z] = masks[z].reshape(512,512)
                 
         return paths, masks
+
     
     def getRegionCenters(self):
         centers = {}

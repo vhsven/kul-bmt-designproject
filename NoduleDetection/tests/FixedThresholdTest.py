@@ -87,3 +87,5 @@ tSlider.on_changed(update)
 
 update(0)
 pylab.show()
+
+#TODO figure out % pixels saved

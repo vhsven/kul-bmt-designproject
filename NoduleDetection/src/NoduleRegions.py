@@ -1,7 +1,6 @@
+import math
 import numpy as np
-import pylab
 from matplotlib.path import Path
-import matplotlib.patches as patches
 from Constants import MIN_NODULE_RADIUS, NODULE_RADIUS_FACTOR
 
 class NoduleRegions:
@@ -27,8 +26,7 @@ class NoduleRegions:
         
         return allRegions
     
-    
-    def getRegionMasksPolygon(self):
+    def getRegionMasksPolygon(self, m, n):
         paths = {}
         masks = {}
         for z in self.getSortedZIndices():
@@ -38,56 +36,41 @@ class NoduleRegions:
                 codes = [Path.MOVETO] + [Path.LINETO] * (len(coords)-2) + [Path.CLOSEPOLY]
                 paths[z] = Path(verts, codes)
                 
-                x, y = np.meshgrid(np.arange(512), np.arange(512))
+                x, y = np.meshgrid(np.arange(m), np.arange(n))
                 x, y = x.flatten(), y.flatten()
                 points = np.vstack((x,y)).T # array([[0, 0],[1, 0],[2, 0],[3, 0],...,[9, 0],[0, 1],[1, 1],...
                 
                 masks[z] = paths[z].contains_points(points)
-                masks[z] = masks[z].reshape(512,512)
+                masks[z] = masks[z].reshape(m,n)
                 
         return paths, masks
 
     
     def getRegionCenters(self):
         centers = {}
-        r2 = {}
+        r = {}
         for z in self.getSortedZIndices():
-            coords = self.getRegionCoords(z)
-            x,y,_ = zip(*coords)
-            x = np.array(x)
-            y = np.array(y)
-            centerX = x.mean()
-            centerY = y.mean()
-            centers[z] = centerX, centerY
-            rx = (x-centerX)**2
-            ry = (y-centerY)**2
-            r2[z] = max(rx + ry)
+            coords = self.getRegionCoords(z) #list of x,y,z tuples
+            coords = np.array(coords)[:,[0,1]] #save x,y in numpy array
+            centers[z] = coords.mean(axis=0)
+            r[z] = math.sqrt(max(((coords - centers[z])**2).sum(axis=1)))
             
-            r2[z] *= NODULE_RADIUS_FACTOR
-            if r2[z] < MIN_NODULE_RADIUS:
-                r2[z] = MIN_NODULE_RADIUS
+            if r[z] < MIN_NODULE_RADIUS:
+                r[z] = MIN_NODULE_RADIUS
             
-        return centers, r2 #returns (r^2)/3 instead of r^2
+        return centers, r
         
-    def getRegionMasksCircle(self):
+    def getRegionMasksCircle(self,m,n):
         masks = {}
-        c, r2 = self.getRegionCenters()
-        for z in self.getSortedZIndices():
-            centerX, centerY = c[z]
-               
-            # TODO get slice dimensions from somewhere
-            masks[z] = np.zeros(512**2).reshape(512,512).astype(np.bool)
-            x = np.arange(0, 512)
-            y = np.arange(0, 512)
-            dx = (x-centerX)**2
-            dy = (y-centerY)**2
-            
-            # can we make this more efficient?
-            for x in range(0, 512):
-                for y in range(0, 512):
-                    masks[z][y,x] = (dx[x] + dy[y] <= r2[z])            
-        
-        return masks, c, r2
+        centers, r = self.getRegionCenters()
+        for z in self.getSortedZIndices():            
+            x, y = np.meshgrid(np.arange(m), np.arange(n))
+            x, y = x.flatten(), y.flatten()
+            points = np.vstack((x,y)).T # array([[0, 0],[1, 0],[2, 0],[3, 0],...,[9, 0],[0, 1],[1, 1],...
+            masks[z] = ((points-centers[z])**2).sum(axis=1) <= (r[z] * NODULE_RADIUS_FACTOR)**2
+            masks[z] = masks[z].reshape(m, n)
+                
+        return masks, centers, r
     
 #     def getRegionMasksSphere(self, cc):
 #         masks = {}

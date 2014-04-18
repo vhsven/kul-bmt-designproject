@@ -1,6 +1,6 @@
+import numpy as np
 from lxml import etree
 from Nodule import Nodule
-from CoordinateConverter import CoordinateConverter
 from DicomFolderReader import DicomFolderReader 
 from os import listdir
 from os.path import isfile, join
@@ -39,12 +39,16 @@ class XmlAnnotationReader:
             
         return nodules 
     
-    def getNodulePositions(self):
+    def getNodulePositions(self): #in pixel coordinates
         for nodule in self.Nodules:
-            regionCenters, regionR2s = nodule.regions.getRegionCenters()
-            for pixelZ in regionCenters.keys():
-                cx,cy = regionCenters[pixelZ]
-                r = regionR2s[pixelZ]
+            regionCenters, regionRs = nodule.regions.getRegionCenters()
+            for pixelZ in regionCenters.keys():                
+                yield np.append(regionCenters[pixelZ], pixelZ), regionRs[pixelZ]
                 
-                yield (cx,cy,pixelZ,r) #fancy iterator stuff
+    def getNodulePositionsInSlice(self, mySlice):
+        for nodule in self.Nodules:
+            regionCenters, regionRs = nodule.regions.getRegionCenters()
+            for pixelZ in regionCenters.keys():
+                if int(pixelZ) == int(mySlice):
+                    yield regionCenters[pixelZ], regionRs[pixelZ]
             

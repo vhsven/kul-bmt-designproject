@@ -55,7 +55,7 @@ def processSlice(mySlice, threshold):
 myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
 dfr = DicomFolderReader(myPath)
 
-maskedV, maskedV2 = processVolume(DEFAULT_THRESHOLD)
+#maskedV, maskedV2 = processVolume(DEFAULT_THRESHOLD)
 
 fig, ax = pylab.subplots()
 pylab.subplots_adjust(bottom=0.20)
@@ -71,15 +71,19 @@ def update(val):
     mySlice = int(sSlider.val)
     threshold = int(tSlider.val)
     
-    #masked, masked2 = processSlice(mySlice, threshold)
-    masked, masked2 = maskedV[:,:,mySlice], maskedV2[:,:,mySlice]
+    masked, masked2 = processSlice(mySlice, threshold)
+    #masked, masked2 = maskedV[:,:,mySlice], maskedV2[:,:,mySlice]
+    
+    nbMasked = np.sum(masked2.mask)
+    nbTotal = masked2.shape[0] * masked2.shape[1]
+    percentage = 100.0 * nbMasked / nbTotal
     
     sp1.clear()
     sp2.clear()
     
     sp1.imshow(masked, cmap=pylab.gray())
     sp2.imshow(masked2, cmap=pylab.gray())
-    
+    sp2.set_title("Masked: {}%".format(percentage))
     fig.canvas.draw_idle()
 
 sSlider.on_changed(update)

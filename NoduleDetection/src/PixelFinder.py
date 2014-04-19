@@ -36,10 +36,15 @@ class PixelFinder: #TODO use threshold mask
             
             yield x, y, z
     
-    def findNodulePixels(self):
+    def findNodulePixels(self, method='circle', radiusFactor=1.0):
         m, n, _ = self.Reader.dfr.getVolumeShape()
         for nodule in self.Reader.Nodules:
-            masks, _, _ = nodule.regions.getRegionMasksCircle(m,n)
+            if method == 'circle':
+                masks, _, _ = nodule.regions.getRegionMasksCircle(m,n, radiusFactor)
+            elif method == 'polygon':
+                _, masks = nodule.regions.getRegionMasksPolygon(m,n) #TODO switch back?
+            else:
+                raise ValueError('unsupported method')
             for z, mask in masks.iteritems():
                 xs, ys = np.where(mask)
                 for x, y in zip(xs, ys):

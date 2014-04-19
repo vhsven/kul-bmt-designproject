@@ -76,7 +76,7 @@ allFeatures = deque()
 
 #Calculate features of nodule pixels 
 nbNodulePixels = 0
-for x,y,z in finder.findNodulePixels():
+for x,y,z in finder.findNodulePixels(radiusFactor=0.33):
     nbNodulePixels += 1
     pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
     allFeatures.append(pixelFeatures)

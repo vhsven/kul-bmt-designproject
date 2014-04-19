@@ -9,22 +9,22 @@ reader = XmlAnnotationReader(myPath)
 cc = reader.dfr.getCoordinateConverter()
 m,n,_ = reader.dfr.getVolumeShape()
 
-for c,r2 in reader.getNodulePositions():
-    print(c,r2)
+# for c,r2 in reader.getNodulePositions():
+#     print(c,r2)
 
-# for nodule in reader.Nodules:
-#     print(nodule.ID)
-#     #nodule.regions.printRegions()
-#     #masks, c, r = nodule.regions.getRegionMasksCircle(m,n)
-#     paths, masks = nodule.regions.getRegionMasksPolygon(m,n)
-#       
-#     for z in masks.keys():
-#         mask = masks[z]
-#         mySlice = reader.dfr.getSlicePixelsRescaled(int(z))
-#         mask = np.logical_not(mask)
-#         maskedSlice = ma.array(mySlice, mask=mask)
-#         pylab.imshow(maskedSlice, cmap=pylab.gray())
-#         pylab.show()
+for nodule in reader.Nodules:
+    print(nodule.ID)
+    #nodule.regions.printRegions()
+    masks, c, r = nodule.regions.getRegionMasksCircle(m,n,0.5)
+    #paths, masks = nodule.regions.getRegionMasksPolygon(m,n)
+       
+    for z in masks.keys():
+        mask = masks[z]
+        mySlice = reader.dfr.getSlicePixelsRescaled(int(z))
+        mask = np.logical_not(mask)
+        maskedSlice = ma.array(mySlice, mask=mask)
+        pylab.imshow(maskedSlice, cmap=pylab.gray())
+        pylab.show()
     
 #     mask = nodule.regions.getRegionMasksSphere(cc)
 #     for z in range(0, mask.shape[2]):

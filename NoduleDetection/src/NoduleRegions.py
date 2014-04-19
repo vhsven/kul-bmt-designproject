@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from matplotlib.path import Path
-from Constants import MIN_NODULE_RADIUS, NODULE_RADIUS_FACTOR
+from Constants import MIN_NODULE_RADIUS
 
 class NoduleRegions:
     def __init__(self):
@@ -60,14 +60,14 @@ class NoduleRegions:
             
         return centers, r
         
-    def getRegionMasksCircle(self,m,n):
+    def getRegionMasksCircle(self,m,n, radiusFactor=1.0):
         masks = {}
         centers, r = self.getRegionCenters()
         for z in self.getSortedZIndices():            
             x, y = np.meshgrid(np.arange(m), np.arange(n))
             x, y = x.flatten(), y.flatten()
             points = np.vstack((x,y)).T # array([[0, 0],[1, 0],[2, 0],[3, 0],...,[9, 0],[0, 1],[1, 1],...
-            masks[z] = ((points-centers[z])**2).sum(axis=1) <= (r[z] * NODULE_RADIUS_FACTOR)**2
+            masks[z] = ((points-centers[z])**2).sum(axis=1) <= (r[z] * radiusFactor)**2
             masks[z] = masks[z].reshape(m, n)
                 
         return masks, centers, r

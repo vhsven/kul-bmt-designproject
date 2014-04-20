@@ -9,10 +9,22 @@ from FeatureGenerator import FeatureGenerator
 from XmlAnnotationReader import XmlAnnotationReader
 from DicomFolderReader import DicomFolderReader
 from PixelFinder import PixelFinder
-from dicom._dicom_dict import DicomDictionary
 
-def calculatePixelFeatures(fgen, x,y,z):
+def calculatePixelFeatures(fgen, x,y,z, level=1):
     z = int(z)
+    pixelFeatures = ()
+    
+    if level >= 1:
+        pixelFeatures += fgen.getTrivialFeatures(x,y,z)
+
+    if level >= 2:
+        pass
+    
+    if level >= 3:
+        pass
+    
+    if level >= 4:
+        pass
     
     #global 3D features
     #getVolumeEdges = fgen.getVolumeEdges()
@@ -22,7 +34,6 @@ def calculatePixelFeatures(fgen, x,y,z):
     #entropy2 = fgen.pixelentropy(z)
     #blobs = fgen.blobdetection(z)
     
-    pixelFeatures = ()
             
     #get pixel features from 3D features
     #pixelFeatures += (getVolumeEdges[x,y,z],)
@@ -32,7 +43,6 @@ def calculatePixelFeatures(fgen, x,y,z):
     #for blob in blobs:
     #    pixelFeatures += (blob[x,y],)
     #pixel features
-    pixelFeatures += fgen.getTrivialFeatures(x,y,z)
     #pixelFeatures += (fgen.forbeniusnorm(x,y,z),)
     #pixelFeatures += fgen.neighbours(x,y,z)
     
@@ -63,17 +73,13 @@ def generateProbabilityImage(dfr, fgen, clf, mySlice):
     return probImg
 
 def calculateSetTrainingFeatures(myPath):
-    print("Processing '{}'...".format(myPath))
+    print("Processing '{}'".format(myPath))
     reader = XmlAnnotationReader(myPath)
+    print("\tFound {} nodules.".format(len(reader.Nodules)))
     data = reader.dfr.getVolumeData()
     fgen = FeatureGenerator(data, reader.dfr.getVoxelShape())
     finder = PixelFinder(reader)
     
-    print reader
-    print reader.dfr
-    #pl.imshow(data[:,:,89])
-    #pl.show()
-
     setFeatures = deque()
     
     #Calculate features of nodule pixels 
@@ -82,7 +88,8 @@ def calculateSetTrainingFeatures(myPath):
         nbNodulePixels += 1
         pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
         setFeatures.append(pixelFeatures)
-        
+    print("\tFound {} nodules pixels.".format(nbNodulePixels))
+    
     #Calculate allFeatures of random non -nodule pixels
     for x,y,z in finder.findRandomNonNodulePixels(nbNodulePixels):
         pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
@@ -105,7 +112,9 @@ def calculateSetTrainingFeatures(myPath):
 def calculateAllTrainingFeatures(rootPath, maxPaths=99999):
     allFeatures = None
     allClasses = None
-    for myPath in DicomFolderReader.findPaths(rootPath, maxPaths):        
+    for myPath in DicomFolderReader.findPaths(rootPath, maxPaths):
+        if "LIDC-IDRI-0001" in myPath:
+            continue        
         setFeatures, setClasses = calculateSetTrainingFeatures(myPath)
         if allFeatures is None:
             allFeatures = setFeatures
@@ -119,7 +128,7 @@ def calculateAllTrainingFeatures(rootPath, maxPaths=99999):
     
     return allFeatures, allClasses
 
-allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=2)
+allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=99999)
 
 #model = RandomForestClassifier(n_estimators=30)
 model = ExtraTreesClassifier(n_estimators=30)
@@ -129,19 +138,15 @@ scores = clf.score(allFeatures, allClasses)
 #scores2 = cross_val_score(clf, allFeatures, classes)
 print("Score: {}".format(scores))
 
-#joblib.dump(clf, '../data/models/model.pkl')
-#clf = joblib.load('../data/models/model.pkl')
-
+joblib.dump(clf, '../data/models/model.pkl')
+clf = joblib.load('../data/models/model.pkl')
 
 #Test model
-myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", 0)
+myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", 1)
 reader = XmlAnnotationReader(myPath)
 vData = reader.dfr.getVolumeData()
 sData = reader.dfr.getSlicePixelsRescaled(89)
 fgen = FeatureGenerator(vData, reader.dfr.getVoxelShape())
-
-print reader
-print reader.dfr
 
 probImg = generateProbabilityImage(reader.dfr, fgen, clf, 89)
 
@@ -152,3 +157,4 @@ pl.imshow(probImg, cmap=pl.cm.jet)  # @UndefinedVariable ignore
 pl.show()
 
 #TODO cascaded
+#TODO download more datasets

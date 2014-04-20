@@ -6,7 +6,7 @@ from skimage.morphology import reconstruction, binary_opening, binary_erosion
 from os import listdir, walk
 from os.path import isfile, join
 from CoordinateConverter import CoordinateConverter
-from Constants import DEFAULT_THRESHOLD, DEFAULT_WINDOW_SIZE, ZOOM_FACTOR_3D
+from Constants import DEFAULT_THRESHOLD, DEFAULT_WINDOW_SIZE #, ZOOM_FACTOR_3D
 
 class DicomFolderReader:
     Slices = []
@@ -22,7 +22,7 @@ class DicomFolderReader:
                 
     @staticmethod
     def findPath(rootPath, index):
-        return list(DicomFolderReader.findPaths(rootPath))[index]
+        return list(DicomFolderReader.findPaths(rootPath))[index-1] #LIDC-IDRI-0001 has index 0
     
     def __init__(self, myPath):
         myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".dcm") ]
@@ -51,6 +51,9 @@ class DicomFolderReader:
         
         if self.Slices[0].SliceLocation != self.Slices[0].ImagePositionPatient[2]:
             raise Exception("SliceLocation != ImagePositionZ")
+        
+        if self.getSliceShape() != (512, 512):
+            raise Exception("Unsupported slice dimensions: {}".format(self.getSliceShape()))
         
         # check whether all slices have the same transform params
         #assert sum([s.RescaleSlope for s in self.Slices]) == self.Slices[0].RescaleSlope * len(self.Slices)

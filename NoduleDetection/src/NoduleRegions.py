@@ -1,7 +1,7 @@
 import math
 import numpy as np
 from matplotlib.path import Path
-from Constants import MIN_NODULE_RADIUS
+#from Constants import MIN_NODULE_RADIUS
 
 class NoduleRegions:
     def __init__(self):
@@ -55,8 +55,8 @@ class NoduleRegions:
             centers[z] = coords.mean(axis=0)
             r[z] = math.sqrt(max(((coords - centers[z])**2).sum(axis=1)))
             
-            if r[z] < MIN_NODULE_RADIUS:
-                r[z] = MIN_NODULE_RADIUS
+            #if r[z] < MIN_NODULE_RADIUS:
+            #    r[z] = MIN_NODULE_RADIUS
             
         return centers, r
         
@@ -72,7 +72,7 @@ class NoduleRegions:
                 
         return masks, centers, r
     
-#     def getRegionMasksSphere(self, cc):
+#     def getRegionMasksSphere(self, h, w, d, cc):
 #         masks = {}
 #         c = {}
 #         r2 = {}
@@ -96,9 +96,6 @@ class NoduleRegions:
 #         if r2 < MIN_NODULE_RADIUS:
 #             r2 = MIN_NODULE_RADIUS
 #         
-#         # TODO get volume dimensions from somewhere
-#         h,w,d = 512,512,100
-#         #h,w,d = 50,50,50
 #         mask = np.zeros(h*w*d).reshape(h,w,d).astype(np.bool)
 #         
 #         # we hebben tijd...

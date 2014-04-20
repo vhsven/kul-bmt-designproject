@@ -42,7 +42,7 @@ class PixelFinder: #TODO use threshold mask
             if method == 'circle':
                 masks, _, _ = nodule.regions.getRegionMasksCircle(m,n, radiusFactor)
             elif method == 'polygon':
-                _, masks = nodule.regions.getRegionMasksPolygon(m,n) #TODO switch back?
+                _, masks = nodule.regions.getRegionMasksPolygon(m,n)
             else:
                 raise ValueError('unsupported method')
             for z, mask in masks.iteritems():

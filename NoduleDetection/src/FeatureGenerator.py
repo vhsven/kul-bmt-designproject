@@ -287,7 +287,7 @@ class FeatureGenerator: #TODO fix edge problems
     ############################################################
     # feature[6]= sliceEntropy calculation (disk window or entire image)
     ############################################################
-    def pixelentropy(self, z): #TODO fix this
+    def pixelentropy(self, z): #TODO fix this -> astype
         # calculates the sliceEntropy of each pixel in the slice in comparison to its surroundings
         image = self.getSlice(z)
         #pylab.imshow(image, cmap=pylab.gray())

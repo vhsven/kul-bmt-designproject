@@ -17,6 +17,13 @@ class XmlAnnotationReader:
         tree = etree.parse(myFile)
         root = tree.getroot()
         self.Nodules = self.parseRoot(root, cc)
+    
+    def __del__(self):
+        del self.Nodules
+        del self.dfr
+        
+    def __str__(self):
+        return "XmlAnnotationReader with {} nodules.".format(len(self.Nodules))
         
     def parseRoot(self, rootNode, cc):
         #print(etree.tostring(rootNode, pretty_print=True))

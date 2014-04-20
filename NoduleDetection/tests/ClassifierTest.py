@@ -7,7 +7,9 @@ from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
 from sklearn.externals import joblib
 from FeatureGenerator import FeatureGenerator
 from XmlAnnotationReader import XmlAnnotationReader
+from DicomFolderReader import DicomFolderReader
 from PixelFinder import PixelFinder
+from dicom._dicom_dict import DicomDictionary
 
 def calculatePixelFeatures(fgen, x,y,z):
     z = int(z)
@@ -57,46 +59,73 @@ def generateProbabilityImage(dfr, fgen, clf, mySlice):
     result = clf.predict_proba(testFeatures)
     probImg = result[:,1]
     probImg = probImg.reshape(h, w).T
-
-    pl.subplot(121)
-    pl.imshow(dfr.getSlicePixelsRescaled(mySlice), cmap=pl.gray())
-    pl.subplot(122)
-    pl.imshow(probImg, cmap=pl.cm.jet)
-    pl.show()
     
     return probImg
 
-myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
-reader = XmlAnnotationReader(myPath)
-data = reader.dfr.getVolumeData()
-fgen = FeatureGenerator(data, reader.dfr.getVoxelShape())
-finder = PixelFinder(reader)
-
-allFeatures = deque()
-
-#Calculate features of nodule pixels 
-nbNodulePixels = 0
-for x,y,z in finder.findNodulePixels(radiusFactor=0.33):
-    nbNodulePixels += 1
-    pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
-    allFeatures.append(pixelFeatures)
+def calculateSetTrainingFeatures(myPath):
+    print("Processing '{}'...".format(myPath))
+    reader = XmlAnnotationReader(myPath)
+    data = reader.dfr.getVolumeData()
+    fgen = FeatureGenerator(data, reader.dfr.getVoxelShape())
+    finder = PixelFinder(reader)
     
-#Calculate allFeatures of random non -nodule pixels
-for x,y,z in finder.findRandomNonNodulePixels(nbNodulePixels):
-    pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
-    allFeatures.append(pixelFeatures)
+    print reader
+    print reader.dfr
+    #pl.imshow(data[:,:,89])
+    #pl.show()
 
-allFeatures = np.array(allFeatures)
+    setFeatures = deque()
+    
+    #Calculate features of nodule pixels 
+    nbNodulePixels = 0
+    for x,y,z in finder.findNodulePixels(radiusFactor=0.33):
+        nbNodulePixels += 1
+        pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
+        setFeatures.append(pixelFeatures)
+        
+    #Calculate allFeatures of random non -nodule pixels
+    for x,y,z in finder.findRandomNonNodulePixels(nbNodulePixels):
+        pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
+        setFeatures.append(pixelFeatures)
+    
+    setFeatures = np.array(setFeatures)
+    
+    #Create classification vector
+    setClasses = np.zeros(setFeatures.shape[0], dtype=np.bool)
+    setClasses[0:nbNodulePixels] = True
+    
+    #Let's try not to use too much memory
+    del finder
+    del fgen
+    del data
+    del reader
+    
+    return setFeatures, setClasses
 
-#Create classification vector
-classes = np.zeros(allFeatures.shape[0], dtype=np.bool)
-classes[0:nbNodulePixels] = True
+def calculateAllTrainingFeatures(rootPath, maxPaths=99999):
+    allFeatures = None
+    allClasses = None
+    for myPath in DicomFolderReader.findPaths(rootPath, maxPaths):        
+        setFeatures, setClasses = calculateSetTrainingFeatures(myPath)
+        if allFeatures is None:
+            allFeatures = setFeatures
+            allClasses = setClasses
+        else:
+            allFeatures = np.concatenate([allFeatures, setFeatures], axis=0)
+            allClasses = np.concatenate([allClasses, setClasses], axis=0)
+    
+    #print allFeatures
+    #print allClasses
+    
+    return allFeatures, allClasses
+
+allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=2)
 
 #model = RandomForestClassifier(n_estimators=30)
 model = ExtraTreesClassifier(n_estimators=30)
 clf = clone(model)
-clf = model.fit(allFeatures, classes)
-scores = clf.score(allFeatures, classes)
+clf = model.fit(allFeatures, allClasses)
+scores = clf.score(allFeatures, allClasses)
 #scores2 = cross_val_score(clf, allFeatures, classes)
 print("Score: {}".format(scores))
 
@@ -104,17 +133,23 @@ print("Score: {}".format(scores))
 #clf = joblib.load('../data/models/model.pkl')
 
 
-#Test model on different dataset
-myPath2 = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
-reader2 = XmlAnnotationReader(myPath2)
-data2 = reader2.dfr.getVolumeData()
-fgen2 = FeatureGenerator(data2, reader2.dfr.getVoxelShape())
+#Test model
+myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", 0)
+reader = XmlAnnotationReader(myPath)
+vData = reader.dfr.getVolumeData()
+sData = reader.dfr.getSlicePixelsRescaled(89)
+fgen = FeatureGenerator(vData, reader.dfr.getVoxelShape())
 
-# pl.imshow(data[:,:,89])
-# pl.show()
-# pl.imshow(data2[:,:,89])
-# pl.show()
+print reader
+print reader.dfr
 
-probImg = generateProbabilityImage(reader2.dfr, fgen2, clf, 89)
+probImg = generateProbabilityImage(reader.dfr, fgen, clf, 89)
 
+pl.subplot(121)
+pl.imshow(sData, cmap=pl.gray())
+pl.subplot(122)
+pl.imshow(probImg, cmap=pl.cm.jet)  # @UndefinedVariable ignore
+pl.show()
+
+#TODO figure out NbSlices error 
 #TODO cascaded

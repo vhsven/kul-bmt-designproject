@@ -13,13 +13,13 @@ data = reader.dfr.getVolumeData()
 #h,w,d = reader.dfr.getVolumeShape()
 fgen = FeatureGenerator(data, reader.dfr.getVoxelShape())
 finder = PixelFinder(reader)
-
+ 
 pixels = list(finder.findNodulePixels(method='polygon', radiusFactor=1.0))
 #x,y,z = zip(*pixels)
-
+ 
 pixelsWorld = list(cc.getWorldVectors(pixels))
 X,Y,Z,_ = zip(*pixelsWorld)
-
+ 
 fig = pl.figure()
 ax = fig.add_subplot(111, projection='3d')
 ax.scatter(X,Y,Z, c='r', marker='o')
@@ -33,5 +33,5 @@ ax.set_zlabel('z')
 ax.set_xlim([70,110])
 ax.set_ylim([30,70])
 ax.set_zlim([-135,-95])
-
+ 
 pl.show()

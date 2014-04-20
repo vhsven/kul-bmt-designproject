@@ -26,6 +26,7 @@ class DicomFolderReader:
     
     def __init__(self, myPath):
         myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".dcm") ]
+        self.Slices = []
         try:
             for myFile in myFiles:
                 self.Slices.append(dicom.read_file(myFile))

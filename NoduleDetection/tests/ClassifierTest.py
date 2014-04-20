@@ -151,5 +151,4 @@ pl.subplot(122)
 pl.imshow(probImg, cmap=pl.cm.jet)  # @UndefinedVariable ignore
 pl.show()
 
-#TODO figure out NbSlices error 
 #TODO cascaded

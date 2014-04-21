@@ -34,7 +34,8 @@ class DicomFolderReader:
             print("DICOM parsing failed for file '{1}': {0}".format(e, myFile))
             exit(1)
         
-        self.Path = myPath        
+        self.Path = myPath
+        #if you get an error here, make sure the data folder only contains CT scans, not RX.
         self.Slices = sorted(self.Slices, key=lambda s: s.SliceLocation) #silly slices are not sorted yet
         self.NbSlices = len(self.Slices)
         self.Masks = [None] * self.NbSlices

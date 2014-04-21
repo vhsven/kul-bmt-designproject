@@ -1,0 +1,16 @@
+for each dataset
+	load DICOM slices
+	perform lungsegmentation
+	load XML annotations
+	for each nodule
+		for each slice in nodule
+			calculate center, r
+			select positive pixels (d < r/3)
+	for random pixel in segmented data
+		if far enough from all nodules (d > 2r)
+			add to negative pixels
+	calculate features for selected pixels
+	train classifier
+	
+	
+			

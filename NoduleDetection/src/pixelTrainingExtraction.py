@@ -74,6 +74,7 @@ def RandomPixelGenerator (NumberPixelNeeded, maxXsize, maxYsize, maxZsize):
         for cx,cy,cz,r2 in reader.getNodulePositions():
             if (X-cx)**2 + (Y-cy)**2 + (Z-cz)**2 < 6*r2: # r2 is 1/3 van straal van nodule
                 # TODO Z nog omzetten naar wereldcoordinaten
+                
                 IsGoodPixel = False
                 break
             

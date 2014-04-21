@@ -11,7 +11,7 @@ from XmlAnnotationReader import XmlAnnotationReader
 from DicomFolderReader import DicomFolderReader
 from PixelFinder import PixelFinder
 
-def calculatePixelFeatures(fgen, x,y,z, level=1):
+def calculatePixelFeatures(fgen, x,y,z, level=1): #TODO move to fgen
     z = int(z)
     pixelFeatures = ()
     
@@ -55,25 +55,41 @@ def calculatePixelFeatures(fgen, x,y,z, level=1):
     
     return pixelFeatures
 
-def generateProbabilityVolume(dfr, fgen, clf, level=1):
+def generateProbabilityVolume(dfr, fgen, clf, level=1): #, points
     h, w, d = dfr.getVolumeShape()
-    h //= 2
-    w //= 2
+    h //= 8
+    w //= 8
+    d //= 8
+    print h,w,d
+    
     x, y, z = np.meshgrid(np.arange(h), np.arange(w), np.arange(d))
     x, y, z = x.flatten(), y.flatten(), z.flatten()
     points = np.vstack((x,y,z)).T
-    assert len(points) == h*w*d
+    del x,y,z
+    assert points.shape == (h*w*d,3)
+    points = map(tuple, points) #convert numpy array to list of tuples
+    #featureLocations = deque()
     testFeatures = deque()
     for px,py,pz in points:
         pixelFeatures = calculatePixelFeatures(fgen, px, py, pz, level)
         testFeatures.append(pixelFeatures)
 
+    #featureLocations = np.array(featureLocations)
     testFeatures = np.array(testFeatures)
-    result = clf.predict_proba(testFeatures)
-    probImg = result[:,1]
-    probImg = probImg.reshape(h, w, d).T
     
-    #pixelList = np.where(probImg  > 0.01)
+    result = clf.predict_proba(testFeatures)
+    
+    probImg = np.zeros((h,w,d))
+    print probImg[points]
+    probImg[points] = result[:,1]
+    
+    #linIndices = np.ravel_multi_index(featureLocations, dims=(h, w, d), order='C')
+    #probImg.ravel()[linIndices] = result[:,1]
+    
+    #probImg = result[:,1]
+    #probImg = probImg.reshape(h, w, d).T
+    
+    pixelList = None #np.where(probImg  > 0.01)
     masked = ma.masked_greater(probImg, 0.01)
 
     return probImg, pixelList, masked
@@ -158,7 +174,7 @@ def calculateAllTrainingFeatures(rootPath, maxPaths=99999):
     
     return allFeatures, allClasses
 
-allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=3)
+allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=2)
 
 #model = RandomForestClassifier(n_estimators=30)
 model = ExtraTreesClassifier(n_estimators=30)
@@ -168,8 +184,8 @@ scores = clf.score(allFeatures, allClasses)
 #scores2 = cross_val_score(clf, allFeatures, classes)
 print("Score: {}".format(scores))
 
-joblib.dump(clf, '../data/models/model.pkl')
-clf = joblib.load('../data/models/model.pkl')
+#joblib.dump(clf, '../data/models/model.pkl')
+#clf = joblib.load('../data/models/model.pkl')
 
 #Test model
 myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", 1)

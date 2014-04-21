@@ -57,23 +57,29 @@ def calculatePixelFeatures(fgen, x,y,z, level=1):
 
 def generateProbabilityVolume(dfr, fgen, clf, level=1):
     h, w, d = dfr.getVolumeShape()
-    h //= 2
-    w //= 2
+    # create region of interest (processing time)
+    print h,w,d
+    h //= 8
+    w //= 8
+    d //= 8
+    print h,w,d
     x, y, z = np.meshgrid(np.arange(h), np.arange(w), np.arange(d))
     x, y, z = x.flatten(), y.flatten(), z.flatten()
     points = np.vstack((x,y,z)).T
+    
     assert len(points) == h*w*d
     testFeatures = deque()
     for px,py,pz in points:
         pixelFeatures = calculatePixelFeatures(fgen, px, py, pz, level)
         testFeatures.append(pixelFeatures)
+        
 
     testFeatures = np.array(testFeatures)
     result = clf.predict_proba(testFeatures)
     probImg = result[:,1]
     probImg = probImg.reshape(h, w, d).T
     
-    #pixelList = np.where(probImg  > 0.01)
+    pixelList = np.where(probImg  > 0.01)
     masked = ma.masked_greater(probImg, 0.01)
 
     return probImg, pixelList, masked
@@ -168,8 +174,8 @@ scores = clf.score(allFeatures, allClasses)
 #scores2 = cross_val_score(clf, allFeatures, classes)
 print("Score: {}".format(scores))
 
-joblib.dump(clf, '../data/models/model.pkl')
-clf = joblib.load('../data/models/model.pkl')
+#joblib.dump(clf, '../data/models/model.pkl')
+#clf = joblib.load('../data/models/model.pkl')
 
 #Test model
 myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", 1)
@@ -181,8 +187,10 @@ fgen = FeatureGenerator(vData, reader.dfr.getVoxelShape())
 probImg, pixelList, masked = generateProbabilityVolume(reader.dfr, fgen, clf, level=1)
 #probImg, pixelList, masked = generateProbabilityImage(reader.dfr, fgen, clf, 89)
 
-probImgSlice = probImg[:,:,89]
-maskedSlice = masked.mask[:,:,89]
+probImgSlice = probImg[:,:,45]
+a=masked.mask
+print(masked.mask)
+maskedSlice = masked.mask[:,:,45]
 
 pl.subplot(221)
 pl.imshow(sData, cmap=pl.gray())

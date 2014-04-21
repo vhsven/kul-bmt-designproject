@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.ma as ma
 import pylab as pl
 from collections import deque
 from sklearn import clone
@@ -54,6 +55,29 @@ def calculatePixelFeatures(fgen, x,y,z, level=1):
     
     return pixelFeatures
 
+def generateProbabilityVolume(dfr, fgen, clf, level=1):
+    h, w, d = dfr.getVolumeShape()
+    h //= 2
+    w //= 2
+    x, y, z = np.meshgrid(np.arange(h), np.arange(w), np.arange(d))
+    x, y, z = x.flatten(), y.flatten(), z.flatten()
+    points = np.vstack((x,y,z)).T
+    assert len(points) == h*w*d
+    testFeatures = deque()
+    for px,py,pz in points:
+        pixelFeatures = calculatePixelFeatures(fgen, px, py, pz, level)
+        testFeatures.append(pixelFeatures)
+
+    testFeatures = np.array(testFeatures)
+    result = clf.predict_proba(testFeatures)
+    probImg = result[:,1]
+    probImg = probImg.reshape(h, w, d).T
+    
+    #pixelList = np.where(probImg  > 0.01)
+    masked = ma.masked_greater(probImg, 0.01)
+
+    return probImg, pixelList, masked
+
 def generateProbabilityImage(dfr, fgen, clf, mySlice):
     h, w, _ = dfr.getVolumeShape()
     
@@ -70,7 +94,13 @@ def generateProbabilityImage(dfr, fgen, clf, mySlice):
     probImg = result[:,1]
     probImg = probImg.reshape(h, w).T
     
-    return probImg
+    pixelList = np.where(probImg  > 0.01)
+    masked = ma.masked_greater(probImg, 0.01)
+
+    #test = np.zeros((512, 512))
+    #test[pixelList] = 1
+    
+    return probImg, pixelList, masked
 
 def calculateSetTrainingFeatures(myPath):
     print("Processing '{}'".format(myPath))
@@ -128,7 +158,7 @@ def calculateAllTrainingFeatures(rootPath, maxPaths=99999):
     
     return allFeatures, allClasses
 
-allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=99999)
+allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=3)
 
 #model = RandomForestClassifier(n_estimators=30)
 model = ExtraTreesClassifier(n_estimators=30)
@@ -148,12 +178,18 @@ vData = reader.dfr.getVolumeData()
 sData = reader.dfr.getSlicePixelsRescaled(89)
 fgen = FeatureGenerator(vData, reader.dfr.getVoxelShape())
 
-probImg = generateProbabilityImage(reader.dfr, fgen, clf, 89)
+probImg, pixelList, masked = generateProbabilityVolume(reader.dfr, fgen, clf, level=1)
+#probImg, pixelList, masked = generateProbabilityImage(reader.dfr, fgen, clf, 89)
 
-pl.subplot(121)
+probImgSlice = probImg[:,:,89]
+maskedSlice = masked.mask[:,:,89]
+
+pl.subplot(221)
 pl.imshow(sData, cmap=pl.gray())
-pl.subplot(122)
-pl.imshow(probImg, cmap=pl.cm.jet)  # @UndefinedVariable ignore
+pl.subplot(222)
+pl.imshow(probImgSlice, cmap=pl.cm.jet)  # @UndefinedVariable ignore
+pl.subplot(223)
+pl.imshow(maskedSlice, cmap=pl.gray())
 pl.show()
 
 #TODO cascaded

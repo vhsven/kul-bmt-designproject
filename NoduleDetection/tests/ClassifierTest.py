@@ -70,7 +70,7 @@ def generateProbabilityVolume(dfr, fgen, clf, level=1): #, points
     
     del x,y,z
     assert points.shape == (h*w*d,3)
-    points = map(tuple, points) #convert numpy array to list of tuples
+    #points = map(tuple, points) #convert numpy array to list of tuples
     #featureLocations = deque()
     testFeatures = deque()
     for px,py,pz in points:
@@ -84,7 +84,9 @@ def generateProbabilityVolume(dfr, fgen, clf, level=1): #, points
     result = clf.predict_proba(testFeatures)
     
     probImg = np.zeros((h,w,d))
-    print probImg[points]
+    print probImg
+    print points
+    print result
     probImg[points] = result[:,1]
     
     #linIndices = np.ravel_multi_index(featureLocations, dims=(h, w, d), order='C')

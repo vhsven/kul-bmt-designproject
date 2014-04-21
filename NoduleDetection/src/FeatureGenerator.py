@@ -23,7 +23,9 @@ class FeatureGenerator: #TODO fix edge problems
     ############################################################
     def getTrivialFeatures(self, x, y, z):
         w,h,d = self.Data.shape
-       # return x, y, z, float(x)/w, float(y)/h, float(z)/d, self.Data[x,y,z]
+
+        #return x, y, z, float(x)/w, float(y)/h, float(z)/d, self.Data[x,y,z]
+
         return float(x)/w, float(y)/h, float(z)/d, self.Data[x,y,z]
     
     

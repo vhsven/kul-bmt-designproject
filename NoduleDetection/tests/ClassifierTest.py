@@ -1,106 +1,160 @@
-import scipy
-import scipy.ndimage
 import numpy as np
 import pylab as pl
+from collections import deque
 from sklearn import clone
 from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
+#from sklearn.cross_validation import cross_val_score
 from sklearn.externals import joblib
-from featureselection import FeatureSelection
+from FeatureGenerator import FeatureGenerator
 from XmlAnnotationReader import XmlAnnotationReader
-from Constants import *
+from DicomFolderReader import DicomFolderReader
+from PixelFinder import PixelFinder
 
-myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
-#myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
-reader = XmlAnnotationReader(myPath)
-data = reader.dfr.getVolumeData()
-select = FeatureSelection(data, reader.dfr.getVoxelShape())
-
-
-def calculatePixelFeatures(select, x,y,z,c, edges, sliceEntropy, blobs): #TODO use class c
+def calculatePixelFeatures(fgen, x,y,z, level=1):
+    z = int(z)
     pixelFeatures = ()
+    
+    if level >= 1:
+        pixelFeatures += fgen.getTrivialFeatures(x,y,z)
+
+    if level >= 2:
+        pass
+    
+    if level >= 3:
+        pass
+    
+    if level >= 4:
+        pass
+    
+    #global 3D features
+    #getVolumeEdges = fgen.getVolumeEdges()
+    
+    #2D slice features (TODO only calculate once)
+    #sliceEntropy = fgen.image_entropy(z)
+    #entropy2 = fgen.pixelentropy(z)
+    #blobs = fgen.blobdetection(z)
+    
             
     #get pixel features from 3D features
-    pixelFeatures += (edges[x,y,z],)
+    #pixelFeatures += (getVolumeEdges[x,y,z],)
     #get pixel features from slice features
-    pixelFeatures += (sliceEntropy,)
+    #pixelFeatures += (sliceEntropy,)
     #pixelFeatures += (entropy2[x,y],)
-    for blob in blobs:
-        pixelFeatures += (blob[x,y],)
+    #for blob in blobs:
+    #    pixelFeatures += (blob[x,y],)
     #pixel features
-    pixelFeatures += select.trivialFeature(x,y,z)
-    pixelFeatures += (select.forbeniusnorm(x,y,z),)
-    pixelFeatures += select.neighbours(x,y,z)
+    #pixelFeatures += (fgen.forbeniusnorm(x,y,z),)
+    #pixelFeatures += fgen.neighbours(x,y,z)
     
-    for windowSize in np.arange(3,MAX_FEAT_WINDOW,2):
-        pixelFeatures += select.greyvaluefrequency(x,y,z, windowSize)
-        pixelFeatures += select.averaging3D(x,y,z, windowSize)
-        pixelFeatures += select.greyvaluecharateristic(x,y,z, windowSize)
-        pixelFeatures += select.windowFeatures(x,y,z, windowSize)
+    #for windowSize in np.arange(3,MAX_FEAT_WINDOW,2):
+    #    pixelFeatures += fgen.greyvaluefrequency(x,y,z, windowSize)
+    #    pixelFeatures += fgen.averaging3D(x,y,z, windowSize)
+    #    pixelFeatures += fgen.greyvaluecharateristic(x,y,z, windowSize)
+    #    pixelFeatures += fgen.windowFeatures(x,y,z, windowSize)
     
     return pixelFeatures
-        
-features = np.array([])
 
-#global 3D features
-edges = select.edges()
-
-# prevZ = -1;
-# for x,y,z,c in classes:
-#     if z != prevZ: #2D slice features
-#         prevZ = z
-#         sliceEntropy = select.image_entropy(z)
-#         #entropy2 = select.pixelentropy(z)
-#         blobs = select.blobdetection(z)
-#     
-#     pixelFeatures = calculatePixelFeatures(select, x, y, z, c, edges, sliceEntropy, blobs)
-#     if len(features) == 0:
-#         features = np.array(pixelFeatures)
-#         features = features.reshape(1, len(pixelFeatures)) #else shape = (n,)
-#     else:
-#         features = np.vstack([features, np.array(pixelFeatures)])
+def generateProbabilityImage(dfr, fgen, clf, mySlice):
+    h, w, _ = dfr.getVolumeShape()
     
-for nodule in reader.Nodules:
-    print(nodule.ID)
-    masks, centerMap, r2 = nodule.regions.getRegionMasksCircle()
-    #centerMap = nodule.regions.getRegionCenters()
-    for z,mask in masks.iteritems():
-        zi = int(z)
-        mask = scipy.ndimage.zoom(mask, ZOOM_FACTOR_3D)
-        print("\tSlice (z={})".format(z))
-        data = reader.dfr.getSlicePixelsRescaled(zi)
-        
-        #2D slice features
-        sliceEntropy = select.image_entropy(z)
-        #entropy2 = select.pixelentropy(z)
-        blobs = select.blobdetection(z)
-        
-        xs, ys = np.where(mask)
-        for x,y in zip(xs, ys):
-            pixelFeatures = calculatePixelFeatures(select, x, y, zi, 1, edges, sliceEntropy, blobs)
-            
-            if len(features) == 0:
-                features = np.array(pixelFeatures)
-                features = features.reshape(1, len(pixelFeatures)) #else shape = (n,)
-            else:
-                features = np.vstack([features, np.array(pixelFeatures)])
+    x, y = np.meshgrid(np.arange(h), np.arange(w))
+    x, y = x.flatten(), y.flatten()
+    points = np.vstack((x,y)).T
+    testFeatures = deque()
+    for px,py in points:
+        pixelFeatures = calculatePixelFeatures(fgen, px, py, mySlice)
+        testFeatures.append(pixelFeatures)
 
-n_estimators = 30
+    testFeatures = np.array(testFeatures)
+    result = clf.predict_proba(testFeatures)
+    probImg = result[:,1]
+    probImg = probImg.reshape(h, w).T
+    
+    return probImg
 
-#model = RandomForestClassifier(n_estimators=n_estimators)
-model = ExtraTreesClassifier(n_estimators=n_estimators)
+def calculateSetTrainingFeatures(myPath):
+    print("Processing '{}'".format(myPath))
+    reader = XmlAnnotationReader(myPath)
+    print("\tFound {} nodules.".format(len(reader.Nodules)))
+    data = reader.dfr.getVolumeData()
+    fgen = FeatureGenerator(data, reader.dfr.getVoxelShape())
+    finder = PixelFinder(reader)
+    
+    setFeatures = deque()
+    
+    #Calculate features of nodule pixels 
+    nbNodulePixels = 0
+    for x,y,z in finder.findNodulePixels(radiusFactor=0.33):
+        nbNodulePixels += 1
+        pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
+        setFeatures.append(pixelFeatures)
+    print("\tFound {} nodules pixels.".format(nbNodulePixels))
+    
+    #Calculate allFeatures of random non -nodule pixels
+    for x,y,z in finder.findRandomNonNodulePixels(nbNodulePixels):
+        pixelFeatures = calculatePixelFeatures(fgen, x, y, z)
+        setFeatures.append(pixelFeatures)
+    
+    setFeatures = np.array(setFeatures)
+    
+    #Create classification vector
+    setClasses = np.zeros(setFeatures.shape[0], dtype=np.bool)
+    setClasses[0:nbNodulePixels] = True
+    
+    #Let's try not to use too much memory
+    del finder
+    del fgen
+    del data
+    del reader
+    
+    return setFeatures, setClasses
 
-X=features #featurevector per datapoint
-y=np.ones(len(X)) #class per datapoint
+def calculateAllTrainingFeatures(rootPath, maxPaths=99999):
+    allFeatures = None
+    allClasses = None
+    for myPath in DicomFolderReader.findPaths(rootPath, maxPaths):
+        if "LIDC-IDRI-0001" in myPath:
+            continue        
+        setFeatures, setClasses = calculateSetTrainingFeatures(myPath)
+        if allFeatures is None:
+            allFeatures = setFeatures
+            allClasses = setClasses
+        else:
+            allFeatures = np.concatenate([allFeatures, setFeatures], axis=0)
+            allClasses = np.concatenate([allClasses, setClasses], axis=0)
+    
+    #print allFeatures
+    #print allClasses
+    
+    return allFeatures, allClasses
 
+allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=99999)
+
+#model = RandomForestClassifier(n_estimators=30)
+model = ExtraTreesClassifier(n_estimators=30)
 clf = clone(model)
-clf = model.fit(X, y)
-scores = clf.score(X, y)
-print(scores)
+clf = model.fit(allFeatures, allClasses)
+scores = clf.score(allFeatures, allClasses)
+#scores2 = cross_val_score(clf, allFeatures, classes)
+print("Score: {}".format(scores))
 
-#joblib.dump(clf, '../data/models/model.pkl')
-#clf = joblib.load('../data/models/model.pkl')
+joblib.dump(clf, '../data/models/model.pkl')
+clf = joblib.load('../data/models/model.pkl')
 
-result = clf.predict_proba(X[0,:])
-print(result)
+#Test model
+myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", 1)
+reader = XmlAnnotationReader(myPath)
+vData = reader.dfr.getVolumeData()
+sData = reader.dfr.getSlicePixelsRescaled(89)
+fgen = FeatureGenerator(vData, reader.dfr.getVoxelShape())
+
+probImg = generateProbabilityImage(reader.dfr, fgen, clf, 89)
+
+pl.subplot(121)
+pl.imshow(sData, cmap=pl.gray())
+pl.subplot(122)
+pl.imshow(probImg, cmap=pl.cm.jet)  # @UndefinedVariable ignore
+pl.show()
 
 #TODO cascaded
+#TODO download more datasets

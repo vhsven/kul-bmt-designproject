@@ -1,7 +1,5 @@
-import pylab
 import scipy.stats
 import numpy as np
-#import numpy.ma as ma
 import math
 import collections
 from skimage.filter.rank import entropy
@@ -9,47 +7,23 @@ from skimage.morphology import disk
 import scipy.ndimage as nd
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 
-class FeatureSelection:
+class FeatureGenerator: #TODO fix edge problems
     def __init__(self, data, vshape):
         self.Data = data
         self.VoxelShape = vshape
-        print(self.Data.shape)
-        self.PixelCount = collections.Counter(self.Data.ravel())
-        print("Calculated counts")
+        self.Edges = None
+        self.Blobs = None
+        self.PixelCount = None
         
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
     
-    ###############################################################################
-    ### step 1: import data
-    
-    #myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
-    #dfr = DicomFolderReader(myPath)
-    #data = dfr.getVolumeData() # 3D matrix with data
-    
-    #Xsize, Ysize, Zsize = dfr.getVoxelShape() # size of voxel in mm
-    
-    #X,Y,Z = dfr.getVolumeShape() # size of 3D datamatrix in 3D
-    
-    # REMARK: voxel(i,j) is pixel(j,i)
-    # one voxel is one pixel (http://nipy.org/nibabel/dicom/dicom_orientation.html)
-    
-    ###############################################################################
-    #### step 2: prepare data
-    
-    # select thorax
-    
-    ###############################################################################
-    #### step 3: make 2D feature vector
-    
     ############################################################
-    #featurevector[1]= position of pixel in 2D slice
+    #featurevector[1]= abs/ref position and gray value
     ############################################################
-    # x and y are the pixelcoordinates of certain position in image
-    #position=[x,y,z]
-    def trivialFeature(self, x, y, z):
+    def getTrivialFeatures(self, x, y, z):
         w,h,d = self.Data.shape
-        return x, y, z, x/w, y/h, z/d
+        return x, y, z, float(x)/w, float(y)/h, float(z)/d, self.Data[x,y,z]
     
     
     ############################################################
@@ -220,13 +194,13 @@ class FeatureSelection:
     #featurevector[3]= prevalence of that grey value
     ############################################################
     def greyvaluefrequency(self, x,y,z):
-        #import collections
-        z = int(z)
+        if self.PixelCount == None:
+            self.PixelCount = collections.Counter(self.Data.ravel())
+        
         pixelValue = self.Data[x,y,z]
         freqvalue = self.PixelCount[pixelValue] # prevalence of pixelvalue in image
         
         # prevalence maximum and minimum of pixels in image
-        # max and min
         Max_image = self.Data.max()
         Min_image = self.Data.min()
         
@@ -269,7 +243,7 @@ class FeatureSelection:
         
         windowD=self.Data[x-valdown:x+valup,y-valdown:y+valup,z-valdown:z+valup]
         
-        # calculate 'edges' by substraction 
+        # calculate 'getVolumeEdges' by substraction 
         leftrow=windowD[:,0,:]
         rightrow=windowD[:,windowrowvalue-1,:]
         meanL=leftrow.mean()
@@ -277,11 +251,11 @@ class FeatureSelection:
         gradLRmean=(rightrow-leftrow).mean()
         gradmeanLR=meanR-meanL
         
-        # calculate 'edges' by division
+        # calculate 'getVolumeEdges' by division
         divmeanLR=meanR*meanL
         divLRmean=(leftrow*rightrow).mean()
         
-        # calculate 'edges' by substraction 
+        # calculate 'getVolumeEdges' by substraction 
         toprow=windowD[0,:,:]
         bottomrow=windowD[windowrowvalue-1, :, :]
         Tmean=toprow.mean()
@@ -289,11 +263,11 @@ class FeatureSelection:
         gradmeanUD=Tmean-Bmean
         gradUDmean=(toprow-bottomrow).mean()
         
-        # calculate 'edges' by division
+        # calculate 'getVolumeEdges' by division
         divUDmean=(toprow*bottomrow).mean()
         divmeanUD=Tmean*Bmean
               
-        # calculate 'edges' by substraction 
+        # calculate 'getVolumeEdges' by substraction 
         frontrow=windowD[:,:,0]
         backrow=windowD[:, :, windowrowvalue-1]
         Fmean=frontrow.mean()
@@ -301,7 +275,7 @@ class FeatureSelection:
         gradmeanFB=Fmean-Bmean
         gradFBmean=(frontrow-backrow).mean()
         
-        # calculate 'edges' by division
+        # calculate 'getVolumeEdges' by division
         divFBmean=(frontrow*backrow).mean()
         divmeanFB=Fmean*Bmean
         
@@ -313,7 +287,7 @@ class FeatureSelection:
     ############################################################
     # feature[6]= sliceEntropy calculation (disk window or entire image)
     ############################################################
-    def pixelentropy(self, z): #TODO fix this
+    def pixelentropy(self, z): #TODO fix this -> astype
         # calculates the sliceEntropy of each pixel in the slice in comparison to its surroundings
         image = self.getSlice(z)
         #pylab.imshow(image, cmap=pylab.gray())
@@ -403,10 +377,10 @@ class FeatureSelection:
     
     
     ############################################################
-    # feature[8]= edges: sobel
+    # feature[8]= getVolumeEdges: sobel
     ############################################################
     
-    def edges(self):
+    def getVolumeEdges(self): #TODO perform window calculations on these
         #import scipy
         #from scipy import ndimage
         #from scipy.ndimage.filters import generic_gradient_magnitude, sobel
@@ -415,27 +389,31 @@ class FeatureSelection:
     #     dy = ndimage.sobel(self.Data, 1)  # y derivative
     #     dz = ndimage.sobel(self.Data, 2)  # z derivative
         
-        mag = generic_gradient_magnitude(self.Data, sobel)
+        if self.Edges == None:
+            self.Edges = generic_gradient_magnitude(self.Data, sobel)
             
-        return mag
+        return self.Edges
     
     ############################################################
     # feature[9]= blob detection with laplacian of gaussian
     ############################################################
-    def blobdetection(self, z):
-        image=self.getSlice(z)
-        returnValue = []
-        for sigma in np.arange(1.9,2.1,0.1):
-            LoG = nd.gaussian_laplace(image, sigma) # scalar: standard deviations of the Gaussian filter
-            # hoe bepaal je sigma? nodule_grootte_in_pixels = sqrt(2*sigma)
-            # sigma empirisch vastgesteld op 1.9/ 2/ 2.1
-            aLoG = abs(LoG)
-            output = np.copy(image)
-            output[aLoG > aLoG.max()-200] = 1
-            #pylab.imshow(output, cmap=pylab.gray())
-            #pylab.show()
-            returnValue.append(output)
-        return returnValue
+    def blobdetection(self, z): #TODO do this in 3D, take into account different voxel sizes
+        if self.Blobs == None:
+            image=self.getSlice(z)
+            returnValue = []
+            for sigma in np.arange(1.9,2.1,0.1):
+                LoG = nd.gaussian_laplace(image, sigma) # scalar: standard deviations of the Gaussian filter
+                # hoe bepaal je sigma? nodule_grootte_in_pixels = sqrt(2*sigma)
+                # sigma empirisch vastgesteld op 1.9/ 2/ 2.1
+                aLoG = abs(LoG)
+                output = np.copy(image)
+                output[aLoG > aLoG.max()-200] = 1
+                #pylab.imshow(output, cmap=pylab.gray())
+                #pylab.show()
+                returnValue.append(output)
+            self.Blobs = returnValue
+        
+        return self.Blobs
     
     ############################################################  
     #featurevector[10]=haar features

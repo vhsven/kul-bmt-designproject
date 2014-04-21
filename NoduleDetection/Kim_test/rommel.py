@@ -51,7 +51,7 @@ def pixelentropy(data):
 
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 
-def edges(data):
+def getVolumeEdges(data):
         #import scipy
         #from scipy import ndimage
         #from scipy.ndimage.filters import generic_gradient_magnitude, sobel
@@ -63,7 +63,7 @@ def edges(data):
         mag = generic_gradient_magnitude(data, sobel)
             
         return mag
-mag=edges(data)
+mag=getVolumeEdges(data)
 pylab.imshow(mag)
 pylab.show()
 

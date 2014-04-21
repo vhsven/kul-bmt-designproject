@@ -3,23 +3,38 @@ import scipy
 import numpy as np
 import numpy.ma as ma
 from skimage.morphology import reconstruction, binary_opening, binary_erosion
-from os import listdir
+from os import listdir, walk
 from os.path import isfile, join
 from CoordinateConverter import CoordinateConverter
-from Constants import *
+from Constants import DEFAULT_THRESHOLD, DEFAULT_WINDOW_SIZE #, ZOOM_FACTOR_3D
 
 class DicomFolderReader:
     Slices = []
     
+    @staticmethod
+    def findPaths(rootPath, maxPaths=99999):
+        """Returns the list of lowest possible subdirectories under rootPath that have files in them."""
+        count = 0
+        for dirPath, dirs, files in walk(rootPath):
+            if count < maxPaths and files and not dirs:
+                count += 1
+                yield dirPath
+                
+    @staticmethod
+    def findPath(rootPath, index):
+        return list(DicomFolderReader.findPaths(rootPath))[index-1] #LIDC-IDRI-0001 has index 0
+    
     def __init__(self, myPath):
         myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".dcm") ]
+        self.Slices = []
         try:
             for myFile in myFiles:
                 self.Slices.append(dicom.read_file(myFile))
         except Exception as e:
             print("DICOM parsing failed for file '{1}': {0}".format(e, myFile))
             exit(1)
-                
+        
+        self.Path = myPath        
         self.Slices = sorted(self.Slices, key=lambda s: s.SliceLocation) #silly slices are not sorted yet
         self.NbSlices = len(self.Slices)
         self.Masks = [None] * self.NbSlices
@@ -37,10 +52,24 @@ class DicomFolderReader:
         if self.Slices[0].SliceLocation != self.Slices[0].ImagePositionPatient[2]:
             raise Exception("SliceLocation != ImagePositionZ")
         
+        if self.getSliceShape() != (512, 512):
+            raise Exception("Unsupported slice dimensions: {}".format(self.getSliceShape()))
+        
         # check whether all slices have the same transform params
         #assert sum([s.RescaleSlope for s in self.Slices]) == self.Slices[0].RescaleSlope * len(self.Slices)
         #assert sum([s.RescaleIntercept for s in self.Slices]) == self.Slices[0].RescaleIntercept * len(self.Slices)
 
+    def __del__(self):
+        del self.Path 
+        del self.Slices
+        del self.NbSlices
+        del self.Masks
+        del self.RescaleSlope
+        del self.RescaleIntercept
+    
+    def __str__(self):
+        return "DicomFolderReader('{}') with {} slices.".format(self.Path, self.getNbSlices())
+        
     def getMinZ(self):
         return min([s.ImagePositionPatient[2] for s in self.Slices])
     
@@ -82,13 +111,12 @@ class DicomFolderReader:
     
     def getVolumeData(self):
         h,w,d = self.getVolumeShape()
-        h = int(h * ZOOM_FACTOR_3D)
-        w = int(w * ZOOM_FACTOR_3D)
+        #h = int(h * ZOOM_FACTOR_3D)
+        #w = int(w * ZOOM_FACTOR_3D)
         voxels = np.zeros((h,w,d), dtype=np.int16)
         for index in range(0, self.getNbSlices()):
             data = self.getSlicePixelsRescaled(index)
-            data = scipy.ndimage.zoom(data, ZOOM_FACTOR_3D)
-            #data = imresize(data, (h,w,d))
+            #data = scipy.ndimage.zoom(data, ZOOM_FACTOR_3D)
             voxels[:,:,index] = data
             
         return voxels

@@ -5,26 +5,27 @@ from DicomFolderReader import DicomFolderReader
 from Trainer import Trainer
 from Classifier import Classifier
 
-trainer = Trainer("../data/LIDC-IDRI", maxPaths=9999)
+trainer = Trainer("../data/LIDC-IDRI", maxPaths=2, level=1)
 clf = trainer.train()
 
 #Test model
-mySlice = 10
+mySlice = 89
 myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", 1)
 
 c = Classifier(myPath, clf, level=1)
 h,w,d = c.dfr.getVolumeShape()
 sData = c.dfr.getSlicePixelsRescaled(mySlice)
 
-h //= 2
-w //= 2
-d //= 8
+#h //= 2
+#w //= 2
+#d //= 8
 print h,w,d
 
 #points2D = Classifier.generatePixelList2D((h, w))
 #probImg, masked = c.generateProbabilityImage((h,w), points2D, mySlice)
 
-points3D = Classifier.generatePixelList3D((h, w, d)) #TODO use points from segmentation instead
+#points3D = Classifier.generatePixelList3D((h, w, d))
+points3D = c.dfr.getThresholdPixels()
 probImg, masked = c.generateProbabilityVolume((h,w,d), points3D)
 probImg = probImg[:,:,mySlice]
 mask = masked.mask
@@ -38,7 +39,7 @@ pl.subplot(223)
 pl.imshow(masked, cmap=pl.gray())
 pl.show()
 
-points3D = points3D #get points from mask and launch second classifier
+#points3D = points3D #get points from mask and launch second classifier
 #train level 2
 #classify level 2
 

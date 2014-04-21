@@ -9,16 +9,17 @@ from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier  # @Un
 from sklearn.externals import joblib
 
 class Trainer:
-    def __init__(self, rootPath, maxPaths=99999):
+    def __init__(self, rootPath, maxPaths=99999, level=1):
         self.RootPath = rootPath
         self.MaxPaths = maxPaths
+        self.Level = level
         
     def calculateSetTrainingFeatures(self, myPath):
         print("Processing '{}'".format(myPath))
         reader = XmlAnnotationReader(myPath)
         print("\tFound {} nodules.".format(len(reader.Nodules)))
         data = reader.dfr.getVolumeData()
-        fgen = FeatureGenerator(data, reader.dfr.getVoxelShape())
+        fgen = FeatureGenerator(data, reader.dfr.getVoxelShape(), self.Level)
         finder = PixelFinder(reader)
         
         setFeatures = deque()

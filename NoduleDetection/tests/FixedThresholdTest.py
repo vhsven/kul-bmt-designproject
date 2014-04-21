@@ -5,8 +5,10 @@ import numpy.ma as ma
 from skimage.morphology import reconstruction, binary_opening, binary_erosion
 from DicomFolderReader import DicomFolderReader 
 
-BIN_SIZE = 10
-DEFAULT_THRESHOLD = 1600
+from Constants import DEFAULT_THRESHOLD
+from Constants import BIN_SIZE
+
+
 
 def getHistogram(img, minI, maxI):
     binEdges = np.arange(minI, maxI + BIN_SIZE, BIN_SIZE)
@@ -30,7 +32,9 @@ def processVolume(threshold):
     
     return masked, masked2
     
-def processSlice(mySlice, threshold):
+def processSlice(mySlice):
+    threshold = DEFAULT_THRESHOLD
+    
     HU = dfr.getSlicePixelsRescaled(mySlice)
     
     # select pixels in thorax wall
@@ -51,9 +55,48 @@ def processSlice(mySlice, threshold):
     
     return masked, masked2
 
-#myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
-myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
+def addSegmentedSlices ():
+    w,h,d = dfr.getVolumeShape()
+    z = 0
+    
+    # get a 3D stack of all masks of all slices
+    for z in range(0, d):
+        threshold = DEFAULT_THRESHOLD
+        HU = dfr.getSlicePixelsRescaled(z)
+    
+        # select pixels in thorax wall
+        masked = ma.masked_greater(HU, threshold)
+        
+        # opening to remove small structures
+        newmask = binary_opening(masked.mask, selem=np.ones((9,9)))
+    
+        # reconstruction to fill lungs (figure out how this works) 
+        seed = np.copy(newmask)
+        seed[1:-1, 1:-1] = newmask.max()
+        newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
+        
+        # erode thorax walls slightly (no nodules in there)
+        #newmask = binary_erosion(newmask, selem=np.ones((29,29))).astype(np.int)
+        
+        
+        # get mask and calculate nonzero elements
+        Ind = zip(*np.where(newmask))
+        length = len(Ind)
+        
+                
+        for i in range(0,length):
+            yield Ind[i] + (z,) 
+
+       
+
+myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
+#myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
 dfr = DicomFolderReader(myPath)
+
+masked2 = list(addSegmentedSlices())
+#print (masked2)
+print(len(masked2))
+
 
 #maskedV, maskedV2 = processVolume(DEFAULT_THRESHOLD)
 
@@ -69,9 +112,9 @@ tSlider = Slider(pylab.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0, 4000, DEFAU
 
 def update(val):
     mySlice = int(sSlider.val)
-    threshold = int(tSlider.val)
+    threshold = DEFAULT_THRESHOLD
     
-    masked, masked2 = processSlice(mySlice, threshold)
+    masked, masked2 = processSlice(mySlice)
     #masked, masked2 = maskedV[:,:,mySlice], maskedV2[:,:,mySlice]
     
     nbMasked = np.sum(masked2.mask)

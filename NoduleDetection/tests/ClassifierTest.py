@@ -58,9 +58,9 @@ def calculatePixelFeatures(fgen, x,y,z, level=1): #TODO move to fgen
 def generateProbabilityVolume(dfr, fgen, clf, level=1): #, points
     h, w, d = dfr.getVolumeShape()
    
-    h //= 8
-    w //= 8
-    d //= 8
+    h //= 2
+    w //= 2
+    d //= 4
     print h,w,d
     
     x, y, z = np.meshgrid(np.arange(h), np.arange(w), np.arange(d))
@@ -180,7 +180,7 @@ def calculateAllTrainingFeatures(rootPath, maxPaths=99999):
 allFeatures, allClasses = calculateAllTrainingFeatures("../data/LIDC-IDRI", maxPaths=2)
 
 #model = RandomForestClassifier(n_estimators=30)
-model = ExtraTreesClassifier(n_estimators=30)
+model = ExtraTreesClassifier(n_estimators=50)
 clf = clone(model)
 clf = model.fit(allFeatures, allClasses)
 scores = clf.score(allFeatures, allClasses)
@@ -194,16 +194,15 @@ print("Score: {}".format(scores))
 myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", 1)
 reader = XmlAnnotationReader(myPath)
 vData = reader.dfr.getVolumeData()
-sData = reader.dfr.getSlicePixelsRescaled(89)
+sData = reader.dfr.getSlicePixelsRescaled(50)
 fgen = FeatureGenerator(vData, reader.dfr.getVoxelShape())
 
 probImg, pixelList, masked = generateProbabilityVolume(reader.dfr, fgen, clf, level=1)
 #probImg, pixelList, masked = generateProbabilityImage(reader.dfr, fgen, clf, 89)
 
-probImgSlice = probImg[:,:,45]
-a=masked.mask
-print(masked.mask)
-maskedSlice = masked.mask[:,:,45]
+probImgSlice = probImg[:,:,50]
+mask = masked.mask
+maskedSlice = mask[:,:,50]
 
 pl.subplot(221)
 pl.imshow(sData, cmap=pl.gray())

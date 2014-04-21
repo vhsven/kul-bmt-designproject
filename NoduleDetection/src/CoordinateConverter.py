@@ -22,8 +22,16 @@ class CoordinateConverter:
         assert len(worldVector) == 4
         return np.dot(self.Inverse, worldVector).A1
     
+    def getPixelVectors(self, worldVectors):
+        for world in worldVectors:
+            yield self.getPixelVector(world)
+            
     def getWorldVector(self, pixelVector):
         if len(pixelVector) == 3:
             pixelVector = np.append(pixelVector, 1)
         assert len(pixelVector) == 4
         return np.dot(self.Matrix, pixelVector).A1
+    
+    def getWorldVectors(self, pixelVectors): #this can probably be done in 1 matrix multiplication
+        for pixel in pixelVectors:
+            yield self.getWorldVector(pixel)

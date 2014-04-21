@@ -7,6 +7,9 @@ myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298
 #myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
 reader = XmlAnnotationReader(myPath)
 
+#cc = reader.dfr.getCoordinateConverter()
+#cc.getWorldVector([x,y,z])
+
 for cx,cy,cz,r2 in reader.getNodulePositions():
     print(cx,cy,cz,r2)
 

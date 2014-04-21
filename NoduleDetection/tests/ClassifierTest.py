@@ -66,17 +66,15 @@ def generateProbabilityVolume(dfr, fgen, clf, level=1): #, points
     x, y, z = np.meshgrid(np.arange(h), np.arange(w), np.arange(d))
     x, y, z = x.flatten(), y.flatten(), z.flatten()
     points = np.vstack((x,y,z)).T
-    
-    
-    del x,y,z
     assert points.shape == (h*w*d,3)
-    #points = map(tuple, points) #convert numpy array to list of tuples
-    #featureLocations = deque()
+
+    del x,y,z
+    
+
     testFeatures = deque()
     for px,py,pz in points:
         pixelFeatures = calculatePixelFeatures(fgen, px, py, pz, level)
         testFeatures.append(pixelFeatures)
-        
 
     #featureLocations = np.array(featureLocations)
     testFeatures = np.array(testFeatures)
@@ -84,10 +82,9 @@ def generateProbabilityVolume(dfr, fgen, clf, level=1): #, points
     result = clf.predict_proba(testFeatures)
     
     probImg = np.zeros((h,w,d))
-    print probImg
-    print points
-    print result
-    probImg[points] = result[:,1]
+
+    print probImg[points[:,0], points[:,1], points[:,2]]
+    probImg[points[:,0], points[:,1], points[:,2]] = result[:,1]
     
     #linIndices = np.ravel_multi_index(featureLocations, dims=(h, w, d), order='C')
     #probImg.ravel()[linIndices] = result[:,1]

@@ -15,7 +15,7 @@ m,n,_ = reader.dfr.getVolumeShape()
 for nodule in reader.Nodules:
     print(nodule.ID)
     #nodule.regions.printRegions()
-    masks, c, r = nodule.regions.getRegionMasksCircle(m,n,0.5)
+    masks, c, r = nodule.regions.getRegionMasksCircle(m,n,0.33)
     #paths, masks = nodule.regions.getRegionMasksPolygon(m,n)
        
     for z in masks.keys():

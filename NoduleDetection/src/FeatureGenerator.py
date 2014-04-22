@@ -24,7 +24,8 @@ class FeatureGenerator: #TODO fix edge problems
         pixelFeatures = ()
         
         if self.Level >= 1:
-            pixelFeatures += self.getTrivialFeatures(x,y,z)
+            pixelFeatures += (self.getIntensity(x,y,z),)
+            pixelFeatures += self.getRelativePosition(x, y, z)
     
         if self.Level >= 2:
             pixelFeatures += self.getEdges(x, y, z)
@@ -66,12 +67,12 @@ class FeatureGenerator: #TODO fix edge problems
     ############################################################
     #featurevector[1]= abs/ref position and gray value
     ############################################################
-    def getTrivialFeatures(self, x, y, z):
+    def getIntensity(self, x, y, z):
+        return self.Data[x,y,z]
+    
+    def getRelativePosition(self, x, y, z):
         w,h,d = self.Data.shape
-
-        #return x, y, z, float(x)/w, float(y)/h, float(z)/d, self.Data[x,y,z]
-
-        return float(x)/w, float(y)/h, float(z)/d, self.Data[x,y,z]
+        return float(x)/w, float(y)/h, float(z)/d
     
     
     ############################################################

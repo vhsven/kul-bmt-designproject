@@ -3,14 +3,19 @@ import numpy.ma as ma #TODO work without masks?
 from collections import deque
 from DicomFolderReader import DicomFolderReader
 from FeatureGenerator import FeatureGenerator
+from msilib import Feature
 
 class Classifier:
     def __init__(self, myPath, clf, level=1):
-        self.clf = clf
         self.dfr = DicomFolderReader(myPath)
-        vData = self.dfr.getVolumeData()
-        self.fgen = FeatureGenerator(vData, self.dfr.getVoxelShape(), level)
+        self.setLevel(level, clf)
     
+    def setLevel(self, level, clf):
+        vData = self.dfr.getVolumeData()
+        voxelShape = self.dfr.getVoxelShape()
+        self.fgen = FeatureGenerator(vData, voxelShape, level)
+        self.clf = clf
+        
     @staticmethod
     def generatePixelList2D((h,w)):
         x, y = np.meshgrid(np.arange(h), np.arange(w))

@@ -12,14 +12,13 @@ class Trainer:
     def __init__(self, rootPath, maxPaths=99999, level=1):
         self.RootPath = rootPath
         self.MaxPaths = maxPaths
-        self.Level = level
         
-    def calculateSetTrainingFeatures(self, myPath):
+    def calculateSetTrainingFeatures(self, myPath, level):
         print("Processing '{}'".format(myPath))
         reader = XmlAnnotationReader(myPath)
         print("\tFound {} nodules.".format(len(reader.Nodules)))
         data = reader.dfr.getVolumeData()
-        fgen = FeatureGenerator(data, reader.dfr.getVoxelShape(), self.Level)
+        fgen = FeatureGenerator(data, reader.dfr.getVoxelShape(), level)
         finder = PixelFinder(reader)
         
         setFeatures = deque()
@@ -51,13 +50,13 @@ class Trainer:
         
         return setFeatures, setClasses
     
-    def calculateAllTrainingFeatures(self):
+    def calculateAllTrainingFeatures(self, level):
         allFeatures = None
         allClasses = None
         for myPath in DicomFolderReader.findPaths(self.RootPath, self.MaxPaths):
             if "LIDC-IDRI-0001" in myPath:
                 continue        
-            setFeatures, setClasses = self.calculateSetTrainingFeatures(myPath)
+            setFeatures, setClasses = self.calculateSetTrainingFeatures(myPath, level)
             if allFeatures is None:
                 allFeatures = setFeatures
                 allClasses = setClasses
@@ -70,11 +69,11 @@ class Trainer:
         
         return allFeatures, allClasses
     
-    def train(self):
-        allFeatures, allClasses = self.calculateAllTrainingFeatures()
+    def train(self, level):
+        allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
         #model = RandomForestClassifier(n_estimators=30)
-        model = ExtraTreesClassifier(n_estimators=30)
+        model = ExtraTreesClassifier() #n_estimators=30
         clf = clone(model)
         clf = model.fit(allFeatures, allClasses)
         scores = clf.score(allFeatures, allClasses)
@@ -83,8 +82,8 @@ class Trainer:
         
         return clf
     
-    def trainAndSave(self, myFile='../data/models/model.pkl'):
-        clf = self.train()
+    def trainAndSave(self, level, myFile='../data/models/model.pkl'):
+        clf = self.train(level)
         joblib.dump(clf, myFile)
         
     @staticmethod

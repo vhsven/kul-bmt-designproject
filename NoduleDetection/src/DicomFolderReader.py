@@ -7,6 +7,7 @@ from os import listdir, walk
 from os.path import isfile, join
 from CoordinateConverter import CoordinateConverter
 from Constants import DEFAULT_THRESHOLD, DEFAULT_WINDOW_SIZE #, ZOOM_FACTOR_3D
+from collections import deque
 
 class DicomFolderReader:
     Slices = []
@@ -122,26 +123,59 @@ class DicomFolderReader:
             
         return voxels
     
-    def processSlice(self, index, threshold, erosionWindow):
-        HU = self.getSlicePixelsRescaled(index)
-        
-        # select pixels in thorax wall
-        masked = ma.masked_greater(HU, threshold)
-        
-        # opening to remove small structures
-        newmask = binary_opening(masked.mask, selem=np.ones((9,9)))
+#     def processSlice(self, index, threshold, erosionWindow):
+#         HU = self.getSlicePixelsRescaled(index)
+#         
+#         # select pixels in thorax wall
+#         masked = ma.masked_greater(HU, threshold)
+#         
+#         # opening to remove small structures
+#         newmask = binary_opening(masked.mask, selem=np.ones((9,9)))
+#     
+#         # reconstruction to fill lungs (figure out how this works) 
+#         seed = np.copy(newmask)
+#         seed[1:-1, 1:-1] = newmask.max()
+#         newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
+#         
+#         # erode thorax walls slightly (no nodules in there)
+#         newmask = binary_erosion(newmask, selem=np.ones((erosionWindow,erosionWindow))).astype(np.int)
+#         
+#         masked = ma.array(HU, mask=np.logical_not(newmask))
+#         
+#         return masked
     
-        # reconstruction to fill lungs (figure out how this works) 
-        seed = np.copy(newmask)
-        seed[1:-1, 1:-1] = newmask.max()
-        newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
+    def getThresholdPixels(self):
+        w,h,d = self.getVolumeShape()
+    
+        # get a 3D stack of all masks of all slices
+        points = deque()
+        for z in range(0, d):
+            print z
+            HU = self.getSlicePixelsRescaled(z)
         
-        # erode thorax walls slightly (no nodules in there)
-        newmask = binary_erosion(newmask, selem=np.ones((erosionWindow,erosionWindow))).astype(np.int)
+            # select pixels in thorax wall
+            masked = ma.masked_greater(HU, DEFAULT_THRESHOLD)
+            
+            # opening to remove small structures
+            newmask = binary_opening(masked.mask, selem=np.ones((9,9)))
         
-        masked = ma.array(HU, mask=np.logical_not(newmask))
-        
-        return masked
+            # reconstruction to fill lungs (figure out how this works) 
+            seed = np.copy(newmask)
+            seed[1:-1, 1:-1] = newmask.max()
+            newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
+            
+            # erode thorax walls slightly (no nodules in there)
+            #newmask = binary_erosion(newmask, selem=np.ones((29,29))).astype(np.int)
+            
+            # get mask and calculate nonzero elements
+            xs, ys = np.where(newmask)
+            zs = [z] * len(xs)
+            xyz = np.vstack([xs, ys, zs])
+            Ind = zip(*xyz) #list of 3-tuples #TODO fix memory error
+            
+            points.append(Ind)
+            
+        return points
     
     def getMaskedSlice(self, index):
         if self.Masks[index] == None:

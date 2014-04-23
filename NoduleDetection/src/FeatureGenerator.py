@@ -8,9 +8,10 @@ import scipy.ndimage as nd
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 
 class FeatureGenerator: #TODO fix edge problems
-    def __init__(self, data, vshape):
+    def __init__(self, data, vshape, level=1):
         self.Data = data
         self.VoxelShape = vshape
+        self.Level = level
         self.Edges = None
         self.Blobs = None
         self.PixelCount = None
@@ -18,15 +19,60 @@ class FeatureGenerator: #TODO fix edge problems
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
     
+    def calculatePixelFeatures(self, x,y,z):
+        z = int(z)
+        pixelFeatures = ()
+        
+        if self.Level >= 1:
+            pixelFeatures += (self.getIntensity(x,y,z),)
+            pixelFeatures += self.getRelativePosition(x, y, z)
+    
+        if self.Level >= 2:
+            pixelFeatures += self.getEdges(x, y, z)
+        
+        if self.Level >= 3:
+            pass
+        
+        if self.Level >= 4:
+            pass
+        
+        #global 3D features
+        #getEdges = fgen.getEdges()
+        
+        #2D slice features (TODO only calculate once)
+        #sliceEntropy = fgen.image_entropy(z)
+        #entropy2 = fgen.pixelentropy(z)
+        #blobs = fgen.blobdetection(z)
+        
+                
+        #get pixel features from 3D features
+        #pixelFeatures += (getEdges[x,y,z],)
+        #get pixel features from slice features
+        #pixelFeatures += (sliceEntropy,)
+        #pixelFeatures += (entropy2[x,y],)
+        #for blob in blobs:
+        #    pixelFeatures += (blob[x,y],)
+        #pixel features
+        #pixelFeatures += (fgen.forbeniusnorm(x,y,z),)
+        #pixelFeatures += fgen.neighbours(x,y,z)
+        
+        #for windowSize in np.arange(3,MAX_FEAT_WINDOW,2):
+        #    pixelFeatures += fgen.greyvaluefrequency(x,y,z, windowSize)
+        #    pixelFeatures += fgen.averaging3D(x,y,z, windowSize)
+        #    pixelFeatures += fgen.greyvaluecharateristic(x,y,z, windowSize)
+        #    pixelFeatures += fgen.windowFeatures(x,y,z, windowSize)
+        
+        return pixelFeatures
+    
     ############################################################
     #featurevector[1]= abs/ref position and gray value
     ############################################################
-    def getTrivialFeatures(self, x, y, z):
+    def getIntensity(self, x, y, z):
+        return self.Data[x,y,z]
+    
+    def getRelativePosition(self, x, y, z):
         w,h,d = self.Data.shape
-
-        #return x, y, z, float(x)/w, float(y)/h, float(z)/d, self.Data[x,y,z]
-
-        return float(x)/w, float(y)/h, float(z)/d, self.Data[x,y,z]
+        return float(x)/w, float(y)/h, float(z)/d
     
     
     ############################################################
@@ -246,7 +292,7 @@ class FeatureGenerator: #TODO fix edge problems
         
         windowD=self.Data[x-valdown:x+valup,y-valdown:y+valup,z-valdown:z+valup]
         
-        # calculate 'getVolumeEdges' by substraction 
+        # calculate 'getEdges' by substraction 
         leftrow=windowD[:,0,:]
         rightrow=windowD[:,windowrowvalue-1,:]
         meanL=leftrow.mean()
@@ -254,11 +300,11 @@ class FeatureGenerator: #TODO fix edge problems
         gradLRmean=(rightrow-leftrow).mean()
         gradmeanLR=meanR-meanL
         
-        # calculate 'getVolumeEdges' by division
+        # calculate 'getEdges' by division
         divmeanLR=meanR*meanL
         divLRmean=(leftrow*rightrow).mean()
         
-        # calculate 'getVolumeEdges' by substraction 
+        # calculate 'getEdges' by substraction 
         toprow=windowD[0,:,:]
         bottomrow=windowD[windowrowvalue-1, :, :]
         Tmean=toprow.mean()
@@ -266,11 +312,11 @@ class FeatureGenerator: #TODO fix edge problems
         gradmeanUD=Tmean-Bmean
         gradUDmean=(toprow-bottomrow).mean()
         
-        # calculate 'getVolumeEdges' by division
+        # calculate 'getEdges' by division
         divUDmean=(toprow*bottomrow).mean()
         divmeanUD=Tmean*Bmean
               
-        # calculate 'getVolumeEdges' by substraction 
+        # calculate 'getEdges' by substraction 
         frontrow=windowD[:,:,0]
         backrow=windowD[:, :, windowrowvalue-1]
         Fmean=frontrow.mean()
@@ -278,7 +324,7 @@ class FeatureGenerator: #TODO fix edge problems
         gradmeanFB=Fmean-Bmean
         gradFBmean=(frontrow-backrow).mean()
         
-        # calculate 'getVolumeEdges' by division
+        # calculate 'getEdges' by division
         divFBmean=(frontrow*backrow).mean()
         divmeanFB=Fmean*Bmean
         
@@ -380,10 +426,10 @@ class FeatureGenerator: #TODO fix edge problems
     
     
     ############################################################
-    # feature[8]= getVolumeEdges: sobel
+    # feature[8]= getEdges: sobel
     ############################################################
     
-    def getVolumeEdges(self): #TODO perform window calculations on these
+    def getEdges(self, x, y, z): #TODO perform window calculations on these
         #import scipy
         #from scipy import ndimage
         #from scipy.ndimage.filters import generic_gradient_magnitude, sobel
@@ -395,7 +441,9 @@ class FeatureGenerator: #TODO fix edge problems
         if self.Edges == None:
             self.Edges = generic_gradient_magnitude(self.Data, sobel)
             
-        return self.Edges
+        #TODO calculate more edge features
+        
+        return self.Edges[x,y,z]
     
     ############################################################
     # feature[9]= blob detection with laplacian of gaussian

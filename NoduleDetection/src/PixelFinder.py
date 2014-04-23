@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import pylab as pl
 from Constants import MAX_FEAT_WINDOW
 
 class PixelFinder: #TODO use threshold mask
@@ -49,37 +50,22 @@ class PixelFinder: #TODO use threshold mask
                 xs, ys = np.where(mask)
                 for x, y in zip(xs, ys):
                     yield x, y, z
-
-# from XmlAnnotationReader import XmlAnnotationReader
-# myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
-# #myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490157381160200744295382098329/000000"
-# reader = XmlAnnotationReader(myPath)    
-# finder = PixelFinder(reader)
-# 
-# pixels = list(finder.findNodulePixels())
-# print("Found {} nodule pixels".format(len(pixels)))
-# for x,y,z in pixels:
-#     print x,y,z
-    
-#for x,y,z in finder.findRandomNonNodulePixels(500):
-#    print(x,y,z)
-
-############## STORAGE ########################        
-# store trainingsdata for further use
-# import pickle
-# pixelTraining001 = pixelTraining # give specific name to trainingsset
-# f = open('pixelTraining_LIDC001.pkl', 'wb') # give name to document
-# pickle.dump(pixelTraining001, f, pickle.HIGHEST_PROTOCOL)
-# f.close()
-
-######################## FOR LARGE DATASETS
-# import tables
-# h5file = tables.openFile('test.h5', mode='w', title="Test Array")
-# root = h5file.root
-# h5file.createArray(root, "test", a)
-# h5file.close()     
-                 
-######################## OPEN pickle
-#pixelTraining2 = pickle.load( open( 'pixelTraining_LIDC001.pkl', 'rb') )
-#print(np.array_equal(pixelTraining2, pixelTraining001))
-
+                    
+    def plotHistograms(self):
+        data = self.Reader.dfr.getVolumeData()
+        pixelsP = list(self.findNodulePixels(radiusFactor=0.33))
+        pixelsN = list(self.findRandomNonNodulePixels(len(pixelsP)))
+        
+        xsp,ysp,zsp = zip(*pixelsP)
+        xsn,ysn,zsn = zip(*pixelsN)
+        
+        intensitiesP = data[xsp,ysp,zsp]
+        intensitiesN = data[xsn,ysn,zsn]
+        
+        pl.subplot(121)
+        pl.hist(intensitiesP, 10)
+        pl.title('Histogram of positive (nodule) pixels')
+        pl.subplot(122)
+        pl.hist(intensitiesN, 10)
+        pl.title('Histogram of negative (non-nodule) pixels')
+        pl.show()

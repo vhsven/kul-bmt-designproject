@@ -13,7 +13,7 @@ for i in np.arange(0, dfr.NbSlices, 10):
     pylab.imshow(img, cmap=pylab.gray())
     
     pylab.subplot(122)
-    p, getVolumeEdges = np.histogram(img, 100)
-    pylab.bar(getVolumeEdges[:-1], p)
+    p, getEdges = np.histogram(img, 100)
+    pylab.bar(getEdges[:-1], p)
     
     pylab.show()

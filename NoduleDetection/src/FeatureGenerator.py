@@ -2,6 +2,7 @@ import scipy.stats
 import numpy as np
 import math
 import collections
+from collections import deque
 from skimage.filter.rank import entropy
 from skimage.morphology import disk
 import scipy.ndimage as nd
@@ -19,19 +20,34 @@ class FeatureGenerator: #TODO fix edge problems
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
     
+    def getAllFeatures(self, mask3D):
+        if self.Level == 1: #TODO find better way
+            testFeatures = self.getIntensityByMask(mask3D)
+        elif self.Level == 2:
+            intFeatures = self.getIntensityByMask(mask3D)
+            posFeatures = self.getRelativePositionByMask(mask3D)
+            testFeatures = np.hstack([intFeatures, posFeatures])
+        else:
+            testFeatures = deque()
+            xs,ys,zs = np.where(mask3D)
+            for px,py,pz in zip(xs,ys,zs):
+                pixelFeatures = self.calculatePixelFeatures(px, py, pz)
+                testFeatures.append(pixelFeatures)
+        
+        return np.array(testFeatures)
+    
     def calculatePixelFeatures(self, x,y,z):
         z = int(z)
         pixelFeatures = ()
         
         if self.Level >= 1:
             pixelFeatures += (self.getIntensity(x,y,z),)
-            pixelFeatures += self.getRelativePosition(x, y, z)
     
         if self.Level >= 2:
-            pixelFeatures += self.getEdges(x, y, z)
+            pixelFeatures += self.getRelativePosition(x, y, z)
         
         if self.Level >= 3:
-            pass
+            pixelFeatures += self.getEdges(x, y, z)
         
         if self.Level >= 4:
             pass
@@ -70,10 +86,23 @@ class FeatureGenerator: #TODO fix edge problems
     def getIntensity(self, x, y, z):
         return self.Data[x,y,z]
     
-    def getRelativePosition(self, x, y, z):
-        w,h,d = self.Data.shape
-        return float(x)/w, float(y)/h, float(z)/d
+    def getIntensityByMask(self, mask3D):
+        intensities = self.Data[mask3D]
+        nbInt = len(intensities)
+        return intensities.reshape((nbInt, 1))
     
+    def getRelativePosition(self, x, y, z):
+        h,w,d = self.Data.shape
+        return float(x)/h, float(y)/w, float(z)/d
+    
+    def getRelativePositionByMask(self, mask3D):
+        h,w,d = self.Data.shape
+        xs, ys, zs = np.where(mask3D)
+        xsr = xs / float(h)
+        ysr = ys / float(w)
+        zsr = zs / float(d)
+        #coords = zip(xs, ys, zs)
+        return np.vstack([xsr,ysr,zsr]).T    
     
     ############################################################
     #featurevector[2]= greyvalue + related features in window

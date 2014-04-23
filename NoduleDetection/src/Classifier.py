@@ -6,9 +6,13 @@ from FeatureGenerator import FeatureGenerator
 from msilib import Feature
 
 class Classifier:
-    def __init__(self, myPath, clf, level=1):
+    def __init__(self, myPath):
         self.dfr = DicomFolderReader(myPath)
-        self.setLevel(level, clf)
+        self.clf = None
+        self.fgen = None
+    
+    def isLevelset(self):
+        return self.fgen is not None and self.clf is not None
     
     def setLevel(self, level, clf):
         vData = self.dfr.getVolumeData()
@@ -36,36 +40,37 @@ class Classifier:
         del x,y,z
         return points
     
-    def generateProbabilityVolume(self, shape, points):
-        testFeatures = deque()
-        for px,py,pz in points:
-            pixelFeatures = self.fgen.calculatePixelFeatures(px, py, pz)
-            testFeatures.append(pixelFeatures)
-    
-        testFeatures = np.array(testFeatures)
+    def generateProbabilityVolume(self, mask3D, threshold=0.01):
+        if not self.isLevelset():
+            raise ValueError("Level not set")
+        
+        testFeatures = self.fgen.getAllFeatures(mask3D)
         result = self.clf.predict_proba(testFeatures)
         
-        probImg = np.zeros(shape)
-        probImg[points[:,0], points[:,1], points[:,2]] = result[:,1]
+        probImg = np.zeros(mask3D.shape)
+        #probImg[points[:,0], points[:,1], points[:,2]] = result[:,1]
+        probImg[mask3D] = result[:,1]
         
-        masked = ma.masked_greater(probImg, 0.01)
+        mask = ma.masked_greater(probImg, threshold).mask
         
-        #TODO return list of points for use in next cascade
-        
-        return probImg, masked
+        return probImg, mask
     
-    def generateProbabilityImage(self, shape, points, mySlice):    
+    def generateProbabilityImage(self, mask2D, mySlice, threshold=0.01):
+        if not self.isLevelset():
+            raise ValueError("Level not set")
+        
         testFeatures = deque()
-        for px,py in points:
+        for px,py in zip(np.where(mask2D)):
             pixelFeatures = self.fgen.calculatePixelFeatures(px, py, mySlice)
             testFeatures.append(pixelFeatures)
     
         testFeatures = np.array(testFeatures)
         result = self.clf.predict_proba(testFeatures)
         
-        probImg = np.zeros(shape)
-        probImg[points[:,0], points[:,1]] = result[:,1]
+        probImg = np.zeros(mask2D.shape)
+        #probImg[points[:,0], points[:,1]] = result[:,1]
+        probImg[mask2D] = result[:, 1]
         
-        masked = ma.masked_greater(probImg, 0.01)
+        mask = ma.masked_greater(probImg, threshold).mask
         
-        return probImg, masked
+        return probImg, mask

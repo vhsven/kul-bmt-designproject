@@ -69,3 +69,9 @@ class PixelFinder: #TODO use threshold mask
         pl.hist(intensitiesN, 10)
         pl.title('Histogram of negative (non-nodule) pixels')
         pl.show()
+        
+#from XmlAnnotationReader import XmlAnnotationReader
+#from PixelFinder import PixelFinder
+#reader = XmlAnnotationReader(myPath)
+#finder = PixelFinder(reader)
+#finder.plotHistograms()

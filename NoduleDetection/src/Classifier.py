@@ -1,9 +1,9 @@
 import numpy as np
-import numpy.ma as ma #TODO work without masks?
+import numpy.ma as ma
 from collections import deque
 from DicomFolderReader import DicomFolderReader
 from FeatureGenerator import FeatureGenerator
-from msilib import Feature
+#from msilib import Feature
 
 class Classifier:
     def __init__(self, myPath):

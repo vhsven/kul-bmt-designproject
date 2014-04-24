@@ -3,9 +3,22 @@ import numpy as np
 import pylab as pl
 from Constants import MAX_FEAT_WINDOW
 
-class PixelFinder: #TODO use threshold mask
+class PixelFinder:
     def __init__(self, xmlReader):
         self.Reader = xmlReader
+        self.NbNodules = len(xmlReader.Nodules)
+        self.PixelCacheP = None
+        self.PixelCacheN = None
+    
+    def getLists(self, method='circle', radiusFactor=1.0):
+        if self.PixelCacheP is None:
+            self.PixelCacheP = list(self.findNodulePixels(method, radiusFactor))
+            
+        if self.PixelCacheN is None:
+            nbPixels = len(self.PixelCacheP)
+            self.PixelCacheN = list(self.findRandomNonNodulePixels(nbPixels))
+            
+        return self.PixelCacheP, self.PixelCacheN
         
     ############# NEW METHOD ####################
     # generate random x,y,z
@@ -14,9 +27,14 @@ class PixelFinder: #TODO use threshold mask
     # if it is larger then store in NegativeList, otherwise store in PositiveList
     def findRandomNonNodulePixels(self, NumberPixelNeeded):
         # we generate a random number for x,y,z depending on the scandimensions
+        #print("\tActually searching for non-nodule pixels.")
         maxXsize, maxYsize, maxZsize = self.Reader.dfr.getVolumeShape()
         
+        nbIterations = 0
         while NumberPixelNeeded > 0:
+            nbIterations += 1
+            if nbIterations > NumberPixelNeeded * 10000:
+                raise Exception("Can't find enough good random pixels.")
             x = random.randint(MAX_FEAT_WINDOW,maxXsize-MAX_FEAT_WINDOW-1) #TODO find more elegant solution
             y = random.randint(MAX_FEAT_WINDOW,maxYsize-MAX_FEAT_WINDOW-1)
             z = random.randint(MAX_FEAT_WINDOW,maxZsize-MAX_FEAT_WINDOW-1)
@@ -38,6 +56,7 @@ class PixelFinder: #TODO use threshold mask
             yield x, y, z
     
     def findNodulePixels(self, method='circle', radiusFactor=1.0):
+        #print("\tActually searching for nodule pixels.")
         m, n, _ = self.Reader.dfr.getVolumeShape()
         for nodule in self.Reader.Nodules:
             if method == 'circle':

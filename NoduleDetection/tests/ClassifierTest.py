@@ -61,7 +61,7 @@ for level in range(1, 3):
      
     h,w,d = c.dfr.getVolumeShape()
     #axes: left, bottom, width, height
-    sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, d-1, 90, valfmt='%1.0f')
+    sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, d-1, 1, valfmt='%1.0f')
     tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, 0.5)
      
     sSlider.on_changed(update)

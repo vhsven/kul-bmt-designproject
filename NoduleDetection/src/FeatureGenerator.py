@@ -4,9 +4,8 @@ import numpy as np
 import math
 import collections
 from collections import deque
-from skimage import img_as_ubyte
 from skimage.filter.rank import entropy
-from skimage.morphology import disk, ball
+from skimage.morphology import disk
 import scipy.ndimage as nd
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 
@@ -35,8 +34,8 @@ class FeatureGenerator: #TODO fix edge problems
             lvl1Features = self.getIntensityByMask(mask3D)
             #posFeatures = self.getRelativePositionByMask(mask3D)
             lvl2Features = self.getRelativeZByMask(mask3D)
-            print lvl1Features.shape
-            print lvl2Features.shape
+            #print lvl1Features.shape
+            #print lvl2Features.shape
             testFeatures = np.hstack([lvl1Features, lvl2Features])
         elif self.Level == 3:
             lvl1Features = self.getIntensityByMask(mask3D)
@@ -126,7 +125,7 @@ class FeatureGenerator: #TODO fix edge problems
         return float(z)/d
     
     def getRelativeZByMask(self, mask3D):
-        _,_,d = self.Data.shape
+        _ ,_ ,d = self.Data.shape
         _, _, zs = np.where(mask3D)
         zsr = zs / float(d)
         

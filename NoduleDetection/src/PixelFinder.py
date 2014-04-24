@@ -2,23 +2,28 @@ import random
 import numpy as np
 import pylab as pl
 from Constants import MAX_FEAT_WINDOW
+from XmlAnnotationReader import XmlAnnotationReader
 
 class PixelFinder:
-    def __init__(self, xmlReader):
-        self.Reader = xmlReader
-        self.NbNodules = len(xmlReader.Nodules)
+    def __init__(self, myPath, cc):
+        self.Reader = XmlAnnotationReader(myPath, cc)
         self.PixelCacheP = None
         self.PixelCacheN = None
+        
+    def __del__(self):
+        del self.Reader
+        del self.PixelCacheP
+        del self.PixelCacheN
     
-    def getLists(self, method='circle', radiusFactor=1.0):
+    def getLists(self, shape, method='circle', radiusFactor=1.0):
         if self.PixelCacheP is None:
             print("\tSearching for nodule pixels.")
-            self.PixelCacheP = list(self.findNodulePixels(method, radiusFactor))
+            self.PixelCacheP = list(self.findNodulePixels(shape, method, radiusFactor))
             
         if self.PixelCacheN is None:
             print("\tSearching for non-nodule pixels.")
             nbPixels = len(self.PixelCacheP)
-            self.PixelCacheN = list(self.findRandomNonNodulePixels(nbPixels))
+            self.PixelCacheN = list(self.findRandomNonNodulePixels(shape, nbPixels))
             
         return self.PixelCacheP, self.PixelCacheN
         
@@ -27,12 +32,12 @@ class PixelFinder:
     # get center,r from XmlAnnotationReader.GetNodulePosition()
     # check for every x,y,z whether the distance between x,y,z and every possible center is larger than e.g. 2r
     # if it is larger then store in NegativeList, otherwise store in PositiveList
-    def findRandomNonNodulePixels(self, NumberPixelNeeded):
+    def findRandomNonNodulePixels(self, shape, nbNeeded):
         # we generate a random number for x,y,z depending on the scandimensions
-        maxXsize, maxYsize, maxZsize = self.Reader.dfr.getVolumeShape()
+        maxXsize, maxYsize, maxZsize = shape
         
         nbIterations = 0
-        while NumberPixelNeeded > 0:
+        while nbNeeded > 0:
             nbIterations += 1
             if nbIterations > 10000:
                 raise Exception("Can't find enough good random pixels in volume {}x{}x{}.".format(maxXsize, maxYsize, maxZsize))
@@ -53,17 +58,17 @@ class PixelFinder:
                 continue
             
             nbIterations = 0
-            NumberPixelNeeded -= 1
+            nbNeeded -= 1
             
             yield x, y, z
     
-    def findNodulePixels(self, method='circle', radiusFactor=1.0):
-        m, n, _ = self.Reader.dfr.getVolumeShape()
+    def findNodulePixels(self, shape, method='circle', radiusFactor=1.0):
+        m,n,_ = shape
         for nodule in self.Reader.Nodules:
             if method == 'circle':
-                masks, _, _ = nodule.regions.getRegionMasksCircle(m,n, radiusFactor)
+                masks, _, _ = nodule.Regions.getRegionMasksCircle(m,n, radiusFactor)
             elif method == 'polygon':
-                _, masks = nodule.regions.getRegionMasksPolygon(m,n)
+                _, masks = nodule.Regions.getRegionMasksPolygon(m,n)
             else:
                 raise ValueError('unsupported method')
             for z, mask in masks.iteritems():
@@ -71,8 +76,7 @@ class PixelFinder:
                 for x, y in zip(xs, ys):
                     yield x, y, z
                     
-    def plotHistograms(self):
-        data = self.Reader.dfr.getVolumeData()
+    def plotHistograms(self, data):
         pixelsP = list(self.findNodulePixels(radiusFactor=0.33))
         pixelsN = list(self.findRandomNonNodulePixels(len(pixelsP)))
         
@@ -89,9 +93,9 @@ class PixelFinder:
         pl.hist(intensitiesN, 10)
         pl.title('Histogram of negative (non-nodule) pixels')
         pl.show()
-        
-#from XmlAnnotationReader import XmlAnnotationReader
-#from PixelFinder import PixelFinder
-#reader = XmlAnnotationReader(myPath)
-#finder = PixelFinder(reader)
-#finder.plotHistograms()
+
+#from DicomFolderReader import DicomFolderReader
+#dfr = DicomFolderReader(myPath)
+#data = dfr.getVolumeData()   
+#finder = PixelFinder(myPath)
+#finder.plotHistograms(data)

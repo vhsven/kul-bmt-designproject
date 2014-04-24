@@ -14,22 +14,22 @@ m,n,_ = reader.dfr.getVolumeShape()
 
 for nodule in reader.Nodules:
     print(nodule.ID)
-    #nodule.regions.printRegions()
-    masks, c, r = nodule.regions.getRegionMasksCircle(m,n,0.33)
-    #paths, masks = nodule.regions.getRegionMasksPolygon(m,n)
+    #nodule.Regions.printRegions()
+    masks, c, r = nodule.Regions.getRegionMasksCircle(m,n,0.33)
+    #paths, masks = nodule.Regions.getRegionMasksPolygon(m,n)
        
     for z in masks.keys():
         mask = masks[z]
-        mySlice = reader.dfr.getSlicePixelsRescaled(int(z))
+        mySlice = reader.dfr.getSliceDataRescaled(int(z))
         mask = np.logical_not(mask)
         maskedSlice = ma.array(mySlice, mask=mask)
         pylab.imshow(maskedSlice, cmap=pylab.gray())
         pylab.show()
     
-#     mask = nodule.regions.getRegionMasksSphere(cc)
+#     mask = nodule.Regions.getRegionMasksSphere(cc)
 #     for z in range(0, mask.shape[2]):
 #         mask2D = mask[:,:,z]
-#         mySlice = reader.dfr.getSlicePixelsRescaled(int(z))
+#         mySlice = reader.dfr.getSliceDataRescaled(int(z))
 #         mask2D = np.logical_not(mask2D)
 #         maskedSlice = ma.array(mySlice, mask=mask2D)
 #         pylab.imshow(maskedSlice, cmap=pylab.gray())

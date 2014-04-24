@@ -39,6 +39,7 @@ class Trainer:
         
         #Calculate features of nodule pixels
         pixelsP, pixelsN = finder.getLists(radiusFactor=0.33)
+        print("\tProcessing pixels...")
         nbNodulePixels = len(pixelsP)
         for x,y,z in pixelsP:
             pixelFeatures = fgen.calculatePixelFeatures(x, y, z)

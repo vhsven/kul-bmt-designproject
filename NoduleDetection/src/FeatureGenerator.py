@@ -32,12 +32,17 @@ class FeatureGenerator: #TODO fix edge problems
         if self.Level == 1: #TODO find better way
             testFeatures = self.getIntensityByMask(mask3D)
         elif self.Level == 2:
-            intFeatures = self.getIntensityByMask(mask3D)
+            lvl1Features = self.getIntensityByMask(mask3D)
             #posFeatures = self.getRelativePositionByMask(mask3D)
-            entFeatures = self.getEntropyByMask(mask3D, windowSize=5)
-            print intFeatures.shape
-            print entFeatures.shape
-            testFeatures = np.hstack([intFeatures, entFeatures])
+            lvl2Features = self.getRelativeZByMask(mask3D)
+            print lvl1Features.shape
+            print lvl2Features.shape
+            testFeatures = np.hstack([lvl1Features, lvl2Features])
+        elif self.Level == 3:
+            lvl1Features = self.getIntensityByMask(mask3D)
+            lvl2Features = self.getRelativeZByMask(mask3D)
+            lvl3Features = self.getEntropyByMask(mask3D, windowSize=5)
+            testFeatures = np.hstack([lvl1Features, lvl2Features, lvl3Features])
         else:
             testFeatures = deque()
             xs,ys,zs = np.where(mask3D)
@@ -56,13 +61,13 @@ class FeatureGenerator: #TODO fix edge problems
     
         if self.Level >= 2:
             #pixelFeatures += self.getRelativePosition(x, y, z)
-            pixelFeatures += (self.getEntropy(x,y,z, windowSize=5),)
+            pixelFeatures += (self.getRelativeZ(z),)
         
         if self.Level >= 3:
-            pixelFeatures += (self.getEdges(x, y, z),)
+            pixelFeatures += (self.getEntropy(x,y,z, windowSize=5),)
         
         if self.Level >= 4:
-            pass
+            pixelFeatures += (self.getEdges(x, y, z),)
         
         #global 3D features
         #getEdges = fgen.getEdges()
@@ -100,8 +105,8 @@ class FeatureGenerator: #TODO fix edge problems
     
     def getIntensityByMask(self, mask3D):
         intensities = self.Data[mask3D]
-        nbInt = len(intensities)
-        return intensities.reshape((nbInt, 1))
+        count = len(intensities)
+        return intensities.reshape((count, 1))
     
     def getRelativePosition(self, x, y, z):
         h,w,d = self.Data.shape
@@ -114,7 +119,19 @@ class FeatureGenerator: #TODO fix edge problems
         ysr = ys / float(w)
         zsr = zs / float(d)
         #coords = zip(xs, ys, zs)
-        return np.vstack([xsr,ysr,zsr]).T    
+        return np.vstack([xsr,ysr,zsr]).T
+    
+    def getRelativeZ(self, z):
+        _,_,d = self.Data.shape
+        return float(z)/d
+    
+    def getRelativeZByMask(self, mask3D):
+        _,_,d = self.Data.shape
+        _, _, zs = np.where(mask3D)
+        zsr = zs / float(d)
+        
+        count = len(zsr)
+        return zsr.reshape((count, 1))
     
     ############################################################
     #featurevector[2]= greyvalue + related features in window
@@ -378,9 +395,10 @@ class FeatureGenerator: #TODO fix edge problems
     # feature[6]= sliceEntropy calculation (disk window or entire image)
     ############################################################
     def getEntropy(self, x, y, z, windowSize):
-        mySlice = self.Data[:,:,z].astype('uint8')
-        entropySlice = entropy(mySlice, disk(windowSize))
-        return entropySlice[x,y]
+        #mySlice = self.Data[:,:,z].astype('uint8')
+        #entropySlice = entropy(mySlice, disk(windowSize))
+        #return entropySlice[x,y]
+        return 0
         
     def getEntropyByMask(self, mask3D, windowSize):
         sys.stdout.write("Calculating entropy")

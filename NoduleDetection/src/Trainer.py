@@ -12,29 +12,44 @@ class Trainer:
     def __init__(self, rootPath, maxPaths=99999, level=1):
         self.RootPath = rootPath
         self.MaxPaths = maxPaths
+        #self.PixelFinders = {}
         
-    def calculateSetTrainingFeatures(self, myPath, level):
-        print("Processing '{}'".format(myPath))
+    #save pixelfinders so we don't have to calculate nodule pixels more than once
+    # --> MemoryError
+    def getPixelFinder(self, myPath):
+#         if myPath not in self.PixelFinders.keys():
+#             reader = XmlAnnotationReader(myPath)
+#             self.PixelFinders[myPath] = PixelFinder(reader)
+#         
+#         return self.PixelFinders[myPath]
         reader = XmlAnnotationReader(myPath)
-        print("\tFound {} nodules.".format(len(reader.Nodules)))
-        data = reader.dfr.getVolumeData()
-        fgen = FeatureGenerator(data, reader.dfr.getVoxelShape(), level)
-        finder = PixelFinder(reader)
+        return PixelFinder(reader)
+            
+    def calculateSetTrainingFeatures(self, myPath, level):
+        finder = self.getPixelFinder(myPath)
+        dfr = finder.Reader.dfr
+        data = dfr.getVolumeData()
+        vshape = dfr.getVoxelShape()
+        fgen = FeatureGenerator(data, vshape, level)
+        
+        print("Processing '{}'".format(myPath))
+        print("\tFound {} nodules.".format(finder.NbNodules))
         
         setFeatures = deque()
         
-        #Calculate features of nodule pixels 
-        nbNodulePixels = 0
-        for x,y,z in finder.findNodulePixels(radiusFactor=0.33):
-            nbNodulePixels += 1
+        #Calculate features of nodule pixels
+        pixelsP, pixelsN = finder.getLists(radiusFactor=0.33)
+        nbNodulePixels = len(pixelsP)
+        for x,y,z in pixelsP:
             pixelFeatures = fgen.calculatePixelFeatures(x, y, z)
             setFeatures.append(pixelFeatures)
-        print("\tFound {} nodules pixels.".format(nbNodulePixels))
+        print("\tProcessed {} nodules pixels.".format(nbNodulePixels))
         
         #Calculate allFeatures of random non -nodule pixels
-        for x,y,z in finder.findRandomNonNodulePixels(nbNodulePixels):
+        for x,y,z in pixelsN:
             pixelFeatures = fgen.calculatePixelFeatures(x, y, z)
             setFeatures.append(pixelFeatures)
+        print("\tProcessed {} random non-nodules pixels.".format(nbNodulePixels))
         
         setFeatures = np.array(setFeatures)
         
@@ -46,7 +61,6 @@ class Trainer:
         del finder
         del fgen
         del data
-        del reader
         
         return setFeatures, setClasses
     
@@ -72,6 +86,7 @@ class Trainer:
     def train(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
+        print("Training classifier...")
         #model = RandomForestClassifier(n_estimators=30)
         model = ExtraTreesClassifier() #n_estimators=30
         clf = clone(model)

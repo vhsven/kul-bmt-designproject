@@ -3,8 +3,9 @@ from mpl_toolkits.mplot3d import Axes3D  # @UnresolvedImport @UnusedImport works
 from FeatureGenerator import FeatureGenerator
 from XmlAnnotationReader import XmlAnnotationReader
 from PixelFinder import PixelFinder
+from DicomFolderReader import DicomFolderReader
 
-myPath = "../data/LIDC-IDRI/LIDC-IDRI-0001/1.3.6.1.4.1.14519.5.2.1.6279.6001.298806137288633453246975630178/000000"
+myPath = DicomFolderReader.findPath("../data/LIDC-IDRI/", 1) 
 reader = XmlAnnotationReader(myPath)
 matrix = reader.dfr.getWorldMatrix()
 print(matrix)

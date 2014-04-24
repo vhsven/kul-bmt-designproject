@@ -1,9 +1,12 @@
+import sys
 import scipy.stats
 import numpy as np
 import math
 import collections
+from collections import deque
+from skimage import img_as_ubyte
 from skimage.filter.rank import entropy
-from skimage.morphology import disk
+from skimage.morphology import disk, ball
 import scipy.ndimage as nd
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 
@@ -14,10 +17,35 @@ class FeatureGenerator: #TODO fix edge problems
         self.Level = level
         self.Edges = None
         self.Blobs = None
+        self.Entropy = {} #TODO not used?
         self.PixelCount = None
         
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
+    
+    def getAllFeatures(self, mask3D):
+        nbVoxels = mask3D.sum()
+        h,w,d = mask3D.shape
+        totalVoxels = h*w*d
+        ratio = 100.0 * nbVoxels / totalVoxels
+        print("Generating features for {0} ({1:.2f}%) voxels.".format(nbVoxels, ratio))
+        if self.Level == 1: #TODO find better way
+            testFeatures = self.getIntensityByMask(mask3D)
+        elif self.Level == 2:
+            intFeatures = self.getIntensityByMask(mask3D)
+            #posFeatures = self.getRelativePositionByMask(mask3D)
+            entFeatures = self.getEntropyByMask(mask3D, windowSize=5)
+            print intFeatures.shape
+            print entFeatures.shape
+            testFeatures = np.hstack([intFeatures, entFeatures])
+        else:
+            testFeatures = deque()
+            xs,ys,zs = np.where(mask3D)
+            for px,py,pz in zip(xs,ys,zs):
+                pixelFeatures = self.calculatePixelFeatures(px, py, pz)
+                testFeatures.append(pixelFeatures)
+        
+        return np.array(testFeatures)
     
     def calculatePixelFeatures(self, x,y,z):
         z = int(z)
@@ -25,13 +53,13 @@ class FeatureGenerator: #TODO fix edge problems
         
         if self.Level >= 1:
             pixelFeatures += (self.getIntensity(x,y,z),)
-            pixelFeatures += self.getRelativePosition(x, y, z)
     
         if self.Level >= 2:
-            pixelFeatures += self.getEdges(x, y, z)
+            #pixelFeatures += self.getRelativePosition(x, y, z)
+            pixelFeatures += (self.getEntropy(x,y,z, windowSize=5),)
         
         if self.Level >= 3:
-            pass
+            pixelFeatures += (self.getEdges(x, y, z),)
         
         if self.Level >= 4:
             pass
@@ -70,10 +98,23 @@ class FeatureGenerator: #TODO fix edge problems
     def getIntensity(self, x, y, z):
         return self.Data[x,y,z]
     
-    def getRelativePosition(self, x, y, z):
-        w,h,d = self.Data.shape
-        return float(x)/w, float(y)/h, float(z)/d
+    def getIntensityByMask(self, mask3D):
+        intensities = self.Data[mask3D]
+        nbInt = len(intensities)
+        return intensities.reshape((nbInt, 1))
     
+    def getRelativePosition(self, x, y, z):
+        h,w,d = self.Data.shape
+        return float(x)/h, float(y)/w, float(z)/d
+    
+    def getRelativePositionByMask(self, mask3D):
+        h,w,d = self.Data.shape
+        xs, ys, zs = np.where(mask3D)
+        xsr = xs / float(h)
+        ysr = ys / float(w)
+        zsr = zs / float(d)
+        #coords = zip(xs, ys, zs)
+        return np.vstack([xsr,ysr,zsr]).T    
     
     ############################################################
     #featurevector[2]= greyvalue + related features in window
@@ -336,28 +377,32 @@ class FeatureGenerator: #TODO fix edge problems
     ############################################################
     # feature[6]= sliceEntropy calculation (disk window or entire image)
     ############################################################
-    def pixelentropy(self, z): #TODO fix this -> astype
-        # calculates the sliceEntropy of each pixel in the slice in comparison to its surroundings
-        image = self.getSlice(z)
-        #pylab.imshow(image, cmap=pylab.gray())
-        #pylab.show()
-        image = image.view('uint8')
-        image = image[:, 1::2]
-    #     fig, (ax0, ax1) = plt.subplots(ncols=2, figsize=(10, 4))
+    def getEntropy(self, x, y, z, windowSize):
+        mySlice = self.Data[:,:,z].astype('uint8')
+        entropySlice = entropy(mySlice, disk(windowSize))
+        return entropySlice[x,y]
         
-    #     img0 = ax0.imshow(image, cmap=plt.cm.gray)
-    #     ax0.set_title('Image')
-    #     ax0.axis('off')
-    #     plt.colorbar(img0, ax=ax0)
+    def getEntropyByMask(self, mask3D, windowSize):
+        sys.stdout.write("Calculating entropy")
+        _,_,d = self.Data.shape
+        returnValue = np.array([])
+        for z in range(0,d):
+            sys.stdout.write('.')
+            mySlice = self.Data[:,:,z].astype('uint8')
+            #mySlice = img_as_ubyte(mySlice)
+            mask = mask3D[:,:,z]
+            entropySlice = entropy(mySlice, disk(windowSize))
+            result = entropySlice[mask]
+            returnValue = np.append(returnValue, result)
         
-        pixelentr=entropy(image, disk(5))
-    #     print(imentropy)
-    #     img1 = ax1.imshow(imentropy, cmap=plt.cm.jet)
-    #     ax1.set_title('Entropy')
-    #     ax1.axis('off')
-    #     plt.colorbar(img1, ax=ax1)
-    #     plt.show()
-        return pixelentr #returns a matrix with sliceEntropy values for each pixel
+        print("")
+        nbValues = len(returnValue)
+        return returnValue.reshape(nbValues, 1)
+        #if windowSize not in self.Entropy.keys():
+        #    data8 = self.Data.astype('uint8')
+        #    self.Entropy[windowSize] = entropy(data8, ball(windowSize))
+        
+        #return self.Entropy[windowSize][mask3D].T
     
     
     

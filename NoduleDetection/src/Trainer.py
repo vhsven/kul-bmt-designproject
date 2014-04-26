@@ -1,7 +1,6 @@
 import numpy as np
 from collections import deque
 from FeatureGenerator import FeatureGenerator
-from XmlAnnotationReader import XmlAnnotationReader
 from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
 from sklearn import clone
@@ -9,36 +8,27 @@ from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier  # @Un
 from sklearn.externals import joblib
 
 class Trainer:
-    def __init__(self, rootPath, maxPaths=99999, level=1):
+    def __init__(self, rootPath, maxPaths=99999):
         self.RootPath = rootPath
         self.MaxPaths = maxPaths
-        #self.PixelFinders = {}
-        
-    #save pixelfinders so we don't have to calculate nodule pixels more than once
-    # --> MemoryError
-    def getPixelFinder(self, myPath):
-#         if myPath not in self.PixelFinders.keys():
-#             reader = XmlAnnotationReader(myPath)
-#             self.PixelFinders[myPath] = PixelFinder(reader)
-#         
-#         return self.PixelFinders[myPath]
-        reader = XmlAnnotationReader(myPath)
-        return PixelFinder(reader)
             
     def calculateSetTrainingFeatures(self, myPath, level):
-        finder = self.getPixelFinder(myPath)
-        dfr = finder.Reader.dfr
+        dfr = DicomFolderReader(myPath)
+        cc = dfr.getCoordinateConverter()
+        finder = PixelFinder(myPath, cc)
         data = dfr.getVolumeData()
+        shape = dfr.getVolumeShape()
         vshape = dfr.getVoxelShape()
         fgen = FeatureGenerator(data, vshape, level)
-        
+        nbNodules = len(finder.Reader.Nodules)
         print("Processing '{}'".format(myPath))
-        print("\tFound {} nodules.".format(finder.NbNodules))
+        print("\tFound {} nodules.".format(nbNodules))
         
         setFeatures = deque()
         
         #Calculate features of nodule pixels
-        pixelsP, pixelsN = finder.getLists(radiusFactor=0.33)
+        pixelsP, pixelsN = finder.getLists(shape, radiusFactor=0.33)
+        print("\tProcessing pixels...")
         nbNodulePixels = len(pixelsP)
         for x,y,z in pixelsP:
             pixelFeatures = fgen.calculatePixelFeatures(x, y, z)
@@ -61,6 +51,8 @@ class Trainer:
         del finder
         del fgen
         del data
+        del cc
+        del dfr
         
         return setFeatures, setClasses
     
@@ -97,10 +89,10 @@ class Trainer:
         
         return clf
     
-    def trainAndSave(self, level, myFile='../data/models/model.pkl'):
-        clf = self.train(level)
+    @staticmethod
+    def save(clf, myFile='../data/models/model.pkl'):
         joblib.dump(clf, myFile)
         
     @staticmethod
-    def loadTraining(myFile='../data/models/model.pkl'):
+    def load(myFile='../data/models/model.pkl'):
         return joblib.load(myFile)

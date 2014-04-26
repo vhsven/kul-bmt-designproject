@@ -6,6 +6,10 @@ class CoordinateConverter:
         self.Matrix = matrix;
         self.Inverse = la.inv(matrix)
     
+    def __del__(self):
+        del self.Matrix
+        del self.Inverse
+        
     def getPixelZ(self, worldZ):
         #dz = self.Slices[0].SliceThickness;
         #return (worldZ - self.getMinZ() + dz/2) / dz

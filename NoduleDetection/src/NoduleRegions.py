@@ -5,19 +5,22 @@ from matplotlib.path import Path
 
 class NoduleRegions:
     def __init__(self):
-        self.regions = {}
+        self.Regions = {}
     
+    def __del__(self):
+        del self.Regions
+        
     def addRegion(self, z, coords):
-        self.regions[z] = coords
+        self.Regions[z] = coords
         
     def getRegionCoords(self, z):
-        return self.regions[z]
+        return self.Regions[z]
         
     def getNbRegions(self): 
-        return len(self.regions.keys())
+        return len(self.Regions.keys())
     
     def getSortedZIndices(self):
-        return sorted(self.regions.iterkeys())
+        return sorted(self.Regions.iterkeys())
     
     def getRegionsSorted(self):
         allRegions = {}

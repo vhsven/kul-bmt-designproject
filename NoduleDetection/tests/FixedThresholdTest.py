@@ -31,7 +31,7 @@ def processVolume(threshold):
 def processSlice(mySlice):
     threshold = DEFAULT_THRESHOLD
     
-    HU = dfr.getSlicePixelsRescaled(mySlice)
+    HU = dfr.getSliceDataRescaled(mySlice)
     
     # select pixels in thorax wall
     masked = ma.masked_greater(HU, threshold)

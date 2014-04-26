@@ -6,7 +6,7 @@ myPath = "../data/LIDC-IDRI/LIDC-IDRI-0002/1.3.6.1.4.1.14519.5.2.1.6279.6001.490
 dfr = DicomFolderReader(myPath)
 
 for i in np.arange(0, dfr.NbSlices, 10):
-    img = dfr.getSlicePixelsRescaled(i)
+    img = dfr.getSliceDataRescaled(i)
     img = img // 10
     
     pylab.subplot(121)

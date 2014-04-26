@@ -1,13 +1,8 @@
-import sys
 import dicom
-import scipy
 import numpy as np
-import numpy.ma as ma
-from skimage.morphology import reconstruction, binary_opening, binary_erosion
 from os import listdir, walk
 from os.path import isfile, join
 from CoordinateConverter import CoordinateConverter
-from Constants import DEFAULT_THRESHOLD, DEFAULT_WINDOW_SIZE #, ZOOM_FACTOR_3D
 from collections import deque
 
 class DicomFolderReader:
@@ -28,7 +23,7 @@ class DicomFolderReader:
     
     def __init__(self, myPath):
         myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".dcm") ]
-        self.Slices = []
+        self.Slices = deque()
         try:
             for myFile in myFiles:
                 self.Slices.append(dicom.read_file(myFile))
@@ -39,8 +34,6 @@ class DicomFolderReader:
         self.Path = myPath
         #if you get an error here, make sure the data folder only contains CT scans, not RX.
         self.Slices = sorted(self.Slices, key=lambda s: s.SliceLocation) #silly slices are not sorted yet
-        self.NbSlices = len(self.Slices)
-        self.Masks = [None] * self.NbSlices
         self.RescaleSlope = int(self.Slices[0].RescaleSlope)
         self.RescaleIntercept = int(self.Slices[0].RescaleIntercept)
         
@@ -65,8 +58,6 @@ class DicomFolderReader:
     def __del__(self):
         del self.Path 
         del self.Slices
-        del self.NbSlices
-        del self.Masks
         del self.RescaleSlope
         del self.RescaleIntercept
     
@@ -94,116 +85,26 @@ class DicomFolderReader:
         return len(self.Slices)
     
     def getSliceShape(self):
-        return self.getSlicePixels(0).shape
+        return self.getSliceData(0).shape
     
     def getVolumeShape(self):
-        return self.getSlicePixels(0).shape + (self.getNbSlices(),)
+        return self.getSliceData(0).shape + (self.getNbSlices(),)
     
     def getVoxelShape(self):
         ds = self.Slices[0]
         return ds.PixelSpacing[0], ds.PixelSpacing[1], ds.SliceThickness
         
     def getSliceData(self, index):
-        return self.Slices[index]
-    
-    def getSlicePixels(self, index):
         return self.Slices[index].pixel_array
     
-    def getSlicePixelsRescaled(self, index):
+    def getSliceDataRescaled(self, index):
         return self.Slices[index].pixel_array * self.RescaleSlope - self.RescaleIntercept
     
     def getVolumeData(self):
         h,w,d = self.getVolumeShape()
-        #h = int(h * ZOOM_FACTOR_3D)
-        #w = int(w * ZOOM_FACTOR_3D)
         voxels = np.zeros((h,w,d), dtype=np.int16)
         for index in range(0, self.getNbSlices()):
-            data = self.getSlicePixelsRescaled(index)
-            #data = scipy.ndimage.zoom(data, ZOOM_FACTOR_3D)
+            data = self.getSliceDataRescaled(index)
             voxels[:,:,index] = data
             
         return voxels
-    
-#     def processSlice(self, index, threshold, erosionWindow):
-#         HU = self.getSlicePixelsRescaled(index)
-#         
-#         # select pixels in thorax wall
-#         masked = ma.masked_greater(HU, threshold)
-#         
-#         # opening to remove small structures
-#         newmask = binary_opening(masked.mask, selem=np.ones((9,9)))
-#     
-#         # reconstruction to fill lungs (figure out how this works) 
-#         seed = np.copy(newmask)
-#         seed[1:-1, 1:-1] = newmask.max()
-#         newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
-#         
-#         # erode thorax walls slightly (no nodules in there)
-#         newmask = binary_erosion(newmask, selem=np.ones((erosionWindow,erosionWindow))).astype(np.int)
-#         
-#         masked = ma.array(HU, mask=np.logical_not(newmask))
-#         
-#         return masked
-    
-    def getThresholdMask(self):
-        h,w,d = self.getVolumeShape()
-        mask3D = np.zeros((h,w,d), dtype=np.bool)
-        
-        sys.stdout.write("Performing initial segmentation per slice")
-        for z in range(0, d): #(80, 100):
-            #print z
-            sys.stdout.write('.')
-            HU = self.getSlicePixelsRescaled(z)
-        
-            # select pixels in thorax wall
-            masked = ma.masked_greater(HU, DEFAULT_THRESHOLD)
-            
-            # opening to remove small structures
-            mask3D[:,:,z] = binary_opening(masked.mask, selem=np.ones((9,9)))
-        
-            # reconstruction to fill lungs (figure out how this works) 
-            seed = np.copy(mask3D[:,:,z])
-            seed[1:-1, 1:-1] = mask3D[:,:,z].max()
-            mask3D[:,:,z] = reconstruction(seed, mask3D[:,:,z], method='erosion').astype(np.int)
-        
-        print("")
-        return mask3D
-            
-#     def getThresholdPixels(self): #uses too much memory
-#         w,h,d = self.getVolumeShape()
-#     
-#         # get a 3D stack of all masks of all slices
-#         points = deque()
-#         for z in range(0, d):
-#             print z
-#             HU = self.getSlicePixelsRescaled(z)
-#         
-#             # select pixels in thorax wall
-#             masked = ma.masked_greater(HU, DEFAULT_THRESHOLD)
-#             
-#             # opening to remove small structures
-#             newmask = binary_opening(masked.mask, selem=np.ones((9,9)))
-#         
-#             # reconstruction to fill lungs (figure out how this works) 
-#             seed = np.copy(newmask)
-#             seed[1:-1, 1:-1] = newmask.max()
-#             newmask = reconstruction(seed, newmask, method='erosion').astype(np.int)
-#             
-#             # erode thorax walls slightly (no nodules in there)
-#             #newmask = binary_erosion(newmask, selem=np.ones((29,29))).astype(np.int)
-#             
-#             # get mask and calculate nonzero elements
-#             xs, ys = np.where(newmask)
-#             zs = [z] * len(xs)
-#             xyz = np.vstack([xs, ys, zs])
-#             Ind = zip(*xyz) #list of 3-tuples #TODO fix memory error
-#             
-#             points.append(Ind)
-#             
-#         return points
-    
-    def getMaskedSlice(self, index):
-        if self.Masks[index] == None:
-            self.Masks[index] = self.processSlice(index, DEFAULT_THRESHOLD, DEFAULT_WINDOW_SIZE)
-        
-        return self.Masks[index]

@@ -3,17 +3,20 @@ from NoduleRegions import NoduleRegions
 class Nodule:
     def __init__(self, noduleID):
         self.ID = noduleID
-        self.subtlety = -1
-        self.internalStructure = -1
-        self.calcification = -1
-        self.sphericity = -1
-        self.margin = -1
-        self.lobulation = -1
-        self.spiculation = -1
-        self.texture = -1
-        self.malignancy = -1
-        self.regions = NoduleRegions()
-                
+        self.Subtlety = -1
+        self.InternalStructure = -1
+        self.Calcification = -1
+        self.Sphericity = -1
+        self.Margin = -1
+        self.Lobulation = -1
+        self.Spiculation = -1
+        self.Texture = -1
+        self.Malignancy = -1
+        self.Regions = NoduleRegions()
+    
+    def __del__(self):
+        del self.Regions
+        
     @staticmethod
     def fromXML(xml, cc):
         noduleID = xml.find("{http://www.nih.gov}noduleID").text
@@ -22,15 +25,15 @@ class Nodule:
         
         #parse characterists
         if chars is not None:
-            nodule.subtlety = int(chars.find("{http://www.nih.gov}subtlety").text)
-            nodule.internalStructure = int(chars.find("{http://www.nih.gov}internalStructure").text)
-            nodule.calcification = int(chars.find("{http://www.nih.gov}calcification").text)
-            nodule.sphericity = int(chars.find("{http://www.nih.gov}sphericity").text)
-            nodule.margin = int(chars.find("{http://www.nih.gov}margin").text)
-            nodule.lobulation = int(chars.find("{http://www.nih.gov}lobulation").text)
-            nodule.spiculation = int(chars.find("{http://www.nih.gov}spiculation").text)
-            nodule.texture = int(chars.find("{http://www.nih.gov}texture").text)
-            nodule.malignancy = int(chars.find("{http://www.nih.gov}malignancy").text)
+            nodule.Subtlety = int(chars.find("{http://www.nih.gov}subtlety").text)
+            nodule.InternalStructure = int(chars.find("{http://www.nih.gov}internalStructure").text)
+            nodule.Calcification = int(chars.find("{http://www.nih.gov}calcification").text)
+            nodule.Sphericity = int(chars.find("{http://www.nih.gov}sphericity").text)
+            nodule.Margin = int(chars.find("{http://www.nih.gov}margin").text)
+            nodule.Lobulation = int(chars.find("{http://www.nih.gov}lobulation").text)
+            nodule.Spiculation = int(chars.find("{http://www.nih.gov}spiculation").text)
+            nodule.Texture = int(chars.find("{http://www.nih.gov}texture").text)
+            nodule.Malignancy = int(chars.find("{http://www.nih.gov}malignancy").text)
         
         #parse regions of interest    
         regionList = xml.findall("{http://www.nih.gov}roi")
@@ -48,6 +51,6 @@ class Nodule:
                     coord = voxelX, voxelY, z #tuple
                     coordList.append(coord)
                     
-                nodule.regions.addRegion(z, coordList)
+                nodule.Regions.addRegion(z, coordList)
         
         return nodule

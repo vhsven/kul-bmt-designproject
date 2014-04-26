@@ -5,7 +5,7 @@ from XmlAnnotationReader import XmlAnnotationReader
 from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
 
-myPath = DicomFolderReader.findPath("../data/LIDC-IDRI/", 1) 
+myPath = DicomFolderReader.findPath("../data/LIDC-IDRI/", 5) 
 reader = XmlAnnotationReader(myPath)
 matrix = reader.dfr.getWorldMatrix()
 print(matrix)
@@ -31,8 +31,8 @@ ax.set_zlabel('z')
 #ax.set_xlim([0,h])
 #ax.set_ylim([0,w])
 #ax.set_zlim([0,d])
-ax.set_xlim([70,110])
-ax.set_ylim([30,70])
-ax.set_zlim([-135,-95])
+ax.set_xlim([-235,100])
+ax.set_ylim([-170,100])
+ax.set_zlim([-350,350])
  
 pl.show()

@@ -1,8 +1,79 @@
 \section{Literature Review}
 \subsection{Introduction}
-In Belgium one man in three and one woman in four gets cancer before his or
+In Belgium one man in three and one woman in four faces cancer before his or
 her 75th birthday \cite{kanker}. In 2010 62017 new cases of cancer were
-diagnosed \cite{kankerliga}
+diagnosed in Belgium \cite{kankerliga}. Lung cancer is the second most common
+cander for men, and the third for women.
+On top of that, it is one of the deadliest cancers
+\cite{zheng}. However, an early detection can increase the survival rate up to 70-80\%
+\cite{swensen}. Furthermore, research has shown that the detection of lung
+cancer in an early stage broadens the amount of treatment options and increases
+the amount of invasive surgery\cite{greenlee}.
 
-Lung cancer is the deadliest cancer for men in the world.
-For women it is the second deadliest \cite{zheng}. 
+
+Due to recent developments in
+computed tomography (CT) technology it is now possible to obtain near isotropic, submillimeter resolution images of the complete chest in a single breath hold.
+This high resolution has the advantage that it enables visualisation of small
+and low-contrast nodules that could hardly be screened in conventional
+programs. The downside is that enormous amounts of data are generated
+which increases the work load of radiologists, especially since low-dose CT
+scans are more and more implemented in routine screenings. Still, this is no
+idle measure. Long nodules are very commonly detected on CT scans. Research
+shows that up to 51\% of smokers aged 50 years or older have pulmonary lung nodules on CT scans \cite{mahon}.
+Therefore, the United States Preventive Services Task Force for example stated that it ``recommends annual screening for lung cancer with low-dose computed tomography (LDCT) in adults aged 55 to 80 years who have a 30 pack-year smoking history and currently smoke or have quit
+within the past 15 years'' \cite{ups}.
+Therefore, the detection of pulmonary nodules from volumetric computed
+tomography (CT) scans if one of the most studied CAD applications
+\cite{sluimer}.
+
+
+Currently, expert radiologists perfrom the investigation of the
+CT scans. They use the shape, the texture, the location and the growth rate of
+the volume of the nodule as clinical parameter to determine the malignancy of
+the nodules and to decide on the diagnosis of lung cancer. A jagged shape
+nodule is more likely to be lung cancer than a smoothed one. A fatty, bony,
+watery nodule or a mixture of these different contents is less likely to
+indicate lung cancer than a nodule that is attached to a vessel. A lung wall
+attached nodule is typically diagnosed as benign if the volume-doubling periode
+is longer than 400 days \cite{wu}. Nevertheless, the examination of these scans
+is a time-consuming task and is not free from errors. Although small nodules are
+in principle detectable in CT scans, a non-negligible fraction may be overlooked
+if they are situated in a maze of vessels of similar size \cite{ozekes}. Another
+problem that arises is the intra- and interreader variability amongst
+radiologists in pulmonary lung detection \cite{armato} \cite{hens}. Therefore,
+there is a need for a CAD system that can assist the radiologist in the
+detection of pulmonary nodules.
+
+\subsection{The biology of lung nodules}
+Lung nodules are lung tissue abnormalities that are roughly spherical with a
+diameter up to 30 mm. On chest CT scans they appear as a rounded or
+irregular opacity. Many types of lung nodules can by distinguished on CT scans.
+A centrilobular nodule is separated by several millimeters from the pleural surfaces, fissures and
+interlobular septa. They range in size from a few millimeters to 10 millimeters.
+A micronodule is less than 3 millimeters in diameter. A ground-glass nodule -or
+non-solid nodule- appears on the CT scans as a hazy attenuation in the lung.
+This type of nodule does not efface the bronchial and vascular margins. A solid
+nodule shows a homogenous soft-tissue attenuation. Finally, a part-solid nodule
+exhibits both ground-glass and solid soft-tissue attenuation characteristics
+\cite{nodule}. 
+
+The types of nodules stated above can again be categorised. Juxta-vascular
+pulmonary nodules have significant connections to their neighbouring vessels.
+Pleural tail nodules have only thin connections to the neighbouring pleural
+wall. Well-circumscribed nodules on the other hand do not have a connection to
+the neighbouring vessels and structures. Juxta-pleural nodules show some degree
+of attachment to their neighbouring pleural surface \cite{kostis}.
+
+A number of nodule segmentation algorithms perform well in detecting specific
+types of nodules e.g. large, spherical, isolated nodules. However, these CAD
+systems show large limitations in detecting e.g. non-isolated nodules that are
+connected to the pulmonary wall \cite{keshani}. These algorithms can be usefull
+in particular situations, but if a detection algorithms really aims at being an
+asset for the radiologist, it should be able to detect all nodules while
+refusing as much false positives as possible.
+
+
+
+
+
+

@@ -1,4 +1,4 @@
-import numpy as np
+#import numpy as np
 import pylab as pl
 from matplotlib.widgets import Slider
 #from sklearn.cross_validation import cross_val_score

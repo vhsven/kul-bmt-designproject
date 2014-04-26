@@ -1,16 +1,16 @@
-for each dataset
-	load DICOM slices
-	perform lungsegmentation
-	load XML annotations
-	for each nodule
-		for each slice in nodule
-			calculate center, r
-			select positive pixels (d < r/3)
-	for random pixel in segmented data
-		if far enough from all nodules (d > 2r)
-			add to negative pixels
-	calculate features for selected pixels
-	train classifier
-	
-	
-			
+for each cascade level
+	for each dataset
+		load DICOM slices
+		perform lungsegmentation -> mask
+		load XML annotations
+		for each nodule
+			for each slice in nodule
+				select positive pixels (d < r/3)
+		for random pixel in volume
+			if far enough from all nodules (d > 2r)
+				add to negative pixels
+		generate feature vectors for selected pixels
+		train classifier with selected pictures
+		generate feature vectors for non-masked all pixels in volume
+		use classifier and generate probability volume
+		mask <- pixels with p < 1% positive	

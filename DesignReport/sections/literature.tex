@@ -38,13 +38,15 @@ attached nodule is typically diagnosed as benign if the volume-doubling periode
 is longer than 400 days \cite{wu}. Nevertheless, the examination of these scans
 is a time-consuming task and is not free from errors. Although small nodules are
 in principle detectable in CT scans, a non-negligible fraction may be overlooked
-if they are situated in a maze of vessels of similar size \cite{ozekes}. Another
-problem that arises is the intra- and interreader variability amongst
-radiologists in pulmonary lung detection \cite{armato} \cite{hens}. Therefore,
-there is a need for a CAD system that can assist the radiologist in the
-detection of pulmonary nodules.
+if they are situated in a maze of vessels of similar size \cite{ozekes}.
+FIGUUR
+Another problem that arises is the intra- and interreader variability
+amongst radiologists in pulmonary lung detection \cite{armato} \cite{hens}. Therefore,
+there is a need for a computer-aided detection (CAD) system that can assist the
+radiologist in the detection of pulmonary nodules.
 
 \subsection{The biology of lung nodules}
+FIGUUR vanginneken
 Lung nodules are lung tissue abnormalities that are roughly spherical with a
 diameter up to 30 mm. On chest CT scans they appear as a rounded or
 irregular opacity. Many types of lung nodules can by distinguished on CT scans.
@@ -71,6 +73,55 @@ connected to the pulmonary wall \cite{keshani}. These algorithms can be usefull
 in particular situations, but if a detection algorithms really aims at being an
 asset for the radiologist, it should be able to detect all nodules while
 refusing as much false positives as possible.
+
+\subsection{Overview of the existing lung nodule detection systems}
+As the demand for a reliable CAD system to detect pulmonary nodules is urgent, a
+lot of research has been dedicated to the matter. Several commercial systems
+have already been developed and many workstations that radiologists use to
+examinate CT scans offer on-board nodule detection or enhancement capabilities
+\cite{ginneken}.
+
+In 2004 iCAD, Inc., provided lung cancer detection, analysis and tracking
+software for the TeraRecon's Aquarius product line. The latter licensed three
+software modules from iCAD. The iCAD QuickCueTM for example automatically
+detects cancerous lung nodules while the iCAD QuickMatchTM locates, compares and tracks these
+nodules in previous or subsequent patient studies \cite{tera}.
+However, the ImageChecker CT, launched by R2 Technology, was the first CT Lung
+CAD system approved by the US Food and Drug Administration for the detection of
+lung nodules during the examination of CT scans \cite{Mevis}. In 2005 R2
+Technology, Inc., introduced the second-generation ImageChecker CT Lung Version 2.0 CAD system which also implemented the AutoPoint temporal comparison algorithm. This CAD system ``highlights abnormalities'' and compares new and past images to
+demonstrate changes that have occured over time \cite{diag} \cite{r2}.
+In 2006 Vital Images, Inc., and R2 Technology, Inc., announced the
+implementation of the R2 Technology's ImageChecker CT Lung CAD software into
+the Vitrea workstations \cite{vital}. In 2006 anohter company, Hologic, Inc.,
+acquired R2 Technology, Inc., and implemented their CAD technology
+\cite{Hologic}. Then, in 2008, MeVis Medical Solutions AG, Inc., acquired the
+Pulmonary Computed Tomography Business from Hologic R2, Inc. \cite{Mevis}. 
+
+
+Although the technology from R2 Technology is highly demanded, some companies
+have also developed their own software. In 2007 Medicsight plc announced it was
+granted a medical device license from the Therapeutic Products Directorate of
+Health in Canada to introduce Medicsight LungCAD API \cite{HI}.
+Median Technologies offers the LMS-Lung and LMS-Lung/CAD modules which provide
+quantification and detection functionalities for pulmonary (solid) nodules and
+micronodules \cite{median}. And Siemens has developed the syngo.CT Lung CAD.
+They claim it is ``a fully automated computer assisted second reader tool'' that is designed to assist radiologists in
+the detection of solid pulmonary nodules \cite{siemens}.
+
+Apart from these numerous commercial systems also a lot of research centra
+have tried to come up with a successful pulmonary nodule detection system. The
+algorithms presented in a wide range of papers report however varying successes
+in the automated detection of nodules.
+
+
+
+\subsubsection{Performance of existing systems}
+\subsubsection{Detection systems}
+
+
+
+\subsection{Random Forests: mathematical background}
 
 
 

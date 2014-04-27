@@ -1,0 +1,44 @@
+\documentclass[titlepage, 10pt]{article}
+
+\usepackage{graphicx} %[pdftex]
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlepic}
+\usepackage{amsmath}
+\usepackage{fullpage}
+
+\titlepic{\includegraphics[width=0.30\textwidth]{img/sedes.jpg}}
+\title
+{
+	[H03H1A] Musculoskeletal Biomechanics\\
+	Assignment 2: Biomechanical (over-)loading
+}
+\author{Kim Nuyts \and Sven Van Hove}
+\date{\today}
+
+\begin{document}
+
+\pagenumbering{roman} %i, ii, iii
+\maketitle
+
+\clearpage
+\pagenumbering{Roman} %I, II, III
+\tableofcontents
+
+% paragraph makeup, after ToC
+\setlength{\parindent}{0pt} %don't indent new paragraph
+\setlength{\parskip}{2ex} %add blank line in between
+
+\clearpage
+\pagenumbering{arabic} %1, 2, 3
+
+\input{sections/intro.tex}
+
+\input{sections/assumptions.tex}
+
+\input{sections/analysis.tex}
+
+\input{sections/conclusions.tex}
+
+\bibliographystyle{alpha} %plain,unsrt,alpha,abbrv,acm,apalike,siam,ieeetr,..
+\bibliography{references}
+\end{document}

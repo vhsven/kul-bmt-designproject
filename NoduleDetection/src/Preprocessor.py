@@ -1,15 +1,10 @@
 import sys
+import dicom
 import numpy as np
 from skimage.morphology import reconstruction, binary_dilation
 from Constants import DEFAULT_THRESHOLD
 
 class Preprocessor:
-    def __init__(self, data):
-        self.Data = data
-        
-    def __del__(self):
-        del self.Data
-        
 #     def processSlice(self, index, threshold, erosionWindow):
 #         HU = self.getSlicePixelsRescaled(index)
 #         
@@ -31,12 +26,14 @@ class Preprocessor:
 #         
 #         return masked
     
-    def getThresholdMask(self):
+    @staticmethod
+    def getThresholdMask(data):
         sys.stdout.write("Performing initial segmentation per slice")
         
-        mask3D = self.Data > DEFAULT_THRESHOLD #select soft tissue (thorax wall etc.)
+        mask3D = data > DEFAULT_THRESHOLD #select soft tissue (thorax wall etc.)
+        del data
         
-        for z in range(0, self.Data.shape[2]):
+        for z in range(0, mask3D.shape[2]):
             sys.stdout.write('.')
             
             # reconstruction to fill lungs (figure out how this works) 
@@ -53,3 +50,9 @@ class Preprocessor:
             
         print("")
         return mask3D
+    
+    @staticmethod
+    def loadThresholdMask(setID):
+        mask = dicom.read_file("../data/LIDC-Masks/img{}.dcm".format(setID)).pixel_array.astype(bool)
+        mask = np.rollaxis(mask, 0, 3)
+        return mask

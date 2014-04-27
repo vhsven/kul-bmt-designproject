@@ -48,7 +48,18 @@ class Classifier:
             raise ValueError("Level not set")
         
         testFeatures = self.fgen.getAllFeatures(mask3D)
-        result = self.clf.predict_proba(testFeatures)
+        
+        m,n = testFeatures.shape
+        maxChunk = 100000
+        nbRows = maxChunk // n
+        
+        result = np.empty((m,2))
+        for r in np.arange(0,m,nbRows):
+            print r
+            chunk = testFeatures[r:r+nbRows,:]
+            result[r:r+nbRows,:] = self.clf.predict_proba(chunk)
+        
+        #result = self.clf.predict_proba(testFeatures)
         
         probImg = np.zeros(mask3D.shape)
         probImg[mask3D] = result[:,1]

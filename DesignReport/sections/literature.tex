@@ -1,12 +1,11 @@
 \section{Literature Review}
 \subsection{Introduction}
 In Belgium one man in three and one woman in four faces cancer before his or
-her 75th birthday \cite{kanker}. In 2010 62017 new cases of cancer were
-diagnosed in Belgium \cite{kankerliga}. Lung cancer is the second most common
-cander for men, and the third for women.
-On top of that, it is one of the deadliest cancers
-\cite{zheng}. However, an early detection can increase the survival rate up to 70-80\%
-\cite{swensen}. Furthermore, research has shown that the detection of lung
+her 75th birthday \cite{kanker}. In 2010 62 017 new cases of cancer were
+diagnosed in Belgium \cite{kankerliga}. The World Health Organisation estimates
+the worldwide death toll from lung cancer will be 10 000 000 by , which makes it
+one of the deadliest cancers \cite{gu, zheng}.
+However, an early detection can increase the survival rate up to 70-80\% \cite{swensen}. Furthermore, research has shown that the detection of lung
 cancer in an early stage broadens the amount of treatment options and increases
 the amount of invasive surgery\cite{greenlee}.
 
@@ -140,6 +139,28 @@ performances \cite{review}. In the final step, the amount of false positives is
 reduced to achieve a maximum sensitivity. In the following paragraphs a summary
 of relevant literature is given.
 
+The first problem that arises when laymen start processing CT scan in search
+for nodules is that they have to rely on the annotations made by expert
+radiologists. Accurate delineation of these lung abnormalities is crucial for
+optimal image analysis. The current approach to delineate lung nodules in CT
+scans involves one or more radiologists manually drawing the boundaries of the
+nodules. Often this manual segmentation overestimates the nodule volume to
+ensure the entire lesion is enclosed \cite{rex}. Furthermore, this process is
+highly variable \cite{cooper}. But the success of the extraction of image
+features depends on the accurate delineation of the nodules. Therefore, if one
+wants to develop a nodule segmentation method -- or any other nodule detection
+method -- is it of major importance this delineation is done in an accurate and
+reproducible way. \cite{gu} have improved the ``Click and Grow'' algorithm that
+has been developed by Definiens AG and Merck and Co., Inc., which
+semi-automatically isolates tumors in CT images. The idea is that a radiologist
+detects the nodule and clicks on the region of interest in a 2D slice. This
+click initiates multiple seed points in a certain area. Then the application
+builds out the object three-dimensionally by region growing. An ensemble
+segmentation is obtained from the multiple regions that were grown. An
+evaluation on a set of 129 CT scans using a similarity index (SI) was performed.
+The average SI was above 93\% which shows stability of the algorithm. The
+average SI for two different readers was 79,5\%.
+
 \cite{elbaz} proposed an three step algorithm to isolate lung nodules from
 spiral chest low-dose CT (LDCT) scans. In the first step the lung tissues were
 isolated by applying an iterative Markov-Gibbs-random-field (MGRF) based
@@ -165,7 +186,8 @@ function of the CPU and the data size. The algorithm, that was implemented in
 C++ on an Intel dual processor wiht 16 GB memory and 2 TB hard drive, took about
 5 minutes to process 182 CT slices of size 512 x 512.
 
-
+Other studies rely on a nodule segmentation method to detect lung abnormalities.
+However, in order to 
 
 segmentation
 

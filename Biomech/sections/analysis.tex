@@ -30,8 +30,8 @@ we consider them as one system with one momentum.
 Solve for $v_1$.
 \begin{equation}
 	v_1 = \frac{m_C}{m_C + m_P} \cdot v_{C_0} 
-	= \frac{2400\text{kg}}{2480\text{kg}} \cdot 10 \tfrac{\text{m}}{\text{s}}
-	\approx 9.68 \tfrac{\text{m}}{\text{s}}
+	= \frac{2400\text{ kg}}{2480\text{ kg}} \cdot 10 \text{ m/s}
+	\approx 9.68 \text{ m/s}
 \end{equation}
 
 From this, we can calculate the force acting on the pedestrian.
@@ -52,13 +52,13 @@ event, we estimate $\Delta t \approx 10$ms.
 
 Plugging this value into the equation gives:
 \begin{equation}
-	F' = \frac{80\text{kg} \cdot 9.68\text{m/s}}{0.01\text{s}} = 77440\text{N}
+	F' = \frac{80\text{ kg} \cdot 9.68\text{ m/s}}{0.01\text{ s}} = 77440\text{ N}
 \end{equation}
 
 We assumed a soft tissue damping factor of roughly 15\%, which allows us to
 calculate the resulting foce on the femur:
 \begin{equation}
-	F = 0.85F' = 65824N
+	F = 0.85F' = 65824\text{ N}
 \end{equation}
 
 \subsection{Discussion on force and torque diagrams} 
@@ -313,10 +313,13 @@ The torques due to the applied forces are also of significant magnitude and will
 therefore cause the bone to bend. Not surprisingly, very soon the bone will
 fracture under these loading conditions.
 
-\subsection{Calculating stresses in the femur}
-To calculate the stresses, we make use of Hertz theory. We model both the
-femur and the bullbar as cylinders, and assume they are in direct contact. This
-theory requires three main assumptions to hold true:
+\subsection{Calculating stress in the femur}
+In this section, we calculate the stress $\sigma$ in the femur, assuming it
+has not yet broken. For this, we need the applied force $F$ and the contact area
+$A$. We already know $F$, so this section will focus on estimating $A$. To do
+so, we make use of Hertz theory. We model both the femur and the bull bar as
+cylinders, and assume they are in direct contact. This theory requires three
+main assumptions to hold true:
 \begin{enumerate}
   \item both materials must have a similar Young's modulus
   \item both surfaces must deform
@@ -325,37 +328,60 @@ theory requires three main assumptions to hold true:
 \end{enumerate}
 
 The first assumption will not hold in the case of a stainless steel bull bar,
-but it can work for an aluminium bull bar. Furthermore, we estimate the
-diameter of the femur and bull bar as respectively $D_{bone} = 24.3$mm and
-$D_{bar} = 60$mm.
+but it can work for an aluminium bull bar.
 
-\cite{puttock1969elastic} suggests following formule to calculate the total
-elastic compression at the contact surface, measured along the line of the
-applied force $F$.
+Out goal is to calculate the area $A$ of the circular contact area. This
+requires a contact radius $a$:
 \begin{equation}
-	d = \frac{3\pi^\frac{2}{3}}{2} \cdot F^\frac{2}{3} \cdot (\nu_1 +
-	\nu_2)^\frac{2}{3} \cdot \frac{1}{D}^\frac{1}{3}
+	a = \sqrt{Rd}
+\end{equation}
+
+We estimate the radius of the femur and bull bar as respectively $R_{bone} =
+12.15$mm and $R_{bar} = 30.00$mm. The diameters $D_{bone}$ and $D_{bar}$ are
+obviously double those values. Combining these two radii with the
+formule below yields $R$:
+\begin{equation}
+	\frac{1}{R} = \frac{1}{R_{bone}} + \frac{1}{R_{bar}} = 115.3 \text{1/m} \Leftrightarrow R = 0.0087\text{m} 
+\end{equation}
+
+We can also calculate $d$ -- the total elastic compression at the contact
+surface, measured along the line of the applied force $F$ -- using a formule
+proposed by \cite{puttock1969elastic}:
+%TODO nu or v?
+\begin{equation}
+	d = \frac{(3\pi)^\frac{2}{3}}{2} \cdot F^\frac{2}{3} \cdot (\nu_{bone} +
+	\nu_{bar})^\frac{2}{3} \cdot \left(\frac{1}{D_{bone}}\right)^\frac{1}{3}
+\end{equation}
+
+%TODO dimensions?
+Herein, $\nu_{bone}$ and $\nu_{bar}$ are given by:
+\begin{equation}
+	\nu_{bone} = \frac{1 - \nu_{femur}^2}{\pi E_{femur}} = \frac{1 - 0,37^2}{\pi \cdot 20\text{ GPa}} = 1,3737 \cdot 10^{-11}
+\end{equation}
+\begin{equation}
+	\nu_{bar} = \frac{1 - \nu_{Al}^2}{\pi E_{Al}} = \frac{1 - 0.32^2}{\pi \cdot 69\text{ GPa}} = 4.1408 \cdot 10^{-12}
+\end{equation}
+
+Plug in all known variables, and we get this result: %TODO dimensions?
+\begin{equation}
+	d = \frac{(3\pi)^\frac{2}{3}}{2} \cdot (65824\text{ N})^\frac{2}{3} \cdot (1,3737 \cdot 10^{-11} +
+	4.1408 \cdot 10^{-12})^\frac{2}{3} \cdot \left(\frac{1}{0.0243\text{ m}}\right)^\frac{1}{3} = 0.0008585\text{ m}
+\end{equation}
+
+At last, we can find $A$ and thus $\sigma$:
+\begin{equation}
+	A = \pi  a^2 = \pi R d = 0.000023465 \text{ m}^2
 \end{equation}
 
 \begin{equation}
-	v = \frac{1 - \nu^2}{\pi E}
+	\sigma = \frac{F}{A} = \frac{65824\text{ N}}{0.000023465 \text{ m}^2} = 2 805 2 \cdot 10^5\text{ Pa} \approx 2.8\text{ GPa}
 \end{equation}
 
 %TODO G=?
-Poisson ratio:
-\begin{equation}
-	\nu = \frac{E}{2G - 1}
-\end{equation}
-
-Contact area radius:
-\begin{equation}
-	a = \sqrt{Rd} \text{ with } \frac{1}{R} = \frac{1}{R_1} + \frac{1}{R_2} 
-\end{equation}
-
-Poisson ratio SS = 0,305
-\footnote{\url{http://www.engineeringtoolbox.com/poissons-ratio-d_1224.html}}
-
-E en poisson ratio femur: \cite{huiskes1977geometrical}
+%Poisson ratio:
+%\begin{equation}
+%	\nu = \frac{E}{2G - 1}
+%\end{equation}
 
 
 \subsection{Will the femur break?}

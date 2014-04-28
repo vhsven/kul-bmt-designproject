@@ -8,14 +8,16 @@ more, a number of assumptions are made. In the following paragraphs these
 assumptions are explained in detail.
 
 Our victim is a healthy thirty year old male with a height of 1,80m and a mass
-of 80kg. Using \autoref{fig:proportions}, we estimate the distance from
-respectively the angle, knee and hip to the ground to be 0,07m, 0,51m and 0,95m.
-The lower legs has a mass of 3,72kg and the upper legs has a mass of
-8kg\cite{Ob}. The car weighs 2400kg,  the bull bar is made of 
-aluminium ($E_{Al}$=69 GPa and $\nu_{Al}$=0,32)
-%stainless steel ($E_{SS}$=210 GPa and $\nu_{SS}$=0,305
-%\footnote{\url{http://www.engineeringtoolbox.com/poissons-ratio-d_1224.html}})
-and its most protuding part sits at 0,80m heigh. \cite{huiskes1977geometrical}
+of 80kg. Before the collision he is located right in front of the car.
+He is walking and at the moment of the crash the leg closest to the car is in
+stand phase. The other leg is in swing phase. We examine the femur of the former
+leg, because it is most likely to fail. The weight of both his upper and lower
+leg segments are also calculated. It is assumed the weight is equally
+distributed over the length of both parts, so the center of gravity is situated
+in the middle of both parts. Using \autoref{fig:proportions}, we estimate the
+distance from respectively the angle, knee and hip to the ground to be 0,07m,
+0,51m and 0,95m. The lower leg has a mass of 3,72kg and the upper leg has a mass
+of 8kg\cite{Ob}.  \cite{huiskes1977geometrical}
 suggest $E_{femur}$ = 20 GPa and $\nu_{femur}$ = 0,37.
 
 \begin{figure}[htp]
@@ -27,46 +29,42 @@ suggest $E_{femur}$ = 20 GPa and $\nu_{femur}$ = 0,37.
 \end{center}
 \end{figure}
 
-Before the collision the pedestrian is located right in front of the car.
-He is walking and at the moment of the crash the leg closest to the car is in
-stand phase. The other leg is in swing phase. We examine the femur of the former
-leg, because it is most likely to fail. The weight of both his upper and lower
-leg segments are also calculated. It is assumed the weight is equally
-distributed over the length of both parts, so the center of gravity is situated
-in the middle of both parts.
-
-At the time of collision the car is decelerating, but it still has a speed of 36
-km/h (10 m/s). Due to the bullbar that is mounted on the bumper, the initial
-contact between the body of the pedestrian and the car is limited to
-the bar touching the upper leg of the pedestrian. The femur is the long
-bone that provides support in the upper leg. Around the femur the hamstring
-muscles, the quadriceps muscles and a layer of fat act as shock absorbers
-during the impact. The literature suggests using a damping factor of roughly
-15\% \cite{kannus1999comparison}.
+The car weighs 2400kg,  the bull bar is made of aluminium ($E_{Al}$=69 GPa and
+$\nu_{Al}$=0,32)
+% stainless steel ($E_{SS}$=210 GPa and $\nu_{SS}$=0,305
+% \footnote{\url{http://www.engineeringtoolbox.com/poissons-ratio-d_1224.html}})
+and its most protuding part sits at 0,80m heigh. At the time of collision the
+car is decelerating, but it still has a speed of 36 km/h (10 m/s). Due to the
+bullbar that is mounted on the bumper, the initial contact between the body of
+the pedestrian and the car is limited to the bar touching the upper leg of the
+pedestrian. The femur is the long bone that provides support in the upper leg.
+Around the femur the hamstring muscles, the quadriceps muscles and a layer of
+fat act as shock absorbers during the impact. The literature suggests using a
+damping factor of roughly 15\% \cite{kannus1999comparison}.
 
 As only the initial phase of the impact is considered in this paper, it is
-assumed that the horizontal velocity of the hip is zero at the time of impact.
-The foot also remains in place, but rotates inwards at the ankle.
-Because of this the bones in the lower leg do not deform. Further it is assumed
-that the knee does not bend initially. So the deformation induced by the bull
-bar is only reflected in the femur shaft. In reality the knee will also be
-affected by the forces exerted by the bull bar. Depending on the situation and
-the relative strength of both, the femur will break or the knee will be
-distorted. In the following analysis however, it is assumed that the femur will
-absorb the initial impact. This means we assume that the knee will not become
-distorted (so it will continue to properly connect the upper and lower leg) and
-that the other bones -- from pelvis to the little bones in the foot -- are not
-affected initially.
+assumed that the horizontal velocity of the hip is zero at the time of impact
+due to the inertia of the body. This boundary condition is also used in the
+literature \cite{snedeker2005assessing}. The foot also remains in place, but
+rotates inwards at the ankle. Because of this the bones in the lower leg do not
+deform. Visual analysis of crash dummy tests
+\footnote{\url{https://www.youtube.com/watch?v=tNRHB75NiIc}} confirms this.
+Further it is assumed that the knee does not bend initially. So the deformation
+induced by the bull bar is only reflected in the femur shaft. In reality the
+knee will also be affected by the forces exerted by the bull bar.
+Depending on the situation and the relative strength of both, the femur will
+break or the knee will be distorted. In the following analysis however, it is
+assumed that the femur will absorb the initial impact. This means we assume that
+the knee will not become distorted (so it will continue to properly connect the
+upper and lower leg) and that the other bones -- from pelvis to the little bones
+in the foot -- are not affected initially.
 
 Because of these (rather rough) assumptions the whole leg can be treated as one
 structure which is clamped at the top (pelvis) and which hinges at the level of
-the ankle. These boundary conditions are also used in the literatue
-\cite{snedeker2005assessing}. Visual analysis of crash test dummy tests
-\footnote{\url{https://www.youtube.com/watch?v=tNRHB75NiIc}} confirms this. The
-force exerted on this structure by the bull bar is treated as a force
-concentrated in one point at a height of 80 cm. It is assumed that the bull bar
-will not deform during the collision, nor that the crumple zone of the car is
-activated. The complete system is visualised in \autoref{fig:hyper1}.
+the ankle. The force exerted on this structure by the bull bar is treated as a
+force concentrated in one point at a height of 80 cm. It is assumed that the
+bull bar will not deform during the collision, nor that the crumple zone of the
+car is activated. The complete system is visualised in \autoref{fig:hyper1}.
 
  \begin{figure}[htp]
 \begin{center}

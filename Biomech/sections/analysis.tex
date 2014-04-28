@@ -2,7 +2,7 @@
 \label{sec:analysis}
 In the following paragraphs the effects of the impact of the car on the femur of
 the pedestrian are investigated. First an estimation of the forces exerted on
-the femur is made. Then a force diagram and bending moment diagrams are calculated.
+the femur is made. Then a force diagram and bending moment diagram are calculated.
 Based on these diagrams the stresses in the bone are estimated and by comparing
 the stresses with experimental data of previous research the probability that
 the bone will fail is estimated.
@@ -91,9 +91,9 @@ allows us to get an exact solution for the hyperstatic mechanical system.
 
 
 In the next step the reduced bending moment diagram is treated as a
-distributed force acting on the entire length of the beams. To calculate the equivalent force of these
+distributed force acting on the entire length of the beam. To calculate the equivalent force of these
 distributed forces the reduced bending moment diagram is divided into triangular
-parts. For each of these triangular parts an $F_{eq}$ is calculated. By
+parts. For each of these triangular parts an $F_e$ is calculated. By
 applying a force and bending moment equilibrium on each part of the beam the
 reaction force in point $c$ is determined.
 The method of the chord then states that the reaction force in this point
@@ -162,7 +162,7 @@ thus $\theta_{HS}$) is calculated.
 
 \begin{equation}
 	R_A = \frac{-1}{3} \frac{L_1 L_2^3 F}{(L_1 + L_2)^2 EI} - \frac{L_1^2 L_2^2
-	F}{(L_1 + L_2)^2 2EI} - \frac{-1}{6} \frac{L_1^3 L_2 F}{(L_1 + L_2)^2 EI} =
+	F}{(L_1 + L_2)^2 2EI} - \frac{1}{6} \frac{L_1^3 L_2 F}{(L_1 + L_2)^2 EI} =
 	\theta_{HS}
 \end{equation}
 
@@ -252,15 +252,15 @@ diagrams by using the principle of superposition.
 \end{equation}
 
 \begin{equation}
-	 M_{HS_{at force F}} = - \frac{L_1 L_2}{L_1 + L_2} F = - 8 500.54 \text{Nm}
+	 M_{HS,\text{ at }F} = - \frac{L_1 L_2}{L_1 + L_2} F = - 8 500.54 \text{Nm}
 \end{equation}
 
 \begin{equation}
-	 M_{hs_{at force F}} = \frac{L_2 M_A}{L_1 + L_2} = 6 552.98 \text{Nm}
+	 M_{hs,\text{ at }F} = \frac{L_2 M_A}{L_1 + L_2} = 6 552.98 \text{Nm}
 \end{equation}
 
 \begin{equation}
-	 M_{at force F} = M_{HS_{at force F}} + M_{hs_{at force F}} = - 1947,56
+	 M_{\text{at }F} = M_{HS,\text{ at }F} + M_{hs,\text{ at }F} = - 1947,56
 	 \text{Nm}
 \end{equation}
 
@@ -289,8 +289,8 @@ anisotropic structure characteristics. This causes them to be weaker in the
 transverse direction than in the longitudinal direction, which makes a fracture
 in our scenario very likely.
 
-\subsection{Calculating stress in the femur}
-In this section, we calculate the stress $\sigma$ in the femur, assuming it
+\subsection{Calculating stresses in the femur}
+In this section, we calculate the stresses $\sigma$ in the femur, assuming it
 has not yet broken. For this, we need the applied force $F$ and the contact area
 $A$. We already know $F$, so this section will focus on estimating $A$. To do
 so, we make use of Hertz theory. We model both the femur and the bull bar as
@@ -309,7 +309,7 @@ a factor 3.5 difference. For the second assumption we can expect that the
 deformation will mostly affect the femur rather than the bull bar. The third
 assumption is likely to be met as well.
 
-Out goal is to calculate the area $A$ of the circular contact area. This
+Our goal is to calculate the area $A$ of the circular contact area. This
 requires a contact radius $a$:
 \begin{equation}
 	a = \sqrt{Rd}
@@ -325,14 +325,17 @@ formule below yields $R$:
 
 We can also calculate $d$ -- the total elastic compression at the contact
 surface, measured along the line of the applied force $F$ -- using a formule
-proposed by \cite{puttock1969elastic}:
+proposed by \cite{puttock1969elastic}. Note that we do not explicitely take into
+account that the femur is actually composed of both cortical (shaft) and trabecular
+(canal) bone. However, the Young's modulus used is that of the femur in
+general. As a consequence, we use the entire diameter of the femur.
 
 \begin{equation}
 	d = \frac{(3\pi)^\frac{2}{3}}{2} \cdot F^\frac{2}{3} \cdot (v_{bone} +
 	v_{bar})^\frac{2}{3} \cdot \left(\frac{1}{D_{bone}}\right)^\frac{1}{3}
 \end{equation}
 
-Herein, $\nu_{bone}$ and $\nu_{bar}$ are given by:
+Herein, $v_{bone}$ and $v_{bar}$ are given by:
 \begin{equation}
 	v_{bone} = \frac{1 - \nu_{femur}^2}{\pi E_{femur}} = \frac{1 - 0,37^2}{\pi
 	\cdot 20\text{ GPa}} = 1,3737 \cdot 10^{-11} \frac{1}{\text{Pa}}
@@ -363,9 +366,9 @@ At last, we can find $A$ and thus $\sigma$:
 \subsection{Will the femur break?}
 
 According to our calculations above, the transverse stresses at the contact
-area are approximately 2,8 GPa. We compare this with the values in table
+area are approximately 2,8 GPa. We compare this with the values in
 \autoref{fig:femurprop}. As 2,8 GPa is much higher than 133 MPa, the maximum
-compression stresses are exceeded, and thus the femur will break. Note that we
+compression stresses are exceeded, and thus the femur will fail. Note that we
 made no distinction between cortical and trabecular bone. Because the table
 only contains data for the relatively stronger cortical bone, it is safe to
 assume that it will fracture regardless. 

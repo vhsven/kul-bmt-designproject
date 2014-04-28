@@ -80,28 +80,32 @@ From these equations it is clear we have a hyperstatic sytem of level 1, which
 means we have three unknowns and only two equations. Therefore, this system has
 to be solved using ‘the method of the chord’. The first step in applying this
 technique is choosing two points $a$ and $b$ that are fixed in your system. Then
-a point $c$ is determined which is situated between point $a$ and $b$ and for
-which you want to calculate the deformation in the system due to external forces
-and bending moments. In this case point $c$ coincides with point $a$. Next the bending moment
+a point $c$ is determined which is situated between points $a$ and $b$. Point
+$c$ indicates where you want to calculate the deformation in the
+system due to external forces and bending moments. In this case point $c$ coincides with point $a$. Next the bending moment
 diagram $M$, taking into account all external forces, is calculated. From this
 bending moment diagram $M$ the reduced bending moment $M_{red}$ is deduced by dividing M by the
 multiplication of the Young’s modulus and the moment of inertia of the system
-($EI$). In this way the stiffness of the system is also taken into account which
-will allow us to get an exact solution for the hyperstatic mechanical system.
-After this the reduced bending moment diagram is treated as a distributed force acting
-on the entire length of the beams. To calculate the equivalent forces of these
-distributed forces the reduced bending moment diagram is divided into triangular parts
-of which an $F_{eq}$ is calculated each time. Then the reaction force in point
-$c$ is determined. The method of the chord assumes the reaction force in this
-point to be the same as the angle of deformation in that point.
+($EI$). In this way the stiffness of the system is also taken into account. This
+allows us to get an exact solution for the hyperstatic mechanical system.
+
+
+In the next step the reduced bending moment diagram is treated as a
+distributed force acting on the entire length of the beams. To calculate the equivalent force of these
+distributed forces the reduced bending moment diagram is divided into triangular
+parts. For each of these triangular parts an $F_{eq}$ is calculated. By
+applying a force and bending moment equilibrium on each part of the beam the
+reaction force in point $c$ is determined.
+The method of the chord then states that the reaction force in this point
+is equal to the angle of deformation in that point.
 
 In order to solve the hyperstatic system it has to be divided into two
 subsystems: a main system (\autoref{fig:hyper2main}) and a recovery system
 (\autoref{fig:hyper3recovery}). The main system is the hyperstatic system made
 static again by cancelling one force or bending moment. In this case we chose to cancel
 the bending moment of the clamped pelvis. The task of the recovery system is to restore
-the distorted line of deformation of the main system to the line of deformation
-of the initial hyperstatic system. Therefore, a bending moment $m_a$ is added in the
+the distortion, due to cancelling the bending moment, of the line of deformation
+of the main system. Therefore, a bending moment $m_a$ is added in the
 recovery system. The method of the chord is applied on both systems and then the
 results of the two systems are superimposed to obtain the results for the
 initial hyperstatic system.

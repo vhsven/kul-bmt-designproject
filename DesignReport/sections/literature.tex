@@ -5,21 +5,26 @@ her 75th birthday \cite{kanker}. In 2010 62 017 new cases of cancer were
 diagnosed in Belgium \cite{kankerliga}. The World Health Organisation estimates
 the worldwide death toll from lung cancer will be 10 000 000 by , which makes it
 one of the deadliest cancers \cite{gu, zheng}.
-However, an early detection can increase the survival rate up to 70-80\% \cite{swensen}. Furthermore, research has shown that the detection of lung
+However, an early detection can increase the survival rate up to 70-80\%
+\cite{swensen}. Furthermore, research has shown that the detection of lung
 cancer in an early stage broadens the amount of treatment options and increases
 the amount of invasive surgery\cite{greenlee}.
 
 
 Due to recent developments in
-computed tomography (CT) technology it is now possible to obtain near isotropic, submillimeter resolution images of the complete chest in a single breath hold.
+computed tomography (CT) technology it is now possible to obtain near isotropic,
+submillimeter resolution images of the complete chest in a single breath hold.
 This high resolution has the advantage that it enables visualisation of small
 and low-contrast nodules that could hardly be screened in conventional
 programs. The downside is that enormous amounts of data are generated
 which increases the work load of radiologists, especially since low-dose CT
 scans are more and more implemented in routine screenings. Still, this is no
 idle measure. Long nodules are very commonly detected on CT scans. Research
-shows that up to 51\% of smokers aged 50 years or older have pulmonary lung nodules on CT scans \cite{mahon}.
-Therefore, the United States Preventive Services Task Force for example stated that it ``recommends annual screening for lung cancer with low-dose computed tomography (LDCT) in adults aged 55 to 80 years who have a 30 pack-year smoking history and currently smoke or have quit
+shows that up to 51\% of smokers aged 50 years or older have pulmonary lung
+nodules on CT scans \cite{mahon}. Therefore, the United States Preventive
+Services Task Force for example stated that it ``recommends annual screening for
+lung cancer with low-dose computed tomography (LDCT) in adults aged 55 to 80
+years who have a 30 pack-year smoking history and currently smoke or have quit
 within the past 15 years'' \cite{ups}.
 Therefore, the detection of pulmonary nodules from volumetric computed
 tomography (CT) scans if one of the most studied CAD applications
@@ -34,9 +39,10 @@ nodule is more likely to be lung cancer than a smooth one. A fatty, bony,
 watery nodule or a mixture of these different contents is less likely to
 indicate lung cancer than a nodule that is attached to a vessel. A nodule
 attached to the lung wall is typically diagnosed as benign if the
-volume-doubling periode is longer than 400 days \cite{wu}. Nevertheless, the examination of these scans is a time-consuming task and is not free from errors. Although small nodules are
-in principle detectable in CT scans, a non-negligible fraction may be overlooked
-if they are situated in a maze of vessels of similar size \cite{ozekes}.
+volume-doubling periode is longer than 400 days \cite{wu}. Nevertheless, the
+examination of these scans is a time-consuming task and is not free from errors.
+Although small nodules are in principle detectable in CT scans, a non-negligible
+fraction may be overlooked if they are situated in a maze of vessels of similar size \cite{ozekes}.
 FIGUUR
 Another problem that arises is the intra- and interreader variability
 amongst radiologists in pulmonary lung detection \cite{armato} \cite{hens}. Therefore,
@@ -48,8 +54,9 @@ FIGUUR vanginneken
 Lung nodules are lung tissue abnormalities that are roughly spherical with a
 diameter up to 30 mm. On chest CT scans they appear as a rounded or
 irregular opacity. Many types of lung nodules can by distinguished on CT scans.
-A centrilobular nodule is separated by several millimeters from the pleural surfaces, fissures and
-interlobular septa. They range in size from a few millimeters to 10 millimeters.
+A centrilobular nodule is separated by several millimeters from the pleural
+surfaces, fissures and interlobular septa. They range in size from a few
+millimeters to 10 millimeters.
 A micronodule is less than 3 millimeters in diameter. A ground-glass nodule --
 or non-solid nodule -- appears on the CT scans as a hazy attenuation in the
 lung. This type of nodule does not efface the bronchial and vascular margins. A solid
@@ -89,8 +96,10 @@ nodules in previous or subsequent patient studies \cite{tera}.
 However, the ImageChecker CT, launched by R2 Technology, was the first CT Lung
 CAD system approved by the US Food and Drug Administration for the detection of
 lung nodules during the examination of CT scans \cite{Mevis}. In 2005 R2
-Technology, Inc., introduced the second-generation ImageChecker CT Lung Version 2.0 CAD system which also implemented the AutoPoint temporal comparison algorithm. This CAD system ``highlights abnormalities'' and compares new and past images to
-demonstrate changes that have occured over time \cite{diag} \cite{r2}.
+Technology, Inc., introduced the second-generation ImageChecker CT Lung Version
+2.0 CAD system which also implemented the AutoPoint temporal comparison
+algorithm. This CAD system ``highlights abnormalities'' and compares new and
+past images to demonstrate changes that have occured over time \cite{diag, r2}.
 In 2006 Vital Images, Inc., and R2 Technology, Inc., announced the
 implementation of the R2 Technology's ImageChecker CT Lung CAD software into
 the Vitrea workstations \cite{vital}. In 2006 anohter company, Hologic, Inc.,
@@ -106,8 +115,8 @@ Health in Canada to introduce Medicsight LungCAD API \cite{HI}.
 Median Technologies offers the LMS-Lung and LMS-Lung/CAD modules which provide
 quantification and detection functionalities for pulmonary (solid) nodules and
 micronodules \cite{median}. And Siemens has developed the syngo.CT Lung CAD.
-They claim it is ``a fully automated computer assisted second reader tool'' that is designed to assist radiologists in
-the detection of solid pulmonary nodules \cite{siemens}.
+They claim it is ``a fully automated computer assisted second reader tool'' that
+is designed to assist radiologists in the detection of solid pulmonary nodules \cite{siemens}.
 
 \subsubsection{Automated lung detection systems: publications}
 Apart from these numerous commercial systems also a lot of academic research
@@ -187,28 +196,54 @@ C++ on an Intel dual processor wiht 16 GB memory and 2 TB hard drive, took about
 5 minutes to process 182 CT slices of size 512 x 512.
 
 Other studies rely on a nodule segmentation method to detect lung abnormalities.
-However, in order to 
+\cite{kuh} applies morphological opening, erosion, thresholding, seed
+optimisation and boundary refinement operations to extract large nodules.
+\cite{itai} proposes a segmentation of the lung areas using SNAKES method which
+is an active contour model. Abnormal shadow areas including ground-glass opacity
+or lung cancer over the size of 5 mm are classified by using voxel densities.
+The algorithm was applied on 9 CT scans and a true positive fraction of 0,81 and
+a false negative fraction of 0,2 were obtained.
 
-segmentation
+A third category of nodule detection methods are the classification based
+methods. \cite{ozekes} tested four different learning based classification
+methods: a Neural Network classifier, a Support Vector Machine (SVM) classifier,
+a naive Bayes classifier and a logistic regression classifier. First ROIs were
+extracted by applying thresholding and an 8-directional search in which
+candidate lung nodule voxels have to have neighbour voxels with densities
+between a minimum and maximum density threshold. From these ROIs a number of
+features were extracted: straightness, thickness, vertical and horizontal
+widths, regularity and vertical and horizontal black pixel ratios. These
+features were then fed to the four classifiers. The Neural Network classifier
+showed the best results, followed by the SVM classifier. \cite{keshani} also
+applies an SVM classifier and active contour modelling to detect lung nodules.
+The lung area was first segmented by active contour modelling which was followed
+by a set of masking techniques to transfer nodules from non-isolated into
+isolated ones. Based on a set of 2D and 3D features the SVM classifier detected
+the lung nodules. Then the contours of these nodules were extracted
+by active contour modelling. In a last step the lung tissues in the original
+image were classified into four classes: lung wall, parenchyma, bronchioles and
+nodules. The results form this classification were used to distuingish solitary
+nodules from attached ones. When this algorithm was used to detect nodules in
+the ANODE09 dataset an average detection rate of 37,8\% was obtained while the
+best performing method yielded a detection rate of 63,2\%. The latter algorithm
+was developed by \cite{mur} and uses the local image features -- shape index and
+curvedness -- to detect candidate nodules. Two successive k-nearest-neighbour
+classifiers are applied to reduce the number of false positives. This yielded a
+sensitivity of 80\% with an average of 4,2 false positives per scan.
 
-classification
-	SVM
-	RF
-	ANN
-	
-ANODE
+lee (2010) PAPER
 
 \subsubsection{Performance of existing systems}
  The algorithms presented in a wide range of papers report varying
  successes in the automated detection of nodules. However, it is very difficult
  to compare studies against one another in a meaningful way due to differences
  in the size of the datasets, the evaluation methods, the data selection
- criteria and the characteristics of the nodules \cite{lee2010}. Especially comparing older and contemporary studies is
- difficult as older ones may have used scans with thicker sections (range 2.5 -
- 10 mm), on which small nodules are rather difficult to detect, than the scans
- nowadays (2,5 mm) \cite{lee2010, ginneken} \cite{mur}. Some studies
- focus on nodules below or above a certain size or on special types of nodules
- (e.g. solid nodules). \cite{mur} performed an extended
+ criteria and the characteristics of the nodules \cite{lee2010}. Especially
+ comparing older and contemporary studies is difficult as older ones may have
+ used scans with thicker sections (range 2.5 - 10 mm), on which small nodules
+ are rather difficult to detect, than the scans nowadays (2,5 mm) \cite{lee2010,
+ ginneken} \cite{mur}. Some studies focus on nodules below or above a certain
+ size or on special types of nodules (e.g. solid nodules). \cite{mur} performed an extended
  literature review and found that the number of scans used for testing varied between 5 and 500 with a
  median number of 29,5. Many of the studies included multiple scans from
  individual patients, which means that the diversity of the available nodules
@@ -216,6 +251,9 @@ ANODE
  diverse way. \cite{results} suggests the performance of CAD systems should be
  presented a the sensitivity of the system, the specificity, the accuracy, the
  error rate, the True Positive Rate and the False Positive Rate.
+ 
+ TABEL X GEEFT OVERZICHT WEER VAN BEST AND SLECHTS PRESTERENDE ALGORITHMS BASED
+ ON EXHAUSTIVE LITERATURE REVIEW
  
  In order to improve the access to data, and hereby the comparability between
  studies, the Lung Image Data Consortium (LIDC) created a publically available
@@ -228,6 +266,7 @@ ANODE
  compare results against one another.
  
 \subsection{Ensemble classifiers}
+ methods met classifiers presteren beter (lee, 2010)
 - reden om classifiers te gaan gebruiken
 
 \subsubsection{Introduction to ensemble classifiers}

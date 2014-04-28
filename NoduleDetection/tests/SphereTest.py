@@ -1,21 +1,20 @@
 import pylab as pl
 from mpl_toolkits.mplot3d import Axes3D  # @UnresolvedImport @UnusedImport works just fine
 from FeatureGenerator import FeatureGenerator
-from XmlAnnotationReader import XmlAnnotationReader
 from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
 
-myPath = DicomFolderReader.findPath("../data/LIDC-IDRI/", 5) 
-reader = XmlAnnotationReader(myPath)
-matrix = reader.dfr.getWorldMatrix()
+myPath = DicomFolderReader.findPath("../data/LIDC-IDRI/", 5)
+dfr = DicomFolderReader(myPath)
+matrix = dfr.getWorldMatrix()
 print(matrix)
-cc = reader.dfr.getCoordinateConverter()
-data = reader.dfr.getVolumeData()
+cc = dfr.getCoordinateConverter() 
+finder = PixelFinder(myPath, cc)
+data = dfr.getVolumeData()
 #h,w,d = reader.dfr.getVolumeShape()
-fgen = FeatureGenerator(data, reader.dfr.getVoxelShape())
-finder = PixelFinder(reader)
+fgen = FeatureGenerator(data, dfr.getVoxelShape())
  
-pixels = list(finder.findNodulePixels(method='polygon', radiusFactor=1.0))
+pixels = list(finder.findNodulePixels(data.shape, method='polygon', radiusFactor=1.0))
 #x,y,z = zip(*pixels)
  
 pixelsWorld = list(cc.getWorldVectors(pixels))

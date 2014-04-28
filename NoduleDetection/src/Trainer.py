@@ -24,24 +24,23 @@ class Trainer:
         print("Processing '{}'".format(myPath))
         print("\tFound {} nodules.".format(nbNodules))
         
-        setFeatures = deque()
-        
-        #Calculate features of nodule pixels
         pixelsP, pixelsN = finder.getLists(shape, radiusFactor=0.33)
         print("\tProcessing pixels...")
+        
+        #Calculate features of nodule pixels
         nbNodulePixels = len(pixelsP)
-        for x,y,z in pixelsP:
-            pixelFeatures = fgen.calculatePixelFeatures(x, y, z)
-            setFeatures.append(pixelFeatures)
+        x,y,z = pixelsP[0]
+        setFeatures = fgen.getAllFeatures(x,y,z)
+        for x,y,z in pixelsP[1:]:
+            pixelFeatures = fgen.getAllFeatures(x, y, z) #1xL ndarray
+            setFeatures = np.vstack([setFeatures, pixelFeatures])
         print("\tProcessed {} nodules pixels.".format(nbNodulePixels))
         
         #Calculate allFeatures of random non -nodule pixels
         for x,y,z in pixelsN:
-            pixelFeatures = fgen.calculatePixelFeatures(x, y, z)
-            setFeatures.append(pixelFeatures)
+            pixelFeatures = fgen.getAllFeatures(x, y, z)
+            setFeatures = np.vstack([setFeatures, pixelFeatures])
         print("\tProcessed {} random non-nodules pixels.".format(nbNodulePixels))
-        
-        setFeatures = np.array(setFeatures)
         
         #Create classification vector
         setClasses = np.zeros(setFeatures.shape[0], dtype=np.bool)

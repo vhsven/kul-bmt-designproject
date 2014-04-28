@@ -9,103 +9,84 @@ from skimage.morphology import disk
 import scipy.ndimage as nd
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 
-class FeatureGenerator: #TODO fix edge problems
+class FeatureGenerator:
     def __init__(self, data, vshape, level=1):
         self.Data = data
         self.VoxelShape = vshape
         self.Level = level
+        self.Laplacian = None
         self.Edges = None
-        self.Blobs = None
         self.Entropy = {} #TODO not used?
         self.PixelCount = None
+        
+    def __str__(self):
+        return "Level {} Feature Generator".format(self.Level)
         
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
     
-    def getAllFeatures(self, mask3D):
+    def getLevelFeatureByMask(self, level, mask3D):
+        """Returns a ndarray (Nx1) containing the features for all given positions and for the given level.""" 
+        if level == 1:
+            return self.getIntensityByMask(mask3D)
+        if level == 2:
+            return self.getLaplacianByMask(mask3D)
+        else:
+            print("Falling back on features per pixel method.")
+            result = deque()
+            for x,y,z in zip(np.where(mask3D)):
+                feature = self.getLevelFeature(level, x, y, z)
+                result.append(feature)
+            return np.array(result).reshape((-1, 1))
+        
+    def getAllFeaturesByMask(self, mask3D):
+        """Returns a ndarray (NxL) with the rows containing the features vector, up to the current level, per datapoint."""
         nbVoxels = mask3D.sum()
         h,w,d = mask3D.shape
         totalVoxels = h*w*d
         ratio = 100.0 * nbVoxels / totalVoxels
         print("Generating features for {0} ({1:.2f}%) voxels.".format(nbVoxels, ratio))
-        if self.Level == 1: #TODO find better way
-            testFeatures = self.getIntensityByMask(mask3D)
-        elif self.Level == 2:
-            lvl1Features = self.getIntensityByMask(mask3D)
-            #posFeatures = self.getRelativePositionByMask(mask3D)
-            lvl2Features = self.getRelativeZByMask(mask3D)
-            #print lvl1Features.shape
-            #print lvl2Features.shape
-            testFeatures = np.hstack([lvl1Features, lvl2Features])
-        elif self.Level == 3:
-            lvl1Features = self.getIntensityByMask(mask3D)
-            lvl2Features = self.getRelativeZByMask(mask3D)
-            lvl3Features = self.getEntropyByMask(mask3D, windowSize=5)
-            testFeatures = np.hstack([lvl1Features, lvl2Features, lvl3Features])
+        allFeatures = self.getLevelFeatureByMask(1, mask3D)
+        for level in range(2, self.Level+1):
+            lvlFeature = self.getLevelFeatureByMask(level, mask3D) #Nx1
+            allFeatures = np.hstack([allFeatures, lvlFeature])
+        
+        return allFeatures
+    
+    def getLevelFeature(self, level, x,y,z):
+        """Returns a scalar representing the feature at the given position for the given level."""
+        if level == 1:
+            return self.getIntensity(x, y, z)
+        if level == 2:
+            return self.getLaplacian(x, y, z)
+        if level == 3:
+            return self.getEntropy(x,y,z, windowSize=5)
+        if level == 4:
+            return self.getEdges(x, y, z)
         else:
-            testFeatures = deque()
-            xs,ys,zs = np.where(mask3D)
-            for px,py,pz in zip(xs,ys,zs):
-                pixelFeatures = self.calculatePixelFeatures(px, py, pz)
-                testFeatures.append(pixelFeatures)
-        
-        return np.array(testFeatures)
+            raise ValueError("Level {} not supported.".format(level))
     
-    def calculatePixelFeatures(self, x,y,z):
+    def getAllFeatures(self, x,y,z): #TODO distance from lung wall?
+        """Returns a ndarray (1xL) containing the feature vector, up to the current level, for the given datapoint."""
         z = int(z)
-        pixelFeatures = ()
         
-        if self.Level >= 1:
-            pixelFeatures += (self.getIntensity(x,y,z),)
-    
-        if self.Level >= 2:
-            #pixelFeatures += self.getRelativePosition(x, y, z)
-            pixelFeatures += (self.getRelativeZ(z),)
+        #allFeatures = self.getLevelFeature(1, x, y, z)
+        allFeatures = deque()
+        for level in range(1, self.Level+1):
+            lvlFeature = self.getLevelFeature(level, x, y, z)
+            #np.hstack([allFeatures, lvlFeature])
+            allFeatures.append(lvlFeature)
         
-        if self.Level >= 3:
-            pixelFeatures += (self.getEntropy(x,y,z, windowSize=5),)
-        
-        if self.Level >= 4:
-            pixelFeatures += (self.getEdges(x, y, z),)
-        
-        #global 3D features
-        #getEdges = fgen.getEdges()
-        
-        #2D slice features (TODO only calculate once)
-        #sliceEntropy = fgen.image_entropy(z)
-        #entropy2 = fgen.pixelentropy(z)
-        #blobs = fgen.blobdetection(z)
-        
-                
-        #get pixel features from 3D features
-        #pixelFeatures += (getEdges[x,y,z],)
-        #get pixel features from slice features
-        #pixelFeatures += (sliceEntropy,)
-        #pixelFeatures += (entropy2[x,y],)
-        #for blob in blobs:
-        #    pixelFeatures += (blob[x,y],)
-        #pixel features
-        #pixelFeatures += (fgen.forbeniusnorm(x,y,z),)
-        #pixelFeatures += fgen.neighbours(x,y,z)
-        
-        #for windowSize in np.arange(3,MAX_FEAT_WINDOW,2):
-        #    pixelFeatures += fgen.greyvaluefrequency(x,y,z, windowSize)
-        #    pixelFeatures += fgen.averaging3D(x,y,z, windowSize)
-        #    pixelFeatures += fgen.greyvaluecharateristic(x,y,z, windowSize)
-        #    pixelFeatures += fgen.windowFeatures(x,y,z, windowSize)
-        
-        return pixelFeatures
-    
-    ############################################################
-    #featurevector[1]= abs/ref position and gray value
-    ############################################################
+        return np.array(allFeatures).reshape((1,-1))
+
     def getIntensity(self, x, y, z):
+        """Returns a scalar representing the intensity at the given position."""
         return self.Data[x,y,z]
     
     def getIntensityByMask(self, mask3D):
+        """Returns an array (Nx1) containing the intensities of all the given positions."""
         intensities = self.Data[mask3D]
-        count = len(intensities)
-        return intensities.reshape((count, 1))
+        return intensities.reshape((-1, 1))
     
     def getRelativePosition(self, x, y, z):
         h,w,d = self.Data.shape
@@ -117,7 +98,6 @@ class FeatureGenerator: #TODO fix edge problems
         xsr = xs / float(h)
         ysr = ys / float(w)
         zsr = zs / float(d)
-        #coords = zip(xs, ys, zs)
         return np.vstack([xsr,ysr,zsr]).T
     
     def getRelativeZ(self, z):
@@ -129,8 +109,20 @@ class FeatureGenerator: #TODO fix edge problems
         _, _, zs = np.where(mask3D)
         zsr = zs / float(d)
         
-        count = len(zsr)
-        return zsr.reshape((count, 1))
+        #count = len(zsr)
+        return zsr.reshape((-1, 1))
+    
+    def getLaplacian(self, x,y,z):
+        if self.Laplacian is None:
+            self.Laplacian = nd.filters.laplace(self.Data)
+        
+        return self.Laplacian[x,y,z]
+    
+    def getLaplacianByMask(self, mask3D):
+        if self.Laplacian is None:
+            self.Laplacian = nd.filters.laplace(self.Data)
+
+        return  self.Laplacian[mask3D].reshape((-1,1))
     
     ############################################################
     #featurevector[2]= greyvalue + related features in window
@@ -507,30 +499,5 @@ class FeatureGenerator: #TODO fix edge problems
         
         return self.Edges[x,y,z]
     
-    ############################################################
-    # feature[9]= blob detection with laplacian of gaussian
-    ############################################################
-    def blobdetection(self, z): #TODO do this in 3D, take into account different voxel sizes
-        if self.Blobs == None:
-            image=self.getSlice(z)
-            returnValue = []
-            for sigma in np.arange(1.9,2.1,0.1):
-                LoG = nd.gaussian_laplace(image, sigma) # scalar: standard deviations of the Gaussian filter
-                # hoe bepaal je sigma? nodule_grootte_in_pixels = sqrt(2*sigma)
-                # sigma empirisch vastgesteld op 1.9/ 2/ 2.1
-                aLoG = abs(LoG)
-                output = np.copy(image)
-                output[aLoG > aLoG.max()-200] = 1
-                #pylab.imshow(output, cmap=pylab.gray())
-                #pylab.show()
-                returnValue.append(output)
-            self.Blobs = returnValue
-        
-        return self.Blobs
-    
-    ############################################################  
-    #featurevector[10]=haar features
-    ############################################################
-    
-    # problem with import SimpleCV???
+        #TODO haar-like features
         

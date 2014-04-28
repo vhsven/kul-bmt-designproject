@@ -1,6 +1,4 @@
 import numpy as np
-from collections import deque
-from DicomFolderReader import DicomFolderReader
 from FeatureGenerator import FeatureGenerator
 
 class Classifier:
@@ -47,15 +45,15 @@ class Classifier:
         if not self.isLevelset():
             raise ValueError("Level not set")
         
-        testFeatures = self.fgen.getAllFeatures(mask3D)
+        testFeatures = self.fgen.getAllFeaturesByMask(mask3D)
         
         m,n = testFeatures.shape
-        maxChunk = 100000
+        maxChunk = 1000000
         nbRows = maxChunk // n
         
         result = np.empty((m,2))
         for r in np.arange(0,m,nbRows):
-            print r
+            print "[{}, {}[".format(r, r+nbRows)
             chunk = testFeatures[r:r+nbRows,:]
             result[r:r+nbRows,:] = self.clf.predict_proba(chunk)
         

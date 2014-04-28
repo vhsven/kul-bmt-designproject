@@ -127,27 +127,21 @@ initial hyperstatic system.
 \end{figure}
 
 \subsubsection{Analysis of the main system}
-First, we calculate $R_A$ (and thus $\theta_{HS}$) in \autoref{fig:hyper4}.
+First, we calculate the bending moment $M$ for the main system. From this
+bending moment $M$ the reduced bending moment $M_{red}$ is deduced in
+\autoref{fig:hyper4}.
+
 \begin{equation}
-	M_{HS} = M(L_1) = R_A \cdot L_1 = \frac{-L_1 \cdot L_2}{L_1 + L_2} \cdot F
+	M_{HS} = R_A \cdot L_1 = \frac{-L_1 \cdot L_2}{L_1 + L_2} \cdot F
 \end{equation}
 
 \begin{equation}
 	M_{red} = \frac{-L_1 \cdot L_2}{L_1 + L_2} \cdot \frac{F}{EI}
 \end{equation}
 
-\begin{equation}
-	\Sigma M_z \stackrel{w.r.t. b}{=} 0: \frac{2}{3} L_2 F_{e_2} + (L_2 +
-	\frac{1}{3}L_1) F_{e_1} - R_A (L_1 + L_2) = 0
-\end{equation}
+Based on $M_{red}$ the equivalent forces $F_e$ are calculated. Then $R_A$ (and
+thus $\theta_{HS}$) are calculated.
 
-Solve for $R_A$:
-\begin{equation}\label{eq:RA}
-	R_A = \frac{\frac{2}{3} L_2 F_{e_2} + L_2 F_{e_1} + \frac{1}{3}L_1 F_{e_1}}{L_1 +
-	L_2} = \theta_{HS}
-\end{equation}
-
-We also know $F_{e_1}$ and $F_{e_2}$: 
 \begin{equation}
 	F_{e_1} = \frac{-L_1 L_2}{L_1+ L_2} \frac{F}{EI} \frac{L_1}{2}
 \end{equation}
@@ -156,7 +150,16 @@ We also know $F_{e_1}$ and $F_{e_2}$:
 	F_{e_2} = \frac{-L_1 L_2}{L_1+ L_2} \frac{F}{EI} \frac{L_2}{2}
 \end{equation}
 
-Plugging these equations in \autoref{eq:RA} gives:
+\begin{equation}
+	\Sigma M_z \stackrel{w.r.t. b}{=} 0: \frac{2}{3} L_2 F_{e_2} + (L_2 +
+	\frac{1}{3}L_1) F_{e_1} - R_A (L_1 + L_2) = 0
+\end{equation}
+
+\begin{equation}\label{eq:RA}
+	R_A = \frac{\frac{2}{3} L_2 F_{e_2} + L_2 F_{e_1} + \frac{1}{3}L_1 F_{e_1}}{L_1 +
+	L_2} = \theta_{HS}
+\end{equation}
+
 \begin{equation}
 	R_A = \frac{-1}{3} \frac{L_1 L_2^3 F}{(L_1 + L_2)^2 EI} - \frac{L_1^2 L_2^2
 	F}{(L_1 + L_2)^2 2EI} - \frac{-1}{6} \frac{L_1^3 L_2 F}{(L_1 + L_2)^2 EI} =
@@ -225,7 +228,8 @@ Solve for m:
 	m = \frac{-2 L_1 L_2^3F - 3 L_1^2 L_2^2 - L_1^3 L_2 F}{2(L_1 + L_2)^3}
 \end{equation}
 
-Using $L_1 = 0.154$m, $L_2 = 0.8$m and $F = 65824$N, we can calculate $M_A$:
+Using $L_1 = 0.154$m, $L_2 = 0.8$m and $F = 65824$N, we can calculate $M_A$ by
+applying the superposition principle in point $c$:
 \begin{equation}
 	M_A = 0-m = 7814.44\text{Nm}
 \end{equation}
@@ -236,19 +240,28 @@ accompanying force (\autoref{fig:hyper6}) and bending moment (\autoref{fig:hyper
 diagrams by using the principle of superposition.
 
 \begin{equation}
-	R_{Ay} = \frac{L_2}{L_1 + L_2} F = 55 198.32
+	R_{Ay} = \frac{L_2}{L_1 + L_2} F = 55 198.32 \text{N}
 \end{equation}
 
 \begin{equation}
-	R_{By} = \frac{L_1}{L_1 + L_2} F = 10 625.68
+	R_{By} = \frac{L_1}{L_1 + L_2} F = 10 625.68 \text{N}
 \end{equation}
 
 \begin{equation}
-	 M_{HS} = \frac{L_1 L_2}{L_1 + L_2} F = 8 500.54
+	M_A = 7814.44\text{Nm}
 \end{equation}
 
 \begin{equation}
-	 M_{hs} = \frac{L_2 M_A}{L_1 + L_2} = 6 552.98
+	 M_{HS_{at force F}} = - \frac{L_1 L_2}{L_1 + L_2} F = - 8 500.54 \text{Nm}
+\end{equation}
+
+\begin{equation}
+	 M_{hs_{at force F}} = \frac{L_2 M_A}{L_1 + L_2} = 6 552.98 \text{Nm}
+\end{equation}
+
+\begin{equation}
+	 M_{at force F} = M_{HS_{at force F}} + M_{hs_{at force F}} = - 1947,56
+	 \text{Nm}
 \end{equation}
 
 \begin{figure}[htp]

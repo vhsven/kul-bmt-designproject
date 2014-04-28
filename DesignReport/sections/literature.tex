@@ -120,11 +120,61 @@ in CT scans as they enable the visualisation of small volume and low-contrast
 nodules because of the limited slice thichness. A large number of chest CT scans
 are available in public databases such as the LIDC database. During the next
 step, the data are pre-processed to remove noise and artefacts. This might
-improve the quality of the images, but it is not necessary to do so.
+improve the quality of the images, but it is not necessary to do so. In the
+third step a segmentation of the lungs is performed. The lung lobe region is
+identified and the rest of the image is removed. This reduces the computational
+cost compared to the case where the whole image is processed and it increases
+the reliability, the accuracy and the precision of the algorithm. This
+increases the performance of the next step: the nodule detection. ``Lung nodule
+detection refers to the process of determining whether nodule patterns are
+present in the image and identifying the location of the nodules''
+\cite[p.~154]{review}. Nodule detection methods can be categorized according to
+the detection method that is applied. The first group of publications uses a
+classification technique to classify voxels or regions of interest (ROI). In
+addition, a clustering method may be implemented to improve the perfromance of
+the automated nodule detection method. The second group uses template matching
+to detect specific geometries. The third group relies entirely on the output of
+a lung nodule segmentation method. The systems that include a classification
+component in their nodule detection algorithm have demonstrated better
+performances \cite{review}. In the final step, the amount of false positives is
+reduced to achieve a maximum sensitivity. In the following paragraphs a summary
+of relevant literature is given.
 
-algemeen: stappen
-enkele voorbeelden
-overzichtstabel?
+\cite{elbaz} proposed an three step algorithm to isolate lung nodules from
+spiral chest low-dose CT (LDCT) scans. In the first step the lung tissues were
+isolated by applying an iterative Markov-Gibbs-random-field (MGRF) based
+segmentation framework. To retain the nodules attached to the pulmonary walls, the
+segmentation was refined by the iterative conditional mode relaxation that
+maximizes a MGRF energy. Then the lung nodules, arteries, veins, bronchi and
+bronchioles were separated from the rest of the tissues in the slice. In the
+second step the lung nodules (2-12 mm) were detected by applying 3D and 2D
+templates which describe typical geometry and greylevel distributions within
+nodules of the same type. Four template shapes were used: solid sphere, hollow
+sphere, solid circle and solid semicircle. The radius and the greyscale
+intensity of the templates was made adaptable. The detection combined the
+normalized cross-correlation template matching and a genetic optimization
+algorithm. The third step eliminated the false positive nodules using three
+textural and geometric features that were calculated for each detected nodule.
+To distuingish between false positives and true positives Bayesian supervised
+classifier learning statistical characteristics from a training set (20 FP, 20
+lung TP, 20 lung wall TP nodules) of nodules selected from 50 separate subjects.
+CT scans from 200 subjects were used in this study. The sensitivity was 82,3\%
+and a FPNs rate of 9,2\% (i.e. the number of FPNs -- 12-- with respect to the
+total number of true nodules -- 130 -- ). The speed of the execution is a
+function of the CPU and the data size. The algorithm, that was implemented in
+C++ on an Intel dual processor wiht 16 GB memory and 2 TB hard drive, took about
+5 minutes to process 182 CT slices of size 512 x 512.
+
+
+
+segmentation
+
+classification
+	SVM
+	RF
+	ANN
+	
+ANODE
 
 \subsubsection{Performance of existing systems}
  The algorithms presented in a wide range of papers report varying
@@ -134,7 +184,7 @@ overzichtstabel?
  criteria and the characteristics of the nodules \cite{lee2010}. Especially comparing older and contemporary studies is
  difficult as older ones may have used scans with thicker sections (range 2.5 -
  10 mm), on which small nodules are rather difficult to detect, than the scans
- nowadays (2,5 mm) \cite{lee2010} \cite{ginneken} \cite{mur}. Some studies
+ nowadays (2,5 mm) \cite{lee2010, ginneken} \cite{mur}. Some studies
  focus on nodules below or above a certain size or on special types of nodules
  (e.g. solid nodules). \cite{mur} performed an extended
  literature review and found that the number of scans used for testing varied between 5 and 500 with a
@@ -165,6 +215,8 @@ waarom random forest
 
 \subsubsection{Random Forests}
 wisk achtergrond
+
+
 
 
 

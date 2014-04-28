@@ -1,6 +1,4 @@
 import numpy as np
-from collections import deque
-from DicomFolderReader import DicomFolderReader
 from FeatureGenerator import FeatureGenerator
 
 class Classifier:

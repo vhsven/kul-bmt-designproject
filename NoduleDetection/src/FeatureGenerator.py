@@ -19,14 +19,17 @@ class FeatureGenerator:
         self.Entropy = {} #TODO not used?
         self.PixelCount = None
         
+    def __str__(self):
+        return "Level {} Feature Generator".format(self.Level)
+        
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
     
     def getLevelFeatureByMask(self, level, mask3D):
         """Returns a ndarray (Nx1) containing the features for all given positions and for the given level.""" 
-        if self.Level == 1:
+        if level == 1:
             return self.getIntensityByMask(mask3D)
-        if self.Level == 2:
+        if level == 2:
             return self.getLaplacianByMask(mask3D)
         else:
             print("Falling back on features per pixel method.")
@@ -52,18 +55,17 @@ class FeatureGenerator:
     
     def getLevelFeature(self, level, x,y,z):
         """Returns a scalar representing the feature at the given position for the given level."""
-        if self.Level == 1:
+        if level == 1:
             return self.getIntensity(x, y, z)
-        if self.Level == 2:
+        if level == 2:
             return self.getLaplacian(x, y, z)
-        if self.Level == 3:
+        if level == 3:
             return self.getEntropy(x,y,z, windowSize=5)
-        if self.Level == 4:
+        if level == 4:
             return self.getEdges(x, y, z)
         else:
             raise ValueError("Level {} not supported.".format(level))
     
-    #TODO cascade 1 == 2?
     def getAllFeatures(self, x,y,z): #TODO distance from lung wall?
         """Returns a ndarray (1xL) containing the feature vector, up to the current level, for the given datapoint."""
         z = int(z)
@@ -76,37 +78,7 @@ class FeatureGenerator:
             allFeatures.append(lvlFeature)
         
         return np.array(allFeatures).reshape((1,-1))
-        #global 3D features
-        #getEdges = fgen.getEdges()
-        
-        #2D slice features (TODO only calculate once)
-        #sliceEntropy = fgen.image_entropy(z)
-        #entropy2 = fgen.pixelentropy(z)
-        #blobs = fgen.blobdetection(z)
-        
-                
-        #get pixel features from 3D features
-        #pixelFeatures += (getEdges[x,y,z],)
-        #get pixel features from slice features
-        #pixelFeatures += (sliceEntropy,)
-        #pixelFeatures += (entropy2[x,y],)
-        #for blob in blobs:
-        #    pixelFeatures += (blob[x,y],)
-        #pixel features
-        #pixelFeatures += (fgen.forbeniusnorm(x,y,z),)
-        #pixelFeatures += fgen.neighbours(x,y,z)
-        
-        #for windowSize in np.arange(3,MAX_FEAT_WINDOW,2):
-        #    pixelFeatures += fgen.greyvaluefrequency(x,y,z, windowSize)
-        #    pixelFeatures += fgen.averaging3D(x,y,z, windowSize)
-        #    pixelFeatures += fgen.greyvaluecharateristic(x,y,z, windowSize)
-        #    pixelFeatures += fgen.windowFeatures(x,y,z, windowSize)
-        
-        #return pixelFeatures
-    
-    ############################################################
-    #featurevector[1]= abs/ref position and gray value
-    ############################################################
+
     def getIntensity(self, x, y, z):
         """Returns a scalar representing the intensity at the given position."""
         return self.Data[x,y,z]
@@ -114,7 +86,6 @@ class FeatureGenerator:
     def getIntensityByMask(self, mask3D):
         """Returns an array (Nx1) containing the intensities of all the given positions."""
         intensities = self.Data[mask3D]
-        #count = len(intensities)
         return intensities.reshape((-1, 1))
     
     def getRelativePosition(self, x, y, z):
@@ -127,7 +98,6 @@ class FeatureGenerator:
         xsr = xs / float(h)
         ysr = ys / float(w)
         zsr = zs / float(d)
-        #coords = zip(xs, ys, zs)
         return np.vstack([xsr,ysr,zsr]).T
     
     def getRelativeZ(self, z):

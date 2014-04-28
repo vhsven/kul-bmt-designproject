@@ -27,16 +27,15 @@ tomography (CT) scans if one of the most studied CAD applications
 \cite{sluimer}.
 
 
-Currently, expert radiologists perfrom the investigation of the
+Currently, expert radiologists perform the investigation of the
 CT scans. They use the shape, the texture, the location and the growth rate of
 the volume of the nodule as clinical parameter to determine the malignancy of
 the nodules and to decide on the diagnosis of lung cancer. A jagged shape
-nodule is more likely to be lung cancer than a smoothed one. A fatty, bony,
+nodule is more likely to be lung cancer than a smooth one. A fatty, bony,
 watery nodule or a mixture of these different contents is less likely to
-indicate lung cancer than a nodule that is attached to a vessel. A lung wall
-attached nodule is typically diagnosed as benign if the volume-doubling periode
-is longer than 400 days \cite{wu}. Nevertheless, the examination of these scans
-is a time-consuming task and is not free from errors. Although small nodules are
+indicate lung cancer than a nodule that is attached to a vessel. A nodule
+attached to the lung wall is typically diagnosed as benign if the
+volume-doubling periode is longer than 400 days \cite{wu}. Nevertheless, the examination of these scans is a time-consuming task and is not free from errors. Although small nodules are
 in principle detectable in CT scans, a non-negligible fraction may be overlooked
 if they are situated in a maze of vessels of similar size \cite{ozekes}.
 FIGUUR
@@ -52,14 +51,14 @@ diameter up to 30 mm. On chest CT scans they appear as a rounded or
 irregular opacity. Many types of lung nodules can by distinguished on CT scans.
 A centrilobular nodule is separated by several millimeters from the pleural surfaces, fissures and
 interlobular septa. They range in size from a few millimeters to 10 millimeters.
-A micronodule is less than 3 millimeters in diameter. A ground-glass nodule -or
-non-solid nodule- appears on the CT scans as a hazy attenuation in the lung.
-This type of nodule does not efface the bronchial and vascular margins. A solid
-nodule shows a homogenous soft-tissue attenuation. Finally, a part-solid nodule
+A micronodule is less than 3 millimeters in diameter. A ground-glass nodule --
+or non-solid nodule -- appears on the CT scans as a hazy attenuation in the
+lung. This type of nodule does not efface the bronchial and vascular margins. A solid
+nodule shows a homogeneous soft-tissue attenuation. Finally, a part-solid nodule
 exhibits both ground-glass and solid soft-tissue attenuation characteristics
 \cite{nodule}. 
 
-The types of nodules stated above can again be categorised. Juxta-vascular
+The types of nodules stated above can be categorised. Juxta-vascular
 pulmonary nodules have significant connections to their neighbouring vessels.
 Pleural tail nodules have only thin connections to the neighbouring pleural
 wall. Well-circumscribed nodules on the other hand do not have a connection to
@@ -74,13 +73,15 @@ in particular situations, but if a detection algorithms really aims at being an
 asset for the radiologist, it should be able to detect all nodules while
 refusing as much false positives as possible.
 
-\subsection{Overview of the existing lung nodule detection systems}
+\subsection{Overview of existing lung nodule detection systems}
 As the demand for a reliable CAD system to detect pulmonary nodules is urgent, a
 lot of research has been dedicated to the matter. Several commercial systems
 have already been developed and many workstations that radiologists use to
 examinate CT scans offer on-board nodule detection or enhancement capabilities
-\cite{ginneken}.
+\cite{ginneken}. However, although a lot of efforts were made, the results shown
+in the various studies are rather diverse.
 
+\subsubsection{Commercial systems}
 In 2004 iCAD, Inc., provided lung cancer detection, analysis and tracking
 software for the TeraRecon's Aquarius product line. The latter licensed three
 software modules from iCAD. The iCAD QuickCueTM for example automatically
@@ -109,20 +110,61 @@ micronodules \cite{median}. And Siemens has developed the syngo.CT Lung CAD.
 They claim it is ``a fully automated computer assisted second reader tool'' that is designed to assist radiologists in
 the detection of solid pulmonary nodules \cite{siemens}.
 
-Apart from these numerous commercial systems also a lot of research centra
-have tried to come up with a successful pulmonary nodule detection system. The
-algorithms presented in a wide range of papers report however varying successes
-in the automated detection of nodules.
+\subsubsection{Automated lung detection systems: publications}
+Apart from these numerous commercial systems also a lot of academic research
+centra have tried to come up with a successful pulmonary nodule detection
+system. \cite{review} suggest that most CAD systems for the automated detection
+of lung nodules proceed according to a number of steps of which the first one is
+the acquisition of data. The detection of lung nodules is preferably performed
+in CT scans as they enable the visualisation of small volume and low-contrast
+nodules because of the limited slice thichness. A large number of chest CT scans
+are available in public databases such as the LIDC database. During the next
+step, the data are pre-processed to remove noise and artefacts. This might
+improve the quality of the images, but it is not necessary to do so.
 
-
+algemeen: stappen
+enkele voorbeelden
+overzichtstabel?
 
 \subsubsection{Performance of existing systems}
-\subsubsection{Detection systems}
+ The algorithms presented in a wide range of papers report varying
+ successes in the automated detection of nodules. However, it is very difficult
+ to compare studies against one another in a meaningful way due to differences
+ in the size of the datasets, the evaluation methods, the data selection
+ criteria and the characteristics of the nodules \cite{lee2010}. Especially comparing older and contemporary studies is
+ difficult as older ones may have used scans with thicker sections (range 2.5 -
+ 10 mm), on which small nodules are rather difficult to detect, than the scans
+ nowadays (2,5 mm) \cite{lee2010} \cite{ginneken} \cite{mur}. Some studies
+ focus on nodules below or above a certain size or on special types of nodules
+ (e.g. solid nodules). \cite{mur} performed an extended
+ literature review and found that the number of scans used for testing varied between 5 and 500 with a
+ median number of 29,5. Many of the studies included multiple scans from
+ individual patients, which means that the diversity of the available nodules
+ was reduced. Furthermore, the results of publications are often presented in a
+ diverse way. \cite{results} suggests the performance of CAD systems should be
+ presented a the sensitivity of the system, the specificity, the accuracy, the
+ error rate, the True Positive Rate and the False Positive Rate.
+ 
+ In order to improve the access to data, and hereby the comparability between
+ studies, the Lung Image Data Consortium (LIDC) created a publically available
+ database which provides researchers with a vast amount of test- and
+ trainingsdata. Nevertheless, as one can take different subdatasets from this
+ large database for the training and the testing of algorithms, it is still not
+ possible to compare results in an objective and meaningful way. Therefore,
+ \cite{ginneken} created ANODE09, a database of 55 scans and a web-based
+ framework which allows researchers to test their algorithms and to
+ compare results against one another.
+ 
+\subsection{Ensemble classifiers}
+- reden om classifiers te gaan gebruiken
 
+\subsubsection{Introduction to ensemble classifiers}
+voordelen/nadelen verschillende classifiers
 
+waarom random forest
 
-\subsection{Random Forests: mathematical background}
-
+\subsubsection{Random Forests}
+wisk achtergrond
 
 
 

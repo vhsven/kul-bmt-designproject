@@ -55,4 +55,5 @@ class Preprocessor:
     def loadThresholdMask(setID):
         mask = dicom.read_file("../data/LIDC-Masks/img{}.dcm".format(setID)).pixel_array.astype(bool)
         mask = np.rollaxis(mask, 0, 3)
+        print("Loaded mask for dataset {}.".format(setID))
         return mask

@@ -21,8 +21,8 @@ class Main:
         vshape = self.dfr.getVoxelShape()
         c = Classifier(data, vshape)
         
-        mask3D = Preprocessor.getThresholdMask(data)
-            
+        #mask3D = Preprocessor.getThresholdMask(data)
+        mask3D = Preprocessor.loadThresholdMask(1)
         for level in range(1, 3):
             print("Cascade level {}".format(level))
             #Phase 1: training

@@ -8,9 +8,10 @@ from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier  # @Un
 from sklearn.externals import joblib
 
 class Trainer:
-    def __init__(self, rootPath, maxPaths=99999):
+    def __init__(self, rootPath, setID, maxPaths=99999):
         self.RootPath = rootPath
         self.MaxPaths = maxPaths
+        self.IgnorePath = "LIDC-IDRI-{0:0>4d}".format(setID)
             
     def calculateSetTrainingFeatures(self, myPath, level):
         dfr = DicomFolderReader(myPath)
@@ -59,7 +60,7 @@ class Trainer:
         allFeatures = None
         allClasses = None
         for myPath in DicomFolderReader.findPaths(self.RootPath, self.MaxPaths):
-            if "LIDC-IDRI-0001" in myPath:
+            if self.IgnorePath in myPath:
                 continue        
             setFeatures, setClasses = self.calculateSetTrainingFeatures(myPath, level)
             if allFeatures is None:
@@ -77,7 +78,7 @@ class Trainer:
     def train(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
-        print("Training classifier...")
+        print("Training level {} classifier...".format(level))
         #model = RandomForestClassifier(n_estimators=30)
         model = ExtraTreesClassifier() #n_estimators=30
         clf = clone(model)
@@ -89,9 +90,19 @@ class Trainer:
         return clf
     
     @staticmethod
-    def save(clf, myFile='../data/models/model.pkl'):
+    def save(clf, level):
+        myFile = "../data/models/model_{}.pkl".format(level)
         joblib.dump(clf, myFile)
         
     @staticmethod
-    def load(myFile='../data/models/model.pkl'):
+    def load(level):
+        myFile = "../data/models/model_{}.pkl".format(level)
         return joblib.load(myFile)
+    
+    def loadOrTrain(self, level):
+        try:
+            clf = Trainer.load(level)
+            print("Loaded level {} classifier".format(level))
+            return clf
+        except:
+            return self.train(level)

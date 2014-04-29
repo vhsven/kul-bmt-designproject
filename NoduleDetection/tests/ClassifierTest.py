@@ -8,32 +8,33 @@ from Trainer import Trainer
 from Classifier import Classifier
         
 class Main:
-    def __init__(self, rootPath="../data/LIDC-IDRI", testSet=1):
+    def __init__(self, rootPath, testSet, maxPaths=999999):
         self.RootPath = rootPath
+        self.MaxPaths = maxPaths
+        self.TestSet = testSet
         myPath = DicomFolderReader.findPath(self.RootPath, testSet)
         self.dfr = DicomFolderReader(myPath)
     
     def main(self):
-        paths = int(raw_input("Enter #datasets: "))+1
-        trainer = Trainer(self.RootPath, maxPaths=paths)
+        trainer = Trainer(self.RootPath, self.TestSet, maxPaths=self.MaxPaths)
         
         data = self.dfr.getVolumeData()
         vshape = self.dfr.getVoxelShape()
-        c = Classifier(data, vshape)
+        clf = Classifier(data, vshape)
         
         #mask3D = Preprocessor.getThresholdMask(data)
-        mask3D = Preprocessor.loadThresholdMask(1)
+        mask3D = Preprocessor.loadThresholdMask(self.TestSet)
         for level in range(1, 3):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            clf = trainer.train(level)
-            #Trainer.save(clf, file="../data/models/model_{}.pkl".format(level))
-            #clf = Trainer.load(file="../data/models/model_{}.pkl".format(level))
+            model = trainer.train(level)
+            #Trainer.save(model, level)
+            #model = trainer.loadOrTrain(level)
             
             #Phase 2: test model
-            c.setLevel(level, clf)
+            clf.setLevel(level, model)
             
-            probImg3D, mask3D = c.generateProbabilityVolume(mask3D, threshold=0.01)
+            probImg3D, mask3D = clf.generateProbabilityVolume(mask3D, threshold=0.01)
             
             fig, _ = pl.subplots()
             pl.subplots_adjust(bottom=0.20)
@@ -74,5 +75,7 @@ class Main:
         ratio = 100.0 * nbVoxels / totalVoxels
         print("Done, {0} ({1:.2f}%) voxels remaining.".format(nbVoxels, ratio))
         
-m = Main()
+testSet = int(raw_input("Enter dataset # to be classified: "))
+maxPaths = int(raw_input("Enter # training datasets: "))+1
+m = Main("../data/LIDC-IDRI", testSet, maxPaths)
 m.main()

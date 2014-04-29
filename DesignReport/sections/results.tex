@@ -1,0 +1,27 @@
+\section{results}
+The comparative study of \cite{ginneken} indicated the importance of the
+algorithm - dataset match. From a number of studies the sensitivities at seven
+levels of false positive detection were calculated and then averaged. The best
+performing method in this study yielded an average sensitivity of 0.632 for the
+detection of all kinds of nodules. The sensitivity per nodule type was also
+provided: small nodules (0.634), large nodules (0.628), isolated nodules
+(0.609), vascular nodules (0.693), pleural nodules (0.435) and peri-fissural
+nodules (0.766).
+These results also show that the ease of nodule detection also depends on the
+type of nodule. As this information is not available in the annotations of the
+scans and as we did not cooperate with a radiologist, it is not possible to
+differentiate between the nodules in this project.
+
+Therefore, our aim will be to
+detect all types of nodules, regardless of their size or anatomical location.
+However, the annotations assign a probability of malignancy for each nodule.
+Separating the detected nodules into a malignancy or benignancy class is not the
+main aim of this project, but this might be implemented as an extra feature.
+In the ideal case, the algorithm would be able to do the processing in a couple
+of minutes. This would be very interesting for a commercial software product.
+However, considering the available computational power (a laptop) and the
+scripting language that is used, this would not be feasible. Python is an
+interpreted language which makes it inherently slower than compiled languages
+such as C++. Nevertheless, Python was chosen for its rapid prototyping
+abilities. Future work may implement our algorithm in C++ or another compiled
+language to speed up the computational process.

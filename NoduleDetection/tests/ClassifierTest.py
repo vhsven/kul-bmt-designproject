@@ -7,7 +7,9 @@ from Preprocessor import Preprocessor
 from Trainer import Trainer
 from Classifier import Classifier
 
-#TODO laplace on different scales -> 4D pyramid
+#TODO laplace on different scales -> 4D pyramid:
+# -> https://code.google.com/p/pythonxy/source/browse/src/python/scikits.image/PLATLIB/skimage/transform/pyramids.py?repo=xy-27&r=a902945e2d26c085937365e71d5bbce50f1c40c9
+
 class Main:
     def __init__(self, rootPath, testSet, maxPaths=999999):
         self.RootPath = rootPath

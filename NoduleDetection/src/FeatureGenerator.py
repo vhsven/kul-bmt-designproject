@@ -8,29 +8,47 @@ from skimage.filter.rank import entropy
 from skimage.morphology import disk
 import scipy.ndimage as nd
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
+from Preprocessor import Preprocessor
 
 class FeatureGenerator:
-    def __init__(self, data, vshape, level=1):
+    def __init__(self, setID, data, vshape, level=1):
+        self.SetID = setID
         self.Data = data
         self.VoxelShape = vshape
         self.Level = level
         self.Laplacian = None
+        self.BlurredEdges = None
         self.Edges = None
         self.Entropy = {} #TODO not used?
         self.PixelCount = None
         
     def __str__(self):
         return "Level {} Feature Generator".format(self.Level)
+    
+    def __del__(self):
+        del self.SetID
+        del self.Data
+        del self.VoxelShape
+        del self.Level
+        del self.Laplacian
+        del self.Edges
+        del self.Entropy
+        del self.PixelCount
         
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
     
+    # N: number of datapoints
+    # l(i): total features per level i
+    # L: total features over all levels
     def getLevelFeatureByMask(self, level, mask3D):
-        """Returns a ndarray (Nx1) containing the features for all given positions and for the given level.""" 
+        """Returns a ndarray (Nxl) containing the features for all given positions and for the given level.""" 
         if level == 1:
             return self.getIntensityByMask(mask3D)
         if level == 2:
-            return self.getLaplacianByMask(mask3D)
+            laplace = self.getLaplacianByMask(mask3D, np.array([7,7,7]) / np.array(self.VoxelShape))
+            edges = self.getBlurredEdgesByMask(mask3D, self.SetID, sigma=4.5)
+            return np.hstack([laplace, edges])
         else:
             print("Falling back on features per pixel method.")
             result = deque()
@@ -48,7 +66,7 @@ class FeatureGenerator:
         print("Generating features for {0} ({1:.2f}%) voxels.".format(nbVoxels, ratio))
         allFeatures = self.getLevelFeatureByMask(1, mask3D)
         for level in range(2, self.Level+1):
-            lvlFeature = self.getLevelFeatureByMask(level, mask3D) #Nx1
+            lvlFeature = self.getLevelFeatureByMask(level, mask3D) #Nxl
             allFeatures = np.hstack([allFeatures, lvlFeature])
         
         return allFeatures
@@ -58,7 +76,9 @@ class FeatureGenerator:
         if level == 1:
             return self.getIntensity(x, y, z)
         if level == 2:
-            return self.getLaplacian(x, y, z)
+            laplace = self.getLaplacian(x,y,z, np.array([7,7,7]) / np.array(self.VoxelShape))
+            edges = self.getBlurredEdges(x,y,z, self.SetID, sigma=4.5)
+            return np.array([laplace, edges])
         if level == 3:
             return self.getEntropy(x,y,z, windowSize=5)
         if level == 4:
@@ -70,12 +90,12 @@ class FeatureGenerator:
         """Returns a ndarray (1xL) containing the feature vector, up to the current level, for the given datapoint."""
         z = int(z)
         
-        #allFeatures = self.getLevelFeature(1, x, y, z)
-        allFeatures = deque()
-        for level in range(1, self.Level+1):
+        allFeatures = self.getLevelFeature(1, x, y, z)
+        #allFeatures = deque()
+        for level in range(2, self.Level+1):
             lvlFeature = self.getLevelFeature(level, x, y, z)
-            #np.hstack([allFeatures, lvlFeature])
-            allFeatures.append(lvlFeature)
+            allFeatures = np.hstack([allFeatures, lvlFeature])
+            #allFeatures.append(lvlFeature)
         
         return np.array(allFeatures).reshape((1,-1))
 
@@ -112,18 +132,35 @@ class FeatureGenerator:
         #count = len(zsr)
         return zsr.reshape((-1, 1))
     
-    def getLaplacian(self, x,y,z):
+    def getLaplacian(self, x,y,z, sigmas):
         if self.Laplacian is None:
-            self.Laplacian = nd.filters.laplace(self.Data)
+            self.Laplacian = nd.filters.gaussian_laplace(self.Data, sigmas)
         
         return self.Laplacian[x,y,z]
     
-    def getLaplacianByMask(self, mask3D):
+    def getLaplacianByMask(self, mask3D, sigmas):
         if self.Laplacian is None:
-            self.Laplacian = nd.filters.laplace(self.Data)
+            self.Laplacian = nd.filters.gaussian_laplace(self.Data, sigmas)
 
         return  self.Laplacian[mask3D].reshape((-1,1))
     
+    def getBlurredEdges(self, x,y,z, setID, sigma=4.5):
+        if self.BlurredEdges is None:
+            self.BlurredEdges = Preprocessor.loadThresholdMask(setID)
+            self.BlurredEdges = generic_gradient_magnitude(self.BlurredEdges, sobel).astype(np.int16)
+            self.BlurredEdges = nd.filters.gaussian_filter(self.BlurredEdges, sigma)
+            
+        return self.BlurredEdges[x,y,z]
+            
+    def getBlurredEdgesByMask(self, mask3D, setID, sigma=4.5):
+        if self.BlurredEdges is None:
+            self.BlurredEdges = Preprocessor.loadThresholdMask(setID)
+            self.BlurredEdges = generic_gradient_magnitude(self.BlurredEdges, sobel).astype(np.int16)
+            self.BlurredEdges = nd.filters.gaussian_filter(self.BlurredEdges, sigma)
+            
+        return self.BlurredEdges[mask3D].reshape((-1,1))
+            
+            
     ############################################################
     #featurevector[2]= greyvalue + related features in window
     ############################################################
@@ -495,8 +532,6 @@ class FeatureGenerator:
         if self.Edges == None:
             self.Edges = generic_gradient_magnitude(self.Data, sobel)
             
-        #TODO calculate more edge features
-        
         return self.Edges[x,y,z]
     
         #TODO haar-like features

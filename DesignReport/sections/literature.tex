@@ -199,6 +199,28 @@ evaluation on a set of 129 CT scans using a similarity index (SI) was performed.
 The average SI was above 93\% which shows stability of the algorithm. The
 average SI for two different readers was 79,5\%.
 
+Apart from improving the manual nodule delineation of the radiologists, an image
+processing algorithm may also increase their detection rate by assisting as a
+``second reader''. \cite{roos} assessed the diagnostic performance of
+radiologists -- with their years of experience ranging between 9 and 24
+years -- using incremental CAD assistance and their temporal variation.
+20 scans containing 190 non-calcified nodules with a magnitude of 3 mm and above
+were examined by three radiologists. After a free search the radiologists
+independently evaluated a number of CAD detections per scan. The
+average sensitivity of their free search was about 53\% (range, 44\% - 59\%) at
+1,15 false positives per scan. This increased up to 69\% (range, 59\% - 82\%)
+and a false positive rate of 1,45 per scan when using the CAD assistance. The
+increase in sensitivity, with only a minimal increase in false positives, was
+significant during a time period of 100 seconds. Then the increase in
+sensitivity flattened from 14\% to only 2\%. This evolution was due to the fact
+that the CAD nodules were presented to the radiologists in order of CAD score
+and was not due to a temporal change in the readers' performance. However, it
+was also noticed in this study that different readers may experience a variable
+benefit from the use of CAD as some readers tend to often reject true positive
+CAD candidates. This reduces the potential benefit of CAD assistance.
+Nevertheless, \cite{roos} states that CAD has the potential to equalise
+performance among readers by reducing individual detection errors.
+
 \cite{elbaz} proposed a three step algorithm to isolate lung nodules from
 spiral chest low-dose CT (LDCT) scans. In the first step the lung tissues were
 isolated by applying an iterative Markov-Gibbs-random-field (MGRF) based
@@ -256,9 +278,9 @@ image were classified into four classes: lung wall, parenchyma, bronchioles and
 nodules. The results form this classification were used to distuingish solitary
 nodules from attached ones. When this algorithm was used to detect nodules in
 the ANODE09 dataset an average detection rate of 37,8\% was obtained while the
-best performing method yielded a detection rate of 63,2\%. The latter algorithm
-was developed by \cite{mur} and uses the local image features -- shape index and
-curvedness -- to detect candidate nodules. Two successive k-nearest-neighbour
+best performing method yielded a detection rate of 63,2\%. The latter algorithm,
+ISI-CAD, was developed by \cite{mur} and uses the local image features -- shape
+index and curvedness -- to detect candidate nodules. Two successive k-nearest-neighbour
 (K-NN) classifiers are applied to reduce the number of false positives. This
 yielded a sensitivity of 80\% with an average of 4,2 false positives per scan.
 \cite{sluimer2003} also used k-NN for developing an algorithm which
@@ -310,8 +332,8 @@ non-CAC RF. This method also recorded the lowest execution time (10 seconds).
  presented a the sensitivity of the system, the specificity, the accuracy, the
  error rate, the True Positive Rate and the False Positive Rate.
  
- TABEL X GEEFT OVERZICHT WEER VAN BEST AND SLECHTS PRESTERENDE ALGORITHMS BASED
- ON EXHAUSTIVE LITERATURE REVIEW ??
+%TABEL X GEEFT OVERZICHT WEER VAN BEST AND SLECHTS PRESTERENDE ALGORITHMS BASED
+% ON EXHAUSTIVE LITERATURE REVIEW ??
  
  In order to improve the access to data, and thereby the comparability between
  studies, the Lung Image Data Consortium (LIDC) created a publically available
@@ -323,16 +345,67 @@ non-CAC RF. This method also recorded the lowest execution time (10 seconds).
  framework which allows researchers to test their algorithms and to
  compare results against one another.
  
-\subsection{Ensemble classifiers}
- methods met classifiers presteren beter (lee, 2010)
-- reden om classifiers te gaan gebruiken
+\subsection{Learning algorithms}
+CAD systems which implement a classifier tend to outperform the CAD systems
+which do not \cite{lee2010}. Therefore, the use of classifiers is very common in
+this field of research and many classifiers have been tested.
 
-\subsubsection{Introduction to ensemble classifiers}
-voordelen/nadelen verschillende classifiers
+\subsubsection{Classifiers used in nodule detection systems}
+\cite{caruana} compared the performance of a range of classifiers on eleven
+binary classification problems. The supervised learning algorithms that were
+used are Support Vector Machines, Neural Nets, Naive Bayes, Memory-Based
+Learning, Random Forests, Decision Trees, Bagged Trees, Boosted Trees and
+Boosted Stumps. Prior to calibration Bagged Trees, Random Forests and Neural
+Nets perform the best on average across all test problems. After calibration
+Boosted Trees outperformed all other methods. The performances of SVMs, Boosted
+Stumps and Naive Bayes were also dramatically improved by calibration. The
+performance of RF was not increased significantly. Overall, \cite{caruana}
+suggests calibrated boosted trees is the best learning algorithm. Random Forests
+are close second, followed by uncalibrated bagged trees, calibrated SVMs and
+uncalibrated Neural Nets. However, the training of Boosted Trees is inherently
+sequential which makes it slower to implement than RF. Another problem may be
+the noisyness of the data. Therefore, the choice and tuning of the parameters of
+the boosted trees (depth of trees, amount of trees, etc.) algorithm should be
+done carefully and this will take some time.
 
-waarom random forest
+Support Vector Machines (SVM) are widely used in the development
+of nodule detection CAD systems \cite{keshani, lee2010, ozekes}.
+According to \cite{ash} SVM even outperforms Random Forest (RF). However, SVM
+has some disadvantages. First of all, the featues to be used need to be determined
+in advance and there is no such thing as a standard feature set (see also
+\ref{sec:featureselection} ). In the ideal case these features should all have
+the same dimensions and/or magnitudes. With SVM problems may arise with noisy data
+and images are very often quite noisy. The time complexity of SVM increases as
+$O(n^2)$ \cite{svmcompex}.
 
-\subsubsection{Selection of the features}
+The best performing CAD system in the ANODE09 challenge, which is entirely
+dedicated to comparing nodule detection CAD systems, was the ISI-CAD algorithm
+\cite{ginneken}.
+ISI-CAD uses a k-nearest neighbour classifier to reduce the amount of false
+positives which has the disadvantage that the features should all be of the same
+magnitude in order to perform an optimal classification.
+
+Random Forests is a relatively new classification method which has not been
+exhaustively explored yet. ``Random Forests are a combination of tree predictors
+such that each tree depends on the values of a random vector sampled
+independently and with the same distribution for all trees in the forest. The
+generalisation error for forests converges to a limit as the number of trees in
+the forest becomes large'' \cite[~p.5]{breiman}. Therefore, RF is an ensemble
+learning method. Ensemble learners combine decisions of multiple classifiers to
+form an integrated output \cite{lee2010}. So given a test sample as the input,
+this input vector is put down each of the trees, each tree gives a
+classification and the forest selects the classification that has most votes.
+Therefore, the output of the RF depends on the combination of results from all
+individual trees. In this way a variance reduction is achieved and the output is
+made more robust against noise \cite{breiman, Lee2010, RFcompex}. RF has the
+advantage that the set of features do not need to be known in advance as the
+algorithm itself decides on itself which features to use. Therefore, a lot of
+features can be generated at will and the algorithm itself will decide on using
+them or not. The time complexity of RF increases as $O(nlog(n))$ \cite{RFcompex}
+which makes it more suitable than e.g. SVM for large datasets.
+ 
+
+\subsubsection{Selection of the features} \label{sec:featureselection}
 An non-exhaustive literature review revealed commonly used features used in
 automatic nodule detection. \cite{tartar} primarily used morphological features:
 area, perimeter, diameter, solidity, eccentricity, aspect ratio, compactness,
@@ -350,29 +423,13 @@ volume, CT value, convergence, diameter and overlapping area. The algorithm of
 and horizontal widths, regularity and vertical and horizontal black pixel
 ratios.
 
-\subsubsection{Random Forests}
-wisk achtergrond
-
-Support vector machines
--	Better than Random Forest according to Ashfaq et al. (2013)
--	Complexity is O(n2) at best in number of samples, based on Chang et al. (2011)
--	Problems with noisy data (which will be the case for this project)
--	Features need to be determined in advance (there is no standard feature set)
--	Problems if features do not have the same dimensions/magnitudes
-Calibrated boosted trees
--	Slightly better than Random Forest according to Caruana et al. (2006)
--	Problems with noise: choice and tuning of parameters of boosted trees method should be done carefully (which may take some time)
--	Training of the algorithm is inherently sequential (which makes it slower)
-Methode E, ISI-CAD
--	Best method according to ANODE09 comparison by van Ginneken et al. (2010)
--	False positive detection based on k-nearest neighbour classifier (new approach)
--	Problems if features do not have the same magnitudes (e.g. diameter of sphere or distance of nodule to certain point)
-Random forests
--	Complexity is O(n log n), which makes is suitable for larger datasets
--	No problem if features are not known in advance (RF can determine the main features for us)
--	Not extremely sensitive to noise
-By process of elimination, it was decided to use the Random Forest approach. An extra advantage of Random Forests is that this method has not been exhaustively explored yet in this field of research which makes it interesting to use. To increase the sensitivity and keep the computational cost as low as possible, this approach can be combined with a false positive reduction technique.
-
+These features are calculated based on a prior segmentation of the nodules. On
+the other hand, instead of doing a nodule segmentation first, a lot of features
+can be calculated on the image itself based on greyvalues, intensities,
+greyvalues in the neighbourhood, etc. Although this is not a very common
+approach, these features can be generated without any pre-processing of the
+image and can then be fed to a classifier to calculate a nodule-probability for
+each voxel.
 
 
 

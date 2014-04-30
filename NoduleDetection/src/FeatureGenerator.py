@@ -14,7 +14,7 @@ class FeatureGenerator:
         self.Data = data
         self.VoxelShape = vshape
         self.Level = level
-        self.Laplacian = {}
+        self.Laplacian = None
         self.Edges = None
         self.Entropy = {} #TODO not used?
         self.PixelCount = None
@@ -30,7 +30,7 @@ class FeatureGenerator:
         if level == 1:
             return self.getIntensityByMask(mask3D)
         if level == 2:
-            return self.getLaplacianByMask(mask3D, 1.5)
+            return self.getLaplacianByMask(mask3D, np.array([7,7,7]) / np.array(self.VoxelShape))
         else:
             print("Falling back on features per pixel method.")
             result = deque()
@@ -58,7 +58,7 @@ class FeatureGenerator:
         if level == 1:
             return self.getIntensity(x, y, z)
         if level == 2:
-            return self.getLaplacian(x, y, z, 1.5)
+            return self.getLaplacian(x, y, z, np.array([7,7,7]) / np.array(self.VoxelShape))
         if level == 3:
             return self.getEntropy(x,y,z, windowSize=5)
         if level == 4:
@@ -112,19 +112,19 @@ class FeatureGenerator:
         #count = len(zsr)
         return zsr.reshape((-1, 1))
     
-    def getLaplacian(self, x,y,z, sigma):
-        if sigma not in self.Laplacian.keys():
-            self.Laplacian[sigma] = nd.filters.gaussian_laplace(self.Data, sigma)
+    def getLaplacian(self, x,y,z, sigmas):
+        if self.Laplacian is None:
+            self.Laplacian = nd.filters.gaussian_laplace(self.Data, sigmas)
             #self.Laplacian = nd.filters.laplace(self.Data)
         
-        return self.Laplacian[sigma][x,y,z]
+        return self.Laplacian[x,y,z]
     
-    def getLaplacianByMask(self, mask3D, sigma):
-        if sigma not in self.Laplacian.keys():
+    def getLaplacianByMask(self, mask3D, sigmas):
+        if self.Laplacian is None:
             #self.Laplacian = nd.filters.laplace(self.Data)
-            self.Laplacian[sigma] = nd.filters.gaussian_laplace(self.Data, sigma)
+            self.Laplacian = nd.filters.gaussian_laplace(self.Data, sigmas)
 
-        return  self.Laplacian[sigma][mask3D].reshape((-1,1))
+        return  self.Laplacian[mask3D].reshape((-1,1))
     
     ############################################################
     #featurevector[2]= greyvalue + related features in window

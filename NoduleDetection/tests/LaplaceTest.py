@@ -12,6 +12,8 @@ cc = dfr.getCoordinateConverter()
 reader = XmlAnnotationReader(myPath, cc)
 for c, r in reader.getNodulePositions():
     print c, r
+vh,vw,vd = dfr.getVoxelShape()
+voxelShape = np.array([vh,vw,vd])
 vData = dfr.getVolumeData()
 vLap = None
 vLapMed = None
@@ -31,7 +33,6 @@ def update_slice(mySlice):
     mySlice = int(mySlice)
     sData = vData[:,:,mySlice]
     sLap = vLap[:,:,mySlice]
-    sLapMed = vLapMed[:,:,mySlice]
     
     sp1.clear()
     sp2.clear()
@@ -39,19 +40,21 @@ def update_slice(mySlice):
     
     sp1.set_title("Slice {}".format(mySlice))
     sp2.set_title("Laplacian")
-    sp3.set_title("Laplacian + Median")
+    sp3.set_title("Ignore")
     sp1.imshow(sData, cmap=pylab.cm.bone)
     sp2.imshow(sLap, cmap=pylab.cm.jet)
-    sp3.imshow(sLapMed, cmap=pylab.cm.jet)
+    sp3.imshow(sLap, cmap=pylab.cm.jet)
     fig.canvas.draw()
     
 def update_sigma(sigma):
     sp2.set_title("Updating...")
     fig.canvas.draw()
-    global vLap, vLapMed
-    vLap = nd.filters.gaussian_laplace(vData, sigma)
+    global vLap
+    sigmas = np.array([sigma, sigma, sigma]) / voxelShape
+    print sigmas
+    vLap = nd.filters.gaussian_laplace(vData, sigmas)
     #vLapMed = nd.filters.median_filter(vLap, size=10)
-    vLapMed = nd.filters.convolve(vLap, np.ones((5,5,5)))
+    #vLapMed = nd.filters.convolve(vLap, np.ones((5,5,5)))
     #vLap = abs(vLap)
     
     update_slice(slSlider.val)
@@ -62,4 +65,3 @@ siSlider.on_changed(update_sigma)
 slSlider.on_changed(update_slice)
 
 pylab.show()
-

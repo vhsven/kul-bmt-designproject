@@ -2,13 +2,15 @@ import numpy as np
 from FeatureGenerator import FeatureGenerator
 
 class Classifier:
-    def __init__(self, data, vshape):
+    def __init__(self, setID, data, vshape):
+        self.SetID = setID
         self.Data = data
         self.VoxelShape = vshape
         self.clf = None
         self.fgen = None
         
     def __del__(self):
+        del self.SetID
         del self.Data
         del self.VoxelShape
         del self.clf
@@ -18,7 +20,7 @@ class Classifier:
         return self.fgen is not None and self.clf is not None
     
     def setLevel(self, level, clf):
-        self.fgen = FeatureGenerator(self.Data, self.VoxelShape, level)
+        self.fgen = FeatureGenerator(self.SetID, self.Data, self.VoxelShape, level)
         self.clf = clf
         
 #     @staticmethod

@@ -118,7 +118,7 @@ for i in range(bins):
     Mlow[i] = sumM + i*p[i] - Mhigh[i]
     
     # step 2: calculate the mean values of both regions        
-    muLow[i] = Mlow[i] / Tlow[i] #TODO check division by zero
+    muLow[i] = Mlow[i] / Tlow[i]
     muHigh[i] = Mhigh[i] / Thigh[i]
 
 if SHOW_PLOTS:

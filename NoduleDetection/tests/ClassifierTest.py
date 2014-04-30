@@ -6,7 +6,8 @@ from DicomFolderReader import DicomFolderReader
 from Preprocessor import Preprocessor
 from Trainer import Trainer
 from Classifier import Classifier
-        
+
+#TODO laplace on different scales -> 4D pyramid
 class Main:
     def __init__(self, rootPath, testSet, maxPaths=999999):
         self.RootPath = rootPath
@@ -20,7 +21,7 @@ class Main:
         
         data = self.dfr.getVolumeData()
         vshape = self.dfr.getVoxelShape()
-        clf = Classifier(data, vshape)
+        clf = Classifier(self.TestSet, data, vshape)
         
         #mask3D = Preprocessor.getThresholdMask(data)
         mask3D = Preprocessor.loadThresholdMask(self.TestSet)

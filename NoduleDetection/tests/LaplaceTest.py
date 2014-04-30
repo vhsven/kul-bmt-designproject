@@ -4,6 +4,8 @@ import scipy.ndimage as nd
 from matplotlib.widgets import Slider
 from DicomFolderReader import DicomFolderReader
 from XmlAnnotationReader import XmlAnnotationReader
+from scipy.ndimage.filters import generic_gradient_magnitude, sobel
+from Preprocessor import Preprocessor
 
 setID = int(raw_input("Load dataset #: "))
 myPath = DicomFolderReader.findPath("../data/LIDC-IDRI", setID)
@@ -14,6 +16,7 @@ for c, r in reader.getNodulePositions():
     print c, r
 vh,vw,vd = dfr.getVoxelShape()
 voxelShape = np.array([vh,vw,vd])
+mask3D = Preprocessor.loadThresholdMask(setID)
 vData = dfr.getVolumeData()
 vLap = None
 vLapMed = None
@@ -33,6 +36,7 @@ def update_slice(mySlice):
     mySlice = int(mySlice)
     sData = vData[:,:,mySlice]
     sLap = vLap[:,:,mySlice]
+    sLapMed = vLapMed[:,:,mySlice]
     
     sp1.clear()
     sp2.clear()
@@ -41,21 +45,22 @@ def update_slice(mySlice):
     sp1.set_title("Slice {}".format(mySlice))
     sp2.set_title("Laplacian")
     sp3.set_title("Ignore")
-    sp1.imshow(sData, cmap=pylab.cm.bone)
-    sp2.imshow(sLap, cmap=pylab.cm.jet)
-    sp3.imshow(sLap, cmap=pylab.cm.jet)
+    sp1.imshow(sData, cmap=pylab.cm.bone)  # @UndefinedVariable
+    sp2.imshow(sLap, cmap=pylab.cm.jet)  # @UndefinedVariable
+    sp3.imshow(sLapMed, cmap=pylab.cm.jet)  # @UndefinedVariable
     fig.canvas.draw()
     
 def update_sigma(sigma):
     sp2.set_title("Updating...")
     fig.canvas.draw()
-    global vLap
+    global vLap, vLapMed
     sigmas = np.array([sigma, sigma, sigma]) / voxelShape
-    print sigmas
+    print "sigma: ", sigmas
     vLap = nd.filters.gaussian_laplace(vData, sigmas)
-    #vLapMed = nd.filters.median_filter(vLap, size=10)
-    #vLapMed = nd.filters.convolve(vLap, np.ones((5,5,5)))
-    #vLap = abs(vLap)
+    print vLap.min(), vLap.max()
+    #vLapMed = np.bitwise_and(vLap < 10, vLap > -10)
+    vLapMed = generic_gradient_magnitude(mask3D, sobel).astype(float)
+    vLapMed = nd.filters.gaussian_filter(vLapMed, 4.5)
     
     update_slice(slSlider.val)
 

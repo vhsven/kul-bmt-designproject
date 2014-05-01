@@ -10,7 +10,7 @@ provided a set of characteristics for each nodule found: region, subtlety,
 spiculation, internal structure, spiculation, lobulation, shape (sphericity),
 solidity, margin, and likelihood of malignancy \cite{lidcbase}.
 
-AANTAL NODULES IN SCANS (MAX AND MIN GROOTTE?)
+% TODO AANTAL NODULES IN SCANS (MAX AND MIN GROOTTE?)
 
 The LIDC/IDRI database consists of 1018 thoracic CT scans that are obtained from
 a heterogeneous range of scanner models (seven GE Medical Systems LightSpeed
@@ -147,31 +147,37 @@ features are implemented. The first feature for example is the greyvalue of each
 voxel. This is a feature we get ``for free'' as they are readily available and
 nothing has to be calculated. The algorithm only decides on which threshold it
 uses to separate nodules from non-nodules. Using this simple feature a large
-part of the voxels is already eliminated. These voxels are also removed from the
-trainingset and only the remaining voxels are taken to the next level in the
-cascaded classifier. The second feature is a more complex feature and therefore
-it requires more computational power. However, this is not a problem anymore as
-the amount of voxels to be processed is reduced. At the second level again a
-number of voxels are eliminated and removed from the dataset. The number of
-levels, and therefore the number of features, can be increased till the end
-results are satisfying. This however is to be decided by the user. The
-classifier is organised this way as both memory and CPU time are limited. The
-result of this step is the creation of a RF classifier model. This model is then
-tested in the next step on new data to assess the performance of the model.
+part of the voxels can already be eliminated by setting a fixed threshold.
+The voxels with a probability that is lower than this threshold are considered
+not to be nodules. These voxels are also removed from the trainingset and only
+the remaining voxels are taken to the next level in the cascaded classifier. The
+choice of the threshold is made in a empirical way. The second feature is a more
+complex feature and therefore it requires more computational power. However,
+this is not a problem anymore as the amount of voxels to be processed is
+reduced. At the second level again a number of voxels are eliminated and removed
+from the dataset. The number of levels, and therefore the number of features,
+can be increased till the end results are satisfying. This however is to be
+decided by the user. The classifier is organised this way as both memory and CPU
+time are limited. The result of this step is the creation of a RF classifier
+model. This model is then tested in the next step on new data to assess the
+performance of the model.
 
+% TODO crossvalidatie
 
 \subsubsection{Testing Cascaded classifier}
+The model that was generated in the previous step is now applied on new data to
+estimate the value of the added feature in the next level of the classifier.
+The question we ask ourselves here is whether a substantial amount of
+non-nodule voxels are again removed from the dataset without removing the nodule
+voxels as well. If this is the case the feature is kept at that level, otherwise
+another feature is implemented.
 
+The assessment is performed based on a probability image that is generated after
+the model is applied on the new dataset. For each voxel in this dataset a
+feature vector is calculated and this feature vector is then pushed down the
+trees of the RF classifier. After each voxel is given a certain probability, the
+probability image is generated.
 
--	GenerateProbabilityVolume op basis van een set punten (for loop)
-o	Bereken features per punt
-o	Geef deze features als input aan Classifier: probabiliteitsimage
-	Selectie van punten op basis van probabiliteitswaarden (thresholding
-empirisch bepaald)
-	Punten met voldoende hoge probabiliteitswaarde worden als input gegeven aan volgende level in cascaded classifier
-Opmerking: zowel in trainer als in classifier heb je parameter ‘Level’ waarin je kan aangeven hoe diep je in cascade zit
-
-crossvalidatie
 
 \subsubsection{Feature extraction} \label{sec:featureExtraction}
 

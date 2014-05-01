@@ -1,5 +1,41 @@
 \section{Algorithms}
 
+\subsection{Datasets}
+The RF algorithm was trained and tested on \ldots and \ldots CT scans,
+subsampled from the LIDC/IDRI database (freely available at
+http://cancerimagingarchive.net/), consisting of \ldots and \ldots slices
+respectively. The pixel size of the scans varied between 0,586 to 0,963 mm,
+while the slice thickness varied between 1,25 or 2,5 mm. Together with the
+original DICOM images the associated XML files were obtained. These XML files
+provided a set of characteristics for each nodule found: region, subtlety,
+spiculation, internal structure, spiculation, lobulation, shape (sphericity),
+solidity, margin, and likelihood of malignancy \cite{lidcbase}.
+
+The LIDC/IDRI database consists of 1018 thoracic CT scans that are obtained from
+a heterogeneous range of scanner models (seven GE Medical Systems LightSpeed
+scanner models, four Philips Brilleance scanner models, five Siemens Definition,
+Emotion, and Sensation scanner models and one Toshiba Aquilion scanner model).
+The database includes only one scan per patient so the scans are not correlated.
+The nodules in the scans were delineated by at least four different expert
+radiologists to indentificate as much nodules as possible. For this purpose the
+indentification process was also subdivided into two phases: a blinded read
+phase and an unblinded read phase. During the initial blinded read phase each
+radiologist independently reviewed all scans and indicated the nodules in the
+range of 3 to 30 mm, the nodules smaller than 3 mm (if not clearly benign) and
+the non-nodules (other pulmonary lesions e.g. an apical scar) larger or equal to
+3 mm. In the subsequent unblinded read phase the anonymized blinded read results
+of all radiologists were revealed to each of the radiologists who then
+independently reviewed their marks along with the anonymous marks of their
+colleagues. The delineation of the nodules was done completely manually or in a
+semiautomated way. This was allowed as a study on this topic showed that the
+variation in nodule delineation done by different radiologists
+substantially exceeded the variation derived from different software tools
+\cite{lidcbase}.
+
+
+
+
+
 
 welke materialen?
 \begin{enumerate}
@@ -12,15 +48,18 @@ welke materialen?
 growing; python)
 \end{enumerate}
 
+\subsection{Training phase}
+
 klassendiagram: hoe is programma opgebouwd?
 TRAINING + TEST
 \begin{enumerate}
 \item stappen die doorlopen worden + fig
 \item welke algorithmes gebruikt + wat doen ze + waarom die keuze?
-\item vergelijken keuzes met literatuur/commerciële systemen?
+\item vergelijken keuzes met literatuur/commerciele systemen?
 \item crossvalidatie
 \end{enumerate}
 
+\subsection{Validation phase}
 
 trainingstage + teststage
 tussenresultaten: moeilijkheden, opl, \ldots

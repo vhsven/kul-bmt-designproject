@@ -1,10 +1,8 @@
 import numpy as np
-from collections import deque
 from FeatureGenerator import FeatureGenerator
 from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
-from sklearn import clone
-from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier  # @UnusedImport
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 import re
 
@@ -17,7 +15,9 @@ class Trainer:
     def calculateSetTrainingFeatures(self, myPath, level):
         m = re.search('LIDC-IDRI-(\d\d\d\d)', myPath)
         setID = int(m.group(1))
+        print("Processing set {}: '{}'".format(setID, myPath))
         dfr = DicomFolderReader(myPath)
+        dfr.compress()
         cc = dfr.getCoordinateConverter()
         finder = PixelFinder(myPath, cc)
         data = dfr.getVolumeData()
@@ -25,26 +25,32 @@ class Trainer:
         vshape = dfr.getVoxelShape()
         fgen = FeatureGenerator(setID, data, vshape, level)
         nbNodules = len(finder.Reader.Nodules)
-        print("Processing set {}: '{}'".format(setID, myPath))
         print("\tFound {} nodules.".format(nbNodules))
         
-        pixelsP, pixelsN = finder.getLists(shape, radiusFactor=0.33)
+        #pixelsP, pixelsN = finder.getLists(shape, radiusFactor=0.33)
         print("\tProcessing pixels...")
         
         #Calculate features of nodule pixels
-        nbNodulePixels = len(pixelsP)
-        x,y,z = pixelsP[0]
-        setFeatures = fgen.getAllFeatures(x,y,z)
-        for x,y,z in pixelsP[1:]:
-            pixelFeatures = fgen.getAllFeatures(x, y, z) #1xL ndarray
-            setFeatures = np.vstack([setFeatures, pixelFeatures])
-        print("\tProcessed {} nodules pixels.".format(nbNodulePixels))
+        #nbNodulePixels = len(pixelsP)
+        #x,y,z = pixelsP[0]
+        #setFeatures = fgen.getAllFeatures(x,y,z)
+        #for x,y,z in pixelsP[1:]:
+        #    pixelFeatures = fgen.getAllFeatures(x, y, z) #1xL ndarray
+        #    setFeatures = np.vstack([setFeatures, pixelFeatures])
+        #print("\tProcessed {} nodules pixels.".format(nbNodulePixels))
         
         #Calculate allFeatures of random non -nodule pixels
-        for x,y,z in pixelsN:
-            pixelFeatures = fgen.getAllFeatures(x, y, z)
-            setFeatures = np.vstack([setFeatures, pixelFeatures])
+        #for x,y,z in pixelsN:
+        #    pixelFeatures = fgen.getAllFeatures(x, y, z)
+        #    setFeatures = np.vstack([setFeatures, pixelFeatures])
+        #print("\tProcessed {} random non-nodules pixels.".format(nbNodulePixels))
+        
+        maskP, maskN, nbNodulePixels = finder.getMasks(shape, radiusFactor=0.33)
+        featuresP = fgen.getAllFeaturesByMask(maskP)
+        print("\tProcessed {} nodules pixels.".format(nbNodulePixels))
+        featuresN = fgen.getAllFeaturesByMask(maskN)
         print("\tProcessed {} random non-nodules pixels.".format(nbNodulePixels))
+        setFeatures = np.vstack([featuresP, featuresN])
         
         #Create classification vector
         setClasses = np.zeros(setFeatures.shape[0], dtype=np.bool)
@@ -82,9 +88,8 @@ class Trainer:
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
         print("Training level {} classifier...".format(level))
-        #model = RandomForestClassifier(n_estimators=30)
-        model = ExtraTreesClassifier() #n_estimators=30
-        clf = clone(model)
+        model = RandomForestClassifier(n_estimators=30)
+        #model = ExtraTreesClassifier() #n_estimators=30
         clf = model.fit(allFeatures, allClasses)
         scores = clf.score(allFeatures, allClasses)
         #scores2 = cross_val_score(clf, allFeatures, classes)

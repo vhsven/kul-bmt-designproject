@@ -7,6 +7,7 @@ from collections import deque
 from skimage.filter.rank import entropy
 from skimage.morphology import disk
 import scipy.ndimage as nd
+import scipy.ndimage.morphology as morph
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 from Preprocessor import Preprocessor
 
@@ -46,7 +47,7 @@ class FeatureGenerator:
                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
                 print(sigmas)
                 result[:,sigma-start] = self.getLaplacianByMask(mask3D, sigmas)
-            result[:,stop-start] = self.getBlurredEdgesByMask(mask3D, self.SetID, sigma=4.5)
+            result[:,stop-start] = self.getEdgeDistByMask(mask3D, self.SetID, sigma=4.5)
             return result
         else:
             print("Falling back on features per pixel method.")
@@ -127,12 +128,13 @@ class FeatureGenerator:
     def getLaplacianByMask(self, mask3D, sigmas):
         return nd.filters.gaussian_laplace(self.Data, sigmas)[mask3D]
             
-    def getBlurredEdgesByMask(self, mask3D, setID, sigma=4.5):
+    def getEdgeDistByMask(self, mask3D, setID, sigma=4.5):
         result = Preprocessor.loadThresholdMask(setID)
-        result = generic_gradient_magnitude(result, sobel).astype(np.float32)
-        result = nd.filters.gaussian_filter(result, sigma)
-            
+        #result = generic_gradient_magnitude(result, sobel).astype(np.float32)
+        #result = nd.filters.gaussian_filter(result, sigma)
+        result = morph.distance_transform_cdt(result, metric='taxicab').astype(np.float32)
         return result[mask3D]
+    
             
     ############################################################
     #featurevector[2]= greyvalue + related features in window

@@ -1,8 +1,11 @@
 import sys
 import dicom
+import pylab as pl
 import numpy as np
+import numpy.ma as ma
 from skimage.morphology import reconstruction, binary_dilation
 from Constants import DEFAULT_THRESHOLD
+from DicomFolderReader import DicomFolderReader
 
 class Preprocessor:
 #     def processSlice(self, index, threshold, erosionWindow):
@@ -57,3 +60,20 @@ class Preprocessor:
         mask = np.rollaxis(mask, 0, 3)
         print("Loaded lung mask for dataset {}.".format(setID))
         return mask
+    
+    @staticmethod
+    def checkMask(setID, mySlice, rootPath="../data/LIDC-IDRI"):
+        dfr = DicomFolderReader.create(rootPath, setID)
+        print dfr.Path
+        vData = dfr.getVolumeData()
+        vMask = Preprocessor.loadThresholdMask(setID)
+        
+        sData = vData[...,mySlice]
+        sMask = vMask[...,mySlice]
+        masked = ma.masked_array(sData, mask=~sMask)
+        
+        pl.imshow(masked, cmap=pl.gray())
+        pl.show()
+        
+#Preprocessor.checkMask(46, 89)
+        

@@ -1,3 +1,4 @@
+import re
 import dicom
 import numpy as np
 from os import listdir, walk
@@ -16,9 +17,21 @@ class DicomFolderReader:
                 yield dirPath
                 
     @staticmethod
-    def findPath(rootPath, index):
-        return list(DicomFolderReader.findPaths(rootPath))[index-1] #LIDC-IDRI-0001 has index 0
+    def findPath(rootPath, setID):
+        for dirPath, dirs, files in walk(rootPath):
+            if files and not dirs and "LIDC-IDRI-{0:0>4d}".format(setID) in dirPath:
+                return dirPath
+        #return list(DicomFolderReader.findPaths(rootPath))[index-1] #LIDC-IDRI-0001 has index 0
     
+    @staticmethod
+    def create(rootPath, setID):
+        myPath = DicomFolderReader.findPath(rootPath, setID)
+        return DicomFolderReader(myPath, True)
+    
+    def getSetID(self):
+        m = re.search('LIDC-IDRI-(\d\d\d\d)', self.Path)
+        return int(m.group(1))
+        
     def __init__(self, myPath, compress=False):
         myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".dcm") ]
         self.Slices = deque()

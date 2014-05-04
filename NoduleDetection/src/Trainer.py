@@ -4,7 +4,6 @@ from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
-import re
 
 class Trainer:
     def __init__(self, rootPath, setID, maxPaths=99999):
@@ -13,11 +12,10 @@ class Trainer:
         self.IgnorePath = "LIDC-IDRI-{0:0>4d}".format(setID)
             
     def calculateSetTrainingFeatures(self, myPath, level):
-        m = re.search('LIDC-IDRI-(\d\d\d\d)', myPath)
-        setID = int(m.group(1))
-        print("Processing set {}: '{}'".format(setID, myPath))
         dfr = DicomFolderReader(myPath)
         dfr.compress()
+        setID = dfr.getSetID()
+        print("Processing set {}: '{}'".format(setID, myPath))
         cc = dfr.getCoordinateConverter()
         finder = PixelFinder(myPath, cc)
         data = dfr.getVolumeData()

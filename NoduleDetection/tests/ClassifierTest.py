@@ -7,12 +7,14 @@ from Preprocessor import Preprocessor
 from Trainer import Trainer
 from Classifier import Classifier
 
+#TODO more sigmas
 #TODO save training
 #TODO validation
-#TODO generate masks
 #TODO cross validation
 #TODO opmerkingen David
-#TODO distance map
+#TODO check 1px nodules
+#TODO check wall nodules
+
 class Main:
     def __init__(self, rootPath, testSet, maxPaths=999999):
         self.RootPath = rootPath

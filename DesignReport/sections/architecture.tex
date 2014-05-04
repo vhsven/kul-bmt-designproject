@@ -186,6 +186,16 @@ probability image is generated.
 
 
 \subsubsection{Feature extraction} \label{sec:featureExtraction}
+The first feature implemented in the cascaded classifier is the greyvalue of the
+voxels. The mask that was generated in MeVisLab is now projected on the image
+and the greyvalues in the mask are taken into account by the classifier.
+
+The second feature is a kind of a blobdetector: Laplacians with different sigma
+values are applied on the remaining voxels. % getblurrededges?
+
+
+
+
 
 
 welke features

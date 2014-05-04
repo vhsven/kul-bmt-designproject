@@ -61,7 +61,7 @@ class Classifier:
         
         #result = self.clf.predict_proba(testFeatures)
         
-        probImg = np.zeros(mask3D.shape)
+        probImg = np.zeros(mask3D.shape, dtype=np.float32)
         probImg[mask3D] = result[:,1]
         
         mask = probImg > threshold

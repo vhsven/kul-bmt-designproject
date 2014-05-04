@@ -7,25 +7,29 @@ from XmlAnnotationReader import XmlAnnotationReader
 class PixelFinder:
     def __init__(self, myPath, cc):
         self.Reader = XmlAnnotationReader(myPath, cc)
-        self.PixelCacheP = None
-        self.PixelCacheN = None
         
     def __del__(self):
         del self.Reader
-        del self.PixelCacheP
-        del self.PixelCacheN
     
     def getLists(self, shape, method='circle', radiusFactor=1.0):
-        if self.PixelCacheP is None:
-            print("\tSearching for nodule pixels.")
-            self.PixelCacheP = list(self.findNodulePixels(shape, method, radiusFactor))
+        #print("\tSearching for nodule pixels.")
+        pixelCacheP = list(self.findNodulePixels(shape, method, radiusFactor))
             
-        if self.PixelCacheN is None:
-            print("\tSearching for non-nodule pixels.")
-            nbPixels = len(self.PixelCacheP)
-            self.PixelCacheN = list(self.findRandomNonNodulePixels(shape, nbPixels))
+        #print("\tSearching for non-nodule pixels.")
+        nbPixels = len(pixelCacheP)
+        pixelCacheN = list(self.findRandomNonNodulePixels(shape, nbPixels))
             
-        return self.PixelCacheP, self.PixelCacheN
+        return pixelCacheP, pixelCacheN
+    
+    def getMasks(self, shape, method='circle', radiusFactor=1.0):
+        
+        maskP = self.findNodulePixelsMask(shape, method, radiusFactor)
+        
+        nbNeeded = maskP.sum()    
+        maskN = self.findRandomNonNodulePixelsMask(shape, nbNeeded)
+            
+        return maskP, maskN, nbNeeded
+        
         
     ############# NEW METHOD ####################
     # generate random x,y,z
@@ -41,7 +45,7 @@ class PixelFinder:
             nbIterations += 1
             if nbIterations > 10000:
                 raise Exception("Can't find enough good random pixels in volume {}x{}x{}.".format(maxXsize, maxYsize, maxZsize))
-            x = random.randint(MAX_FEAT_WINDOW,maxXsize-MAX_FEAT_WINDOW-1) #TODO find more elegant solution
+            x = random.randint(MAX_FEAT_WINDOW,maxXsize-MAX_FEAT_WINDOW-1)
             y = random.randint(MAX_FEAT_WINDOW,maxYsize-MAX_FEAT_WINDOW-1)
             z = random.randint(MAX_FEAT_WINDOW,maxZsize-MAX_FEAT_WINDOW-1)
             v = np.array([x,y])
@@ -61,6 +65,14 @@ class PixelFinder:
             nbNeeded -= 1
             
             yield x, y, z
+            
+    def findRandomNonNodulePixelsMask(self, shape, nbNeeded):
+        mask3D = np.zeros(shape, dtype=np.bool)
+        
+        for x,y,z in self.findRandomNonNodulePixels(shape, nbNeeded):
+            mask3D[x,y,z] = True
+            
+        return mask3D
     
     def findNodulePixels(self, shape, method='circle', radiusFactor=1.0):
         m,n,_ = shape
@@ -75,6 +87,21 @@ class PixelFinder:
                 xs, ys = np.where(mask)
                 for x, y in zip(xs, ys):
                     yield x, y, z
+                    
+    def findNodulePixelsMask(self, shape, method='circle', radiusFactor=1.0):
+        mask3D = np.zeros(shape, dtype=np.bool)
+        m,n,_ = shape
+        for nodule in self.Reader.Nodules:
+            if method == 'circle':
+                masks, _, _ = nodule.Regions.getRegionMasksCircle(m,n, radiusFactor)
+            elif method == 'polygon':
+                _, masks = nodule.Regions.getRegionMasksPolygon(m,n)
+            else:
+                raise ValueError('unsupported method')
+            for z, mask in masks.iteritems():
+                mask3D[:,:,int(z)] = np.bitwise_or(mask, mask3D[:,:,int(z)]) 
+                
+        return mask3D
                     
     def plotHistograms(self, data):
         pixelsP = list(self.findNodulePixels(radiusFactor=0.33))

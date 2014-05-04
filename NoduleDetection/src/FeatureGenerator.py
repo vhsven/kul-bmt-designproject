@@ -16,10 +16,6 @@ class FeatureGenerator:
         self.Data = data
         self.VoxelShape = vshape
         self.Level = level
-        self.Laplacian = None
-        self.BlurredEdges = None
-        self.Edges = None
-        self.Entropy = {} #TODO not used?
         self.PixelCount = None
         
     def __str__(self):
@@ -30,9 +26,6 @@ class FeatureGenerator:
         del self.Data
         del self.VoxelShape
         del self.Level
-        del self.Laplacian
-        del self.Edges
-        del self.Entropy
         del self.PixelCount
         
     def getSlice(self, z):
@@ -46,9 +39,15 @@ class FeatureGenerator:
         if level == 1:
             return self.getIntensityByMask(mask3D)
         if level == 2:
-            laplace = self.getLaplacianByMask(mask3D, np.array([7,7,7]) / np.array(self.VoxelShape))
-            edges = self.getBlurredEdgesByMask(mask3D, self.SetID, sigma=4.5)
-            return np.hstack([laplace, edges])
+            N = mask3D.sum()
+            start,stop = 2,6
+            result = np.empty((N,stop-start+1))
+            for sigma in np.arange(start,stop):
+                sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
+                print(sigmas)
+                result[:,sigma-start] = self.getLaplacianByMask(mask3D, sigmas)
+            result[:,stop-start] = self.getBlurredEdgesByMask(mask3D, self.SetID, sigma=4.5)
+            return result
         else:
             print("Falling back on features per pixel method.")
             result = deque()
@@ -71,95 +70,69 @@ class FeatureGenerator:
         
         return allFeatures
     
-    def getLevelFeature(self, level, x,y,z):
-        """Returns a scalar representing the feature at the given position for the given level."""
-        if level == 1:
-            return self.getIntensity(x, y, z)
-        if level == 2:
-            laplace = self.getLaplacian(x,y,z, np.array([7,7,7]) / np.array(self.VoxelShape))
-            edges = self.getBlurredEdges(x,y,z, self.SetID, sigma=4.5)
-            return np.array([laplace, edges])
-        if level == 3:
-            return self.getEntropy(x,y,z, windowSize=5)
-        if level == 4:
-            return self.getEdges(x, y, z)
-        else:
-            raise ValueError("Level {} not supported.".format(level))
-    
-    def getAllFeatures(self, x,y,z): #TODO distance from lung wall?
-        """Returns a ndarray (1xL) containing the feature vector, up to the current level, for the given datapoint."""
-        z = int(z)
-        
-        allFeatures = self.getLevelFeature(1, x, y, z)
-        #allFeatures = deque()
-        for level in range(2, self.Level+1):
-            lvlFeature = self.getLevelFeature(level, x, y, z)
-            allFeatures = np.hstack([allFeatures, lvlFeature])
-            #allFeatures.append(lvlFeature)
-        
-        return np.array(allFeatures).reshape((1,-1))
-
-    def getIntensity(self, x, y, z):
-        """Returns a scalar representing the intensity at the given position."""
-        return self.Data[x,y,z]
+#     def getLevelFeature(self, level, x,y,z):
+#         """Returns a scalar representing the feature at the given position for the given level."""
+#         if level == 1:
+#             return self.getIntensity(x, y, z)
+#         if level == 2: #TODO this is very inefficient
+#             start,stop = 2,6
+#             result = np.empty((1,stop-start+1))
+#             for sigma in np.arange(start,stop):
+#                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
+#                 print sigmas
+#                 result[:,sigma-start] = self.getLaplacian(x,y,z, sigmas)
+#             result[:,stop-start] = self.getBlurredEdges(x,y,z, self.SetID, sigma=4.5)
+#             return result
+#         #if level == 3:
+#         #    return self.getEntropy(x,y,z, windowSize=5)
+#         #if level == 4:
+#         #    return self.getEdges(x, y, z)
+#         else:
+#             raise ValueError("Level {} not supported.".format(level))
+#     
+#     def getAllFeatures(self, x,y,z): #TODO distance from lung wall?
+#         """Returns a ndarray (1xL) containing the feature vector, up to the current level, for the given datapoint."""
+#         z = int(z)
+#         
+#         allFeatures = self.getLevelFeature(1, x, y, z)
+#         #allFeatures = deque()
+#         for level in range(2, self.Level+1):
+#             lvlFeature = self.getLevelFeature(level, x, y, z)
+#             allFeatures = np.hstack([allFeatures, lvlFeature])
+#             #allFeatures.append(lvlFeature)
+#         
+#         return np.array(allFeatures).reshape((1,-1))
+# 
+#     def getIntensity(self, x, y, z):
+#         """Returns a scalar representing the intensity at the given position."""
+#         return self.Data[x,y,z]
     
     def getIntensityByMask(self, mask3D):
         """Returns an array (Nx1) containing the intensities of all the given positions."""
         intensities = self.Data[mask3D]
         return intensities.reshape((-1, 1))
     
-    def getRelativePosition(self, x, y, z):
-        h,w,d = self.Data.shape
-        return float(x)/h, float(y)/w, float(z)/d
-    
-    def getRelativePositionByMask(self, mask3D):
-        h,w,d = self.Data.shape
-        xs, ys, zs = np.where(mask3D)
-        xsr = xs / float(h)
-        ysr = ys / float(w)
-        zsr = zs / float(d)
-        return np.vstack([xsr,ysr,zsr]).T
-    
-    def getRelativeZ(self, z):
-        _,_,d = self.Data.shape
-        return float(z)/d
-    
-    def getRelativeZByMask(self, mask3D):
-        _ ,_ ,d = self.Data.shape
-        _, _, zs = np.where(mask3D)
-        zsr = zs / float(d)
-        
-        #count = len(zsr)
-        return zsr.reshape((-1, 1))
-    
-    def getLaplacian(self, x,y,z, sigmas):
-        if self.Laplacian is None:
-            self.Laplacian = nd.filters.gaussian_laplace(self.Data, sigmas)
-        
-        return self.Laplacian[x,y,z]
+#     def getRelativePosition(self, x, y, z):
+#         h,w,d = self.Data.shape
+#         return float(x)/h, float(y)/w, float(z)/d
+#     
+#     def getRelativePositionByMask(self, mask3D):
+#         h,w,d = self.Data.shape
+#         xs, ys, zs = np.where(mask3D)
+#         xsr = xs / float(h)
+#         ysr = ys / float(w)
+#         zsr = zs / float(d)
+#         return np.vstack([xsr,ysr,zsr]).T
     
     def getLaplacianByMask(self, mask3D, sigmas):
-        if self.Laplacian is None:
-            self.Laplacian = nd.filters.gaussian_laplace(self.Data, sigmas)
-
-        return  self.Laplacian[mask3D].reshape((-1,1))
-    
-    def getBlurredEdges(self, x,y,z, setID, sigma=4.5):
-        if self.BlurredEdges is None:
-            self.BlurredEdges = Preprocessor.loadThresholdMask(setID)
-            self.BlurredEdges = generic_gradient_magnitude(self.BlurredEdges, sobel).astype(np.int16)
-            self.BlurredEdges = nd.filters.gaussian_filter(self.BlurredEdges, sigma)
-            
-        return self.BlurredEdges[x,y,z]
+        return nd.filters.gaussian_laplace(self.Data, sigmas)[mask3D]
             
     def getBlurredEdgesByMask(self, mask3D, setID, sigma=4.5):
-        if self.BlurredEdges is None:
-            self.BlurredEdges = Preprocessor.loadThresholdMask(setID)
-            self.BlurredEdges = generic_gradient_magnitude(self.BlurredEdges, sobel).astype(np.int16)
-            self.BlurredEdges = nd.filters.gaussian_filter(self.BlurredEdges, sigma)
+        result = Preprocessor.loadThresholdMask(setID)
+        result = generic_gradient_magnitude(result, sobel).astype(np.float32)
+        result = nd.filters.gaussian_filter(result, sigma)
             
-        return self.BlurredEdges[mask3D].reshape((-1,1))
-            
+        return result[mask3D]
             
     ############################################################
     #featurevector[2]= greyvalue + related features in window

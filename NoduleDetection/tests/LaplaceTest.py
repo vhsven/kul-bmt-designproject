@@ -59,7 +59,7 @@ def update_sigma(sigma):
     vLap = nd.filters.gaussian_laplace(vData, sigmas)
     print vLap.min(), vLap.max()
     #vLapMed = np.bitwise_and(vLap < 10, vLap > -10)
-    vLapMed = generic_gradient_magnitude(mask3D, sobel).astype(float)
+    vLapMed = generic_gradient_magnitude(mask3D, sobel).astype(np.float32)
     vLapMed = nd.filters.gaussian_filter(vLapMed, 4.5)
     
     update_slice(slSlider.val)

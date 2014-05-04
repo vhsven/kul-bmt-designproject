@@ -7,9 +7,10 @@ from Preprocessor import Preprocessor
 from Trainer import Trainer
 from Classifier import Classifier
 
-#TODO laplace on different scales -> 4D pyramid:
-# -> https://code.google.com/p/pythonxy/source/browse/src/python/scikits.image/PLATLIB/skimage/transform/pyramids.py?repo=xy-27&r=a902945e2d26c085937365e71d5bbce50f1c40c9
-
+#TODO save training
+#TODO validation
+#TODO generate masks
+#TODO cross validation
 class Main:
     def __init__(self, rootPath, testSet, maxPaths=999999):
         self.RootPath = rootPath
@@ -17,6 +18,7 @@ class Main:
         self.TestSet = testSet
         myPath = DicomFolderReader.findPath(self.RootPath, testSet)
         self.dfr = DicomFolderReader(myPath)
+        self.dfr.compress()
     
     def main(self):
         trainer = Trainer(self.RootPath, self.TestSet, maxPaths=self.MaxPaths)
@@ -31,7 +33,7 @@ class Main:
             print("Cascade level {}".format(level))
             #Phase 1: training
             model = trainer.train(level)
-            #Trainer.save(model, level)
+            Trainer.save(model, level)
             #model = trainer.loadOrTrain(level)
             
             #Phase 2: test model
@@ -47,8 +49,8 @@ class Main:
             sp3 = pl.subplot(133)
              
             #axes: left, bottom, width, height
-            sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, self.dfr.getNbSlices()-1, 0, valfmt='%1.0f')
-            tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, 0.5)
+            sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, self.dfr.getNbSlices()-1, 50, valfmt='%1.0f')
+            tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, 0.01)
             
             def update(val):
                 _threshold = tSlider.val
@@ -71,6 +73,8 @@ class Main:
             tSlider.on_changed(update)
             update(0)
             pl.show()
+            
+            probImg3D = None #free some memory
         
         h,w,d = mask3D.shape
         nbVoxels = mask3D.sum()

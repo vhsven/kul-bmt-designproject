@@ -56,7 +56,7 @@ class NoduleRegions:
             coords = self.getRegionCoords(z) #list of x,y,z tuples
             coords = np.array(coords)[:,[0,1]] #save x,y in numpy array
             centers[z] = coords.mean(axis=0)
-            r[z] = math.sqrt(max(((coords - centers[z])**2).sum(axis=1)))
+            r[z] = math.sqrt(max(((coords - centers[z])**2).sum(axis=1))) #TODO try min?
             
             #if r[z] < MIN_NODULE_RADIUS:
             #    r[z] = MIN_NODULE_RADIUS

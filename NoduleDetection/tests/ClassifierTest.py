@@ -11,6 +11,8 @@ from Classifier import Classifier
 #TODO validation
 #TODO generate masks
 #TODO cross validation
+#TODO opmerkingen David
+#TODO distance map
 class Main:
     def __init__(self, rootPath, testSet, maxPaths=999999):
         self.RootPath = rootPath

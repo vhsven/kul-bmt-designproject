@@ -9,11 +9,12 @@ from Classifier import Classifier
 
 #TODO more sigmas
 #TODO save training
-#TODO validation
+#TODO validation + optimale params
 #TODO cross validation
-#TODO opmerkingen David
+#TODO BB voor laplaciaan
 #TODO check 1px nodules
 #TODO check wall nodules
+#TODO delete set 43
 
 class Main:
     def __init__(self, rootPath, testSet, maxPaths=999999):
@@ -36,7 +37,7 @@ class Main:
         for level in range(1, 3):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            model = trainer.train(level)
+            model = trainer.trainAndValidate(level)
             Trainer.save(model, level)
             #model = trainer.loadOrTrain(level)
             

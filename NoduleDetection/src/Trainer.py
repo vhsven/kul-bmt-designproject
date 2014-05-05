@@ -2,8 +2,13 @@ import numpy as np
 from FeatureGenerator import FeatureGenerator
 from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
+from sklearn import cross_validation
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
+from sklearn.grid_search import GridSearchCV
+from sklearn.metrics.metrics import classification_report
+from sklearn.cross_validation import StratifiedKFold
+from Constants import NB_VALIDATION_FOLDS
 
 class Trainer:
     def __init__(self, rootPath, setID, maxPaths=99999):
@@ -82,16 +87,44 @@ class Trainer:
         
         return allFeatures, allClasses
     
+    def trainAndValidate(self, level):
+        allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
+        
+        print("Training level {} classifier...".format(level))
+        model = RandomForestClassifier(n_estimators=30) #, n_jobs=-1
+        print model.get_params()        
+        #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
+        #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
+        tuned_parameters = [{'min_samples_leaf': np.arange(5, 100, 10),  
+                             'min_samples_split': np.arange(5, 100, 10)}]
+        clfs = GridSearchCV(model, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
+        clfs.fit(allFeatures, allClasses)
+        clf = clfs.best_estimator_
+        #print(clfs.best_estimator_)
+        print(clfs.best_score_)
+        print(clfs.best_params_)
+        
+#        Default: min_samples_leaf=1, min_samples_split=2, n_estimators=10
+
+#        Level 1: (4 trainingsets)
+#           Accuracy: 0.833718244804
+#           Params: {'min_samples_split': 85, 'min_samples_leaf': 25}
+
+#        Level 2: min_samples_leaf=1, min_samples_split=21, n_estimators=31
+#           Accuracy: 0.991339491917
+#           Params: {'min_samples_split': 35, 'min_samples_leaf': 5} 
+        
+        #print("Scores: {}".format(scores))
+        #print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+        
+        return clf
+        
     def train(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
         print("Training level {} classifier...".format(level))
-        model = RandomForestClassifier(n_estimators=30)
-        #model = ExtraTreesClassifier() #n_estimators=30
+        model = RandomForestClassifier(n_estimators=30, n_jobs=-1)
         clf = model.fit(allFeatures, allClasses)
-        scores = clf.score(allFeatures, allClasses)
-        #scores2 = cross_val_score(clf, allFeatures, classes)
-        print("Score: {}".format(scores))
         
         return clf
     

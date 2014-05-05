@@ -74,6 +74,7 @@ class Preprocessor:
         
         pl.imshow(masked, cmap=pl.gray())
         pl.show()
-        
-#Preprocessor.checkMask(46, 89)
+
+if __name__ == "__main__":     
+    Preprocessor.checkMask(46, 89)
         

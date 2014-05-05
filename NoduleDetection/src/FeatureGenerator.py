@@ -42,9 +42,9 @@ class FeatureGenerator:
             return self.getIntensityByMask(mask3D)
         if level == 2:
             N = mask3D.sum()
-            start,stop = 2,4
+            start,stop = 2,8
             result = np.empty((N,stop-start+1))
-            for sigma in np.arange(start,stop, 0.5):
+            for sigma in np.arange(start,stop):
                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
                 print(sigmas)
                 result[:,sigma-start] = self.getLaplacianByMask(mask3D, sigmas)

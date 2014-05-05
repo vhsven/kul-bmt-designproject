@@ -5,7 +5,7 @@ class ExcludedFeatures:
     def __init__(self):
         self.Data = []
     
-    def neighbours(self, x,y,z): #TODO zoals windowFeatures?
+    def neighbours(self, x,y,z):
         # top - bottom neighbours
         Ptop = self.Data[x,y-1,z].astype('int32')
         Pbottom = self.Data[x,y+1,z].astype('int32')

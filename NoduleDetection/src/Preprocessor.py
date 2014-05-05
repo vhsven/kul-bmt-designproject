@@ -58,6 +58,11 @@ class Preprocessor:
     def loadThresholdMask(setID):
         mask = dicom.read_file("../data/LIDC-Masks/img{}.dcm".format(setID)).pixel_array.astype(bool)
         mask = np.rollaxis(mask, 0, 3)
+        z = mask.shape[2]
+        
+        #make sure mask is false at top and bottom to prevent out of bounds errors
+        mask[:,:,0:6] = False
+        mask[:,:,z-6:z] = False
         print("Loaded lung mask for dataset {}.".format(setID))
         return mask
     

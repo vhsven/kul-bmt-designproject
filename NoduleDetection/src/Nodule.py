@@ -38,7 +38,8 @@ class Nodule:
             nodule.Texture = int(chars.find("{http://www.nih.gov}texture").text)
             nodule.Malignancy = int(chars.find("{http://www.nih.gov}malignancy").text)
         
-        #parse regions of interest    
+        #parse regions of interest
+        #TODO ignore 1px Nodules
         regionList = xml.findall("{http://www.nih.gov}roi")
         nbRegions = len(regionList)
         if nbRegions > 0:

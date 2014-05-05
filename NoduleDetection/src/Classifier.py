@@ -6,22 +6,22 @@ class Classifier:
         self.SetID = setID
         self.Data = data
         self.VoxelShape = vshape
-        self.clf = None
+        self.model = None
         self.fgen = None
         
     def __del__(self):
         del self.SetID
         del self.Data
         del self.VoxelShape
-        del self.clf
+        del self.model
         del self.fgen
     
     def isLevelset(self):
-        return self.fgen is not None and self.clf is not None
+        return self.fgen is not None and self.model is not None
     
-    def setLevel(self, level, clf):
+    def setLevel(self, level, model):
         self.fgen = FeatureGenerator(self.SetID, self.Data, self.VoxelShape, level)
-        self.clf = clf
+        self.model = model
         
 #     @staticmethod
 #     def generatePixelList2D((h,w)):
@@ -57,9 +57,9 @@ class Classifier:
         for r in np.arange(0,m,nbRows):
             #print "[{}, {}[".format(r, r+nbRows)
             chunk = testFeatures[r:r+nbRows,:]
-            result[r:r+nbRows,:] = self.clf.predict_proba(chunk)
+            result[r:r+nbRows,:] = self.model.predict_proba(chunk)
         
-        #result = self.clf.predict_proba(testFeatures)
+        #result = self.model.predict_proba(testFeatures)
         
         probImg = np.zeros(mask3D.shape, dtype=np.float32)
         probImg[mask3D] = result[:,1]
@@ -78,7 +78,7 @@ class Classifier:
 #             testFeatures.append(pixelFeatures)
 #     
 #         testFeatures = np.array(testFeatures)
-#         result = self.clf.predict_proba(testFeatures)
+#         result = self.model.predict_proba(testFeatures)
 #         
 #         probImg = np.zeros(mask2D.shape)
 #         probImg[mask2D] = result[:, 1]

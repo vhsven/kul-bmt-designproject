@@ -68,10 +68,7 @@ def ValidateData(self, NodGeg):
     # 3D position= centre of gravity from bounding box
     # probability= mean of all probabilities of voxels in bouding box
     
-    # SCRIPT (van ginneken)
-    # is 'hit' situated in region around nodule centre (annotatie, radius 1,5)? yes, then TP
-    # is 'hit' not situated in region? then FP
-    
+        
     NodGegTF=[]
     dfr = DicomFolderReader.create("../data/LIDC-IDRI", 1)
     cc = dfr.getCoordinateConverter()

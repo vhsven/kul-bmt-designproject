@@ -6,11 +6,11 @@ from DicomFolderReader import DicomFolderReader
 from Preprocessor import Preprocessor
 from Trainer import Trainer
 from Classifier import Classifier
+from Validator import Validator
 
 #TODO more sigmas
 #TODO save training
 #TODO validation + optimale params
-#TODO cross validation
 #TODO BB voor laplaciaan
 #TODO check 1px nodules
 #TODO check wall nodules
@@ -37,9 +37,9 @@ class Main:
         for level in range(1, 3):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            model = trainer.trainAndValidate(level)
-            Trainer.save(model, level)
-            #model = trainer.loadOrTrain(level)
+            #model = trainer.trainAndValidate(level)
+            #Trainer.save(model, level)
+            model = trainer.loadOrTrain(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)
@@ -79,13 +79,21 @@ class Main:
             update(0)
             pl.show()
             
-            probImg3D = None #free some memory
+            #probImg3D = None #free some memory
         
         h,w,d = mask3D.shape
         nbVoxels = mask3D.sum()
         totalVoxels = h*w*d
         ratio = 100.0 * nbVoxels / totalVoxels
         print("Done, {0} ({1:.2f}%) voxels remaining.".format(nbVoxels, ratio))
+        
+        val = Validator(self.dfr.Path, self.dfr.getCoordinateConverter())
+        nodSeg = val.ClusteringData(probImg3D, self.TestSet)
+        NodGegT, NodGegF, lijstje, AmountTP, AmountFP, AmountFN = val.ValidateData(nodSeg)
+        print NodGegT
+        print NodGegF
+        print lijstje
+        print AmountTP, AmountFP, AmountFN
         
 testSet = int(raw_input("Enter dataset # to be classified: "))
 maxPaths = int(raw_input("Enter # training datasets: "))+1

@@ -91,21 +91,19 @@ class Trainer:
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
         print("Training level {} classifier...".format(level))
-        model = RandomForestClassifier(n_estimators=30) #, n_jobs=-1
-        print model.get_params()        
+        rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1
+        print rf.get_params()        
         #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
         #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
         tuned_parameters = [{'min_samples_leaf': np.arange(5, 100, 10),  
                              'min_samples_split': np.arange(5, 100, 10)}]
-        clfs = GridSearchCV(model, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
-        clfs.fit(allFeatures, allClasses)
-        clf = clfs.best_estimator_
-        #print(clfs.best_estimator_)
-        print(clfs.best_score_)
-        print(clfs.best_params_)
+        rfGrid = GridSearchCV(rf, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
+        rfGrid.fit(allFeatures, allClasses)
+        model = rfGrid.best_estimator_
+        #print(rfGrid.best_estimator_)
+        print(rfGrid.best_score_)
+        print(rfGrid.best_params_)
         
-#        Default: min_samples_leaf=1, min_samples_split=2, n_estimators=10
-
 #        Level 1: (4 trainingsets)
 #           Accuracy: 0.833718244804
 #           Params: {'min_samples_split': 85, 'min_samples_leaf': 25}
@@ -114,19 +112,37 @@ class Trainer:
 #           Accuracy: 0.991339491917
 #           Params: {'min_samples_split': 35, 'min_samples_leaf': 5} 
         
-        #print("Scores: {}".format(scores))
-        #print("Accuracy: %0.2f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
-        
-        return clf
+        return model
         
     def train(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
-        print("Training level {} classifier...".format(level))
-        model = RandomForestClassifier(n_estimators=30, n_jobs=-1)
-        clf = model.fit(allFeatures, allClasses)
+        print("Training level {} classifier...".format(level)) #TODO set params
+        if level == 1:
+            n_estimators = 30
+            min_samples_split = 2
+            min_samples_leaf = 1
+        elif level == 2:
+            n_estimators = 30
+            min_samples_split = 2
+            min_samples_leaf = 1
+        elif level == 3:
+            n_estimators = 30
+            min_samples_split = 2
+            min_samples_leaf = 1
+        elif level == 4:
+            n_estimators = 30
+            min_samples_split = 2
+            min_samples_leaf = 1
+        else:
+            n_estimators = 30
+            min_samples_split = 2
+            min_samples_leaf = 1
+            
+        rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf)
+        model = rf.fit(allFeatures, allClasses)
         
-        return clf
+        return model
     
     @staticmethod
     def save(clf, level):

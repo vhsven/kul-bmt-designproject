@@ -39,8 +39,13 @@ class FeatureGenerator:
         coords = zip(xs,ys,zs)
         count = len(coords)
         x,y,z = coords[0]
-        first = f(x, y, z, windowSize) 
-        result = np.zeros((count, len(first)))
+        first = f(x, y, z, windowSize)
+        if hasattr(first,"__len__"):
+            leng = len(first)
+        else:
+            leng = 1
+            
+        result = np.zeros((count, leng))
         result[0,:] = first
         for i in range(1, count):
             x,y,z = coords[i]

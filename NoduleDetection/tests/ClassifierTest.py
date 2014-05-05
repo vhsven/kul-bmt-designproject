@@ -34,19 +34,19 @@ class Main:
         for level in range(1, 5):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            #model = trainer.trainAndValidate(level)
-            #Trainer.save(model, level)
-            model = trainer.loadOrTrain(level)
+            model = trainer.trainAndValidate(level)
+            Trainer.save(model, level)
+            #model = trainer.loadOrTrain(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)
-            
-            probImg3D, mask3D = clf.generateProbabilityVolume(mask3D, threshold=0.03)
             print 132,mask3D[:,:,132].sum()
             print 131,mask3D[:,:,131].sum() #TODO figure out 133 out of bounds error
             print 130,mask3D[:,:,130].sum()
             print 129,mask3D[:,:,129].sum()
             print 128,mask3D[:,:,128].sum()
+            
+            probImg3D, mask3D = clf.generateProbabilityVolume(mask3D, threshold=0.03)
             fig, _ = pl.subplots()
             pl.subplots_adjust(bottom=0.20)
              

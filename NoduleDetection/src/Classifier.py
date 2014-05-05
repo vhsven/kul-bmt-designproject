@@ -55,7 +55,7 @@ class Classifier:
         
         result = np.empty((m,2))
         for r in np.arange(0,m,nbRows):
-            print "[{}, {}[".format(r, r+nbRows)
+            #print "[{}, {}[".format(r, r+nbRows)
             chunk = testFeatures[r:r+nbRows,:]
             result[r:r+nbRows,:] = self.clf.predict_proba(chunk)
         

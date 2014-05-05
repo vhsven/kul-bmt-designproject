@@ -37,6 +37,7 @@ def update_slice(mySlice):
     mySlice = int(mySlice)
     sMask = mask3D[:,:,mySlice]
     sData = vData[:,:,mySlice]
+    #sData[~sMask] = sData.min()
     msData = ma.masked_array(sData, mask=~sMask)
     sLap = vLap[:,:,mySlice]
     msLap = ma.masked_array(sLap, mask=~sMask)

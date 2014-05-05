@@ -37,9 +37,9 @@ class Main:
         for level in range(1, 3):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            #model = trainer.trainAndValidate(level)
-            #Trainer.save(model, level)
-            model = trainer.loadOrTrain(level)
+            model = trainer.trainAndValidate(level)
+            Trainer.save(model, level)
+            #model = trainer.loadOrTrain(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)

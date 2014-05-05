@@ -19,8 +19,7 @@ class Validator:
         BB = ndimage.find_objects(label_im) # provides array of tuples: 3 tuples in 3D per bounding box (3 hoekpunten)
         NodGeg = []
         Nr = scannumber
-        for i in range(0,len(BB)-1):
-            bb = BB[i]
+        for bb in BB:
             point1 = [ f.start for f in bb]
             point2 = [ f.stop for f in bb]
             
@@ -72,9 +71,10 @@ class Validator:
             for pixelZ in regionCenters.keys():
                 c = regionCenters[pixelZ]
                 r = regionRs[pixelZ]
-                for i in range(0,len(NodGeg)-1):
+                print(len(NodGeg))
+                for cluster in NodGeg:
                     #NodGeg = Nr,xm,ym,zm,Mprob
-                    v=NodGeg[i,1:3]
+                    v=cluster[1:3]
                     
                                             
                     if sum((v-c)**2) < (4*r)**2:
@@ -84,16 +84,16 @@ class Validator:
                             RestAm -= 1
                             
                         if len(NodGegT) == 0:
-                            NodGegT = NodGeg
+                            NodGegT = cluster
                         else:
-                            NodGegT = np.vstack((NodGegT, NodGeg))
+                            NodGegT = np.vstack((NodGegT, cluster))
                                           
                     else:
                         FalseP += 1
                         if len(NodGegF) == 0:
-                            NodGegF = NodGeg
+                            NodGegF = cluster
                         else:
-                            NodGegF = np.vstack((NodGegF, NodGeg))
+                            NodGegF = np.vstack((NodGegF, cluster))
                                           
         
         AmountTP = InitAmountN - RestAm

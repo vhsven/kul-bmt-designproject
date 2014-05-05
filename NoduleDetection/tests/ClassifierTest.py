@@ -37,9 +37,9 @@ class Main:
         for level in range(1, 3):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            model = trainer.trainAndValidate(level)
-            Trainer.save(model, level)
-            #model = trainer.loadOrTrain(level)
+            #model = trainer.trainAndValidate(level)
+            #Trainer.save(model, level)
+            model = trainer.loadOrTrain(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)
@@ -90,10 +90,12 @@ class Main:
         val = Validator(self.dfr.Path, self.dfr.getCoordinateConverter())
         nodSeg = val.ClusteringData(probImg3D, self.TestSet)
         NodGegT, NodGegF, lijstje, AmountTP, AmountFP, AmountFN = val.ValidateData(nodSeg)
-        print NodGegT
-        print NodGegF
-        print lijstje
-        print AmountTP, AmountFP, AmountFN
+        print('amount of TP')
+        print AmountTP
+        print('amount of FP')
+        print AmountFP
+        print('amount of FN')
+        print AmountFN
         
 testSet = int(raw_input("Enter dataset # to be classified: "))
 maxPaths = int(raw_input("Enter # training datasets: "))+1

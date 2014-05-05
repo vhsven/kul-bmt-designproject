@@ -6,6 +6,7 @@ from DicomFolderReader import DicomFolderReader
 from Preprocessor import Preprocessor
 from Trainer import Trainer
 from Classifier import Classifier
+from Validator import Validator
 
 #TODO validation + optimale params
 #TODO check 1px nodules
@@ -39,7 +40,7 @@ class Main:
             
             #Phase 2: test model
             clf.setLevel(level, model)
-            
+
             probImg3D, mask3D = clf.generateProbabilityVolume(mask3D, threshold=0.03)
             fig, _ = pl.subplots()
             pl.subplots_adjust(bottom=0.20)
@@ -74,13 +75,23 @@ class Main:
             update(0)
             pl.show()
             
-            probImg3D = None #free some memory
+            #probImg3D = None #free some memory
         
         h,w,d = mask3D.shape
         nbVoxels = mask3D.sum()
         totalVoxels = h*w*d
         ratio = 100.0 * nbVoxels / totalVoxels
         print("Done, {0} ({1:.2f}%) voxels remaining.".format(nbVoxels, ratio))
+        
+        val = Validator(self.dfr.Path, self.dfr.getCoordinateConverter())
+        nodSeg = val.ClusteringData(probImg3D, self.TestSet)
+        NodGegT, NodGegF, lijstje, AmountTP, AmountFP, AmountFN = val.ValidateData(nodSeg)
+        print('amount of TP')
+        print AmountTP
+        print('amount of FP')
+        print AmountFP
+        print('amount of FN')
+        print AmountFN
         
 testSet = int(raw_input("Enter dataset # to be classified: "))
 maxPaths = int(raw_input("Enter # training datasets: "))+1

@@ -2,13 +2,11 @@ import sys
 import scipy.stats
 import numpy as np
 import math
-import collections
 from collections import deque
 from skimage.filter.rank import entropy
 from skimage.morphology import disk
 import scipy.ndimage as nd
 import scipy.ndimage.morphology as morph
-from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 from Preprocessor import Preprocessor
 from numpy import argwhere
 
@@ -39,8 +37,12 @@ class FeatureGenerator:
         coords = zip(xs,ys,zs)
         count = len(coords)
         x,y,z = coords[0]
-        first = f(x, y, z, windowSize) 
-        result = np.zeros((count, len(first))) #TODO zie code Kim
+        first = f(x, y, z, windowSize)
+        if hasattr(first,"__len__"):
+            leng = len(first)
+        else:
+            leng = 1
+        result = np.zeros((count, leng))
         result[0,:] = first
         for i in range(1, count):
             x,y,z = coords[i]

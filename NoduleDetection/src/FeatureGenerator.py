@@ -10,6 +10,7 @@ import scipy.ndimage as nd
 import scipy.ndimage.morphology as morph
 from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 from Preprocessor import Preprocessor
+from numpy import argwhere
 
 class FeatureGenerator:
     def __init__(self, setID, data, vshape, level=1):
@@ -41,9 +42,9 @@ class FeatureGenerator:
             return self.getIntensityByMask(mask3D)
         if level == 2:
             N = mask3D.sum()
-            start,stop = 2,6
+            start,stop = 2,4
             result = np.empty((N,stop-start+1))
-            for sigma in np.arange(start,stop):
+            for sigma in np.arange(start,stop, 0.5):
                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
                 print(sigmas)
                 result[:,sigma-start] = self.getLaplacianByMask(mask3D, sigmas)
@@ -126,7 +127,11 @@ class FeatureGenerator:
 #         return np.vstack([xsr,ysr,zsr]).T
     
     def getLaplacianByMask(self, mask3D, sigmas):
-        return nd.filters.gaussian_laplace(self.Data, sigmas)[mask3D]
+        B = argwhere(mask3D)
+        (xstart, ystart, zstart), (xstop, ystop, zstop) = B.min(0)-2, B.max(0)+3 
+        data = self.Data[xstart:xstop, ystart:ystop, zstart:zstop]
+        mask = mask3D[xstart:xstop, ystart:ystop, zstart:zstop]
+        return nd.filters.gaussian_laplace(data, sigmas)[mask]
             
     def getEdgeDistByMask(self, mask3D, setID, sigma=4.5):
         result = Preprocessor.loadThresholdMask(setID)

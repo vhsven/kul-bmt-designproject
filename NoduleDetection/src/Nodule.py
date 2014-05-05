@@ -17,6 +17,9 @@ class Nodule:
     def __del__(self):
         del self.Regions
         
+    def __str__(self):
+        return self.ID
+        
     @staticmethod
     def fromXML(xml, cc):
         noduleID = xml.find("{http://www.nih.gov}noduleID").text

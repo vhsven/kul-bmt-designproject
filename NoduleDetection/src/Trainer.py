@@ -119,16 +119,16 @@ class Trainer:
         
         print("Training level {} classifier...".format(level))
         #TODO set params
-        #input, trainset=30 (1-36), testset=50
+        #input, trainset=30 (1-40), testset=50
         
         if level == 1: #accuracy = 0.804201427279
             n_estimators = 30
             min_samples_split = 95 #TODO shouldn't this be at least double of 95?
             min_samples_leaf = 95
-        elif level == 2:
+        elif level == 2: #accuracy: 0.975852717221
             n_estimators = 30
-            min_samples_split = 2
-            min_samples_leaf = 1
+            min_samples_split = 5
+            min_samples_leaf = 5
         elif level == 3:
             n_estimators = 30
             min_samples_split = 2

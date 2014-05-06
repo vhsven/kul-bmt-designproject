@@ -9,11 +9,10 @@ from Validator import Validator
 from Constants import CASCADE_THRESHOLD
 from XmlAnnotationReader import XmlAnnotationReader
 
-#TODO validation + optimale params
-#TODO remove datasets because only 1 pixel voxels: 2,19,28,29,32,35,38
+#remove datasets because only 1 voxel nodules: 2,19,22,25,28,29,32,35,38
+#TODO validation + optimale params -> level 3+
 #TODO check wall nodules
-#Question: still use old features in new cascade?
-#Question: RF params
+#Report: better reuse featurevectors from previous level 
 
 class Main:
     def __init__(self, rootPath, testSet, maxPaths=999999):
@@ -45,11 +44,12 @@ class Main:
         for level in range(1, 5):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            if level <= 1:
-                model = trainer.load(level)
-            else:
-                model = trainer.trainAndValidate(level)
-                Trainer.save(model, level)
+            #if level <= 2:
+            #    model = trainer.load(level)
+            #else:
+            #    model = trainer.trainAndValidate(level)
+            #    Trainer.save(model, level)
+            model = trainer.train(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)

@@ -30,7 +30,7 @@ sp3 = pylab.subplot(133)
     
 #axes: left, bottom, width, height
 slSlider = Slider(pylab.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, dfr.getNbSlices()-1, 50, valfmt='%1.0f')
-siSlider = Slider(pylab.axes([0.1, 0.05, 0.8, 0.03]), 'Sigma', 1, 10, 2.5)
+siSlider = Slider(pylab.axes([0.1, 0.05, 0.8, 0.03]), 'Sigma', 1, 30, 2.5)
 
 def update_slice(mySlice):
     mySlice = int(mySlice)

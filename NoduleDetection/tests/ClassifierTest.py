@@ -44,12 +44,14 @@ class Main:
         for level in range(1, 5):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            #if level <= 2:
+            #if level <= 2: #use when previous run failed but saved some models
             #    model = trainer.load(level)
             #else:
-            #    model = trainer.trainAndValidate(level)
-            #    Trainer.save(model, level)
-            model = trainer.train(level)
+            model = trainer.trainAndValidate(level)
+            Trainer.save(model, level)
+            
+            #use when testing:
+            #model = trainer.train(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)
@@ -106,7 +108,7 @@ class Main:
         print('amount of FN')
         print AmountFN
         
-testSet = int(raw_input("Enter dataset # to be classified: "))
-maxPaths = int(raw_input("Enter # training datasets: "))
+testSet = int(raw_input("Enter dataset # to be classified (50): "))
+maxPaths = int(raw_input("Enter # training datasets (30): "))
 m = Main("../data/LIDC-IDRI", testSet, maxPaths)
 m.main()

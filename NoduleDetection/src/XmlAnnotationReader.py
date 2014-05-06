@@ -4,6 +4,7 @@ from Nodule import Nodule
 #from DicomFolderReader import DicomFolderReader 
 from os import listdir
 from os.path import isfile, join
+from Constants import IGNORE_ONE_PIXEL_NODULES
 
 class XmlAnnotationReader:
     def __init__(self, myPath, cc):
@@ -40,7 +41,8 @@ class XmlAnnotationReader:
         #print("First session contains {0} nodules:".format(len(noduleNodes)))
         for noduleNode in noduleNodes:
             nodule = Nodule.fromXML(noduleNode, cc)
-            nodules.append(nodule)
+            if not (IGNORE_ONE_PIXEL_NODULES and nodule.OnePixel):
+                nodules.append(nodule)
             
         return nodules 
     

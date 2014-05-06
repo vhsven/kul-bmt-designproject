@@ -1,9 +1,25 @@
 import numpy as np
 import collections
+import sys
+from skimage.morphology.selem import disk
+from skimage.filter.rank.generic import entropy
+import math
 
 class ExcludedFeatures:
     def __init__(self):
         self.Data = []
+        
+    def getRelativePosition(self, x, y, z):
+        h,w,d = self.Data.shape
+        return float(x)/h, float(y)/w, float(z)/d
+     
+    def getRelativePositionByMask(self, mask3D):
+        h,w,d = self.Data.shape
+        xs, ys, zs = np.where(mask3D)
+        xsr = xs / float(h)
+        ysr = ys / float(w)
+        zsr = zs / float(d)
+        return np.vstack([xsr,ysr,zsr]).T
     
     def neighbours(self, x,y,z):
         # top - bottom neighbours
@@ -202,4 +218,38 @@ class ExcludedFeatures:
                 gradUDmean, gradmeanUD, divUDmean, divmeanUD, \
                 gradFBmean, gradmeanFB, divFBmean, divmeanFB
                 
+    ############################################################
+    # feature[6]= sliceEntropy calculation (disk window or entire image)
+    ############################################################        
+    def getEntropyByMask(self, mask3D, windowSize):
+        sys.stdout.write("Calculating entropy")
+        _,_,d = self.Data.shape
+        returnValue = np.array([])
+        for z in range(0,d):
+            sys.stdout.write('.')
+            mySlice = self.Data[:,:,z].astype('uint8')
+            #mySlice = img_as_ubyte(mySlice)
+            mask = mask3D[:,:,z]
+            entropySlice = entropy(mySlice, disk(windowSize))
+            result = entropySlice[mask]
+            returnValue = np.append(returnValue, result)
+        
+        print("")
+        nbValues = len(returnValue)
+        return returnValue.reshape(nbValues, 1)
+        #if windowSize not in self.Entropy.keys():
+        #    data8 = self.Data.astype('uint8')
+        #    self.Entropy[windowSize] = entropy(data8, ball(windowSize))
+        
+        #return self.Entropy[windowSize][mask3D].T
     
+    def image_entropy(self, z):
+        # calculates the sliceEntropy of the entire slice
+        img=self.getSlice(z)
+        histogram,_ = np.histogram(img,100)
+        histogram_length = sum(histogram)
+    
+        samples_probability = [float(h) / histogram_length for h in histogram]
+        image_entropy=-sum([p * math.log(p, 2) for p in samples_probability if p != 0])
+    
+        return image_entropy

@@ -1,10 +1,5 @@
-import sys
 import scipy.stats
 import numpy as np
-import math
-from collections import deque
-from skimage.filter.rank import entropy
-from skimage.morphology import disk
 import scipy.ndimage as nd
 import scipy.ndimage.morphology as morph
 from Preprocessor import Preprocessor
@@ -57,27 +52,27 @@ class FeatureGenerator:
         """Returns a ndarray (Nxl) containing the features for all given positions and for the given level.""" 
         if level == 1:
             return self.getIntensityByMask(mask3D)
-        if level == 3:
+        if level == 2:
             N = mask3D.sum()
-            start,stop = 2,8
+            start,stop = 2,8 #TODO double check sigmas
             result = np.empty((N,stop-start+1))
             for sigma in np.arange(start,stop):
                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
-                print(sigmas)
                 result[:,sigma-start] = self.getLaplacianByMask(mask3D, sigmas)
             result[:,stop-start] = self.getEdgeDistByMask(mask3D, self.SetID, sigma=4.5)
             return result
-        if level == 2:
+        if level == 3:
             return FeatureGenerator.getWindowFunctionByMask(mask3D, self.averaging3D)
         if level == 4:
             return FeatureGenerator.getWindowFunctionByMask(mask3D, self.getStats)
         else:
-            print("Falling back on features per pixel method.")
-            result = deque()
-            for x,y,z in zip(np.where(mask3D)):
-                feature = self.getLevelFeature(level, x, y, z)
-                result.append(feature)
-            return np.array(result).reshape((-1, 1))
+            raise ValueError("Unsupported level")
+            #print("Falling back on features per pixel method.")
+            #result = deque()
+            #for x,y,z in zip(np.where(mask3D)):
+            #    feature = self.getLevelFeature(level, x, y, z)
+            #    result.append(feature)
+            #return np.array(result).reshape((-1, 1))
         
     def getAllFeaturesByMask(self, mask3D):
         """Returns a ndarray (NxL) with the rows containing the features vector, up to the current level, per datapoint."""
@@ -85,7 +80,7 @@ class FeatureGenerator:
         h,w,d = mask3D.shape
         totalVoxels = h*w*d
         ratio = 100.0 * nbVoxels / totalVoxels
-        print("Generating features for {0} ({1:.2f}%) voxels.".format(nbVoxels, ratio))
+        print("\tGenerating features for {0} ({1:.3f}%) voxels.".format(nbVoxels, ratio))
         allFeatures = self.getLevelFeatureByMask(1, mask3D)
         for level in range(2, self.Level+1):
             lvlFeature = self.getLevelFeatureByMask(level, mask3D) #Nxl
@@ -97,18 +92,6 @@ class FeatureGenerator:
         """Returns an array (Nx1) containing the intensities of all the given positions."""
         intensities = self.Data[mask3D]
         return intensities.reshape((-1, 1))
-    
-#     def getRelativePosition(self, x, y, z):
-#         h,w,d = self.Data.shape
-#         return float(x)/h, float(y)/w, float(z)/d
-#     
-#     def getRelativePositionByMask(self, mask3D):
-#         h,w,d = self.Data.shape
-#         xs, ys, zs = np.where(mask3D)
-#         xsr = xs / float(h)
-#         ysr = ys / float(w)
-#         zsr = zs / float(d)
-#         return np.vstack([xsr,ysr,zsr]).T
     
     def getLaplacianByMask(self, mask3D, sigmas):
         B = argwhere(mask3D)
@@ -138,7 +121,7 @@ class FeatureGenerator:
 #         
 #         return result
     
-    def averaging3D (self, x,y,z, windowSize=3): #TODO speed up?
+    def averaging3D (self, x,y,z, windowSize=3): #TODO speed up? convolution ones(3,3)
         # square windowSize x windowSize
         valdown = windowSize // 2
         valup   = valdown + 1
@@ -150,10 +133,9 @@ class FeatureGenerator:
         def getWindowMean(p):
             if p >= self.Data.shape[2]:
                 print("Value p={} is too large.".format(p))
-                return getWindowMean(p-1) #Idee van Kim
+                return getWindowMean(p-1)
             
-            windowP = self.Data[x-valdown:x+valup,y-valdown:y+valup,p]
-            return windowP.mean()
+            return self.Data[x-valdown:x+valup,y-valdown:y+valup,p].mean()
         
         meanMin = 0
         for p in range(z-Q, z):
@@ -181,39 +163,3 @@ class FeatureGenerator:
         kz = scipy.stats.kurtosis(windowD, axis=2).mean()
         
         return np.array([skx,sky,skz,kx,ky,kz])
-    
-    ############################################################
-    # feature[6]= sliceEntropy calculation (disk window or entire image)
-    ############################################################        
-    def getEntropyByMask(self, mask3D, windowSize):
-        sys.stdout.write("Calculating entropy")
-        _,_,d = self.Data.shape
-        returnValue = np.array([])
-        for z in range(0,d):
-            sys.stdout.write('.')
-            mySlice = self.Data[:,:,z].astype('uint8')
-            #mySlice = img_as_ubyte(mySlice)
-            mask = mask3D[:,:,z]
-            entropySlice = entropy(mySlice, disk(windowSize))
-            result = entropySlice[mask]
-            returnValue = np.append(returnValue, result)
-        
-        print("")
-        nbValues = len(returnValue)
-        return returnValue.reshape(nbValues, 1)
-        #if windowSize not in self.Entropy.keys():
-        #    data8 = self.Data.astype('uint8')
-        #    self.Entropy[windowSize] = entropy(data8, ball(windowSize))
-        
-        #return self.Entropy[windowSize][mask3D].T
-    
-    def image_entropy(self, z):
-        # calculates the sliceEntropy of the entire slice
-        img=self.getSlice(z)
-        histogram,_ = np.histogram(img,100)
-        histogram_length = sum(histogram)
-    
-        samples_probability = [float(h) / histogram_length for h in histogram]
-        image_entropy=-sum([p * math.log(p, 2) for p in samples_probability if p != 0])
-    
-        return image_entropy

@@ -6,7 +6,6 @@ import scipy.ndimage.morphology as morph
 from matplotlib.widgets import Slider
 from DicomFolderReader import DicomFolderReader
 from XmlAnnotationReader import XmlAnnotationReader
-from scipy.ndimage.filters import generic_gradient_magnitude, sobel
 from Preprocessor import Preprocessor
 
 setID = int(raw_input("Load dataset #: "))

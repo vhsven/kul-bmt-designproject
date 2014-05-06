@@ -13,6 +13,7 @@ class Nodule:
         self.Texture = -1
         self.Malignancy = -1
         self.Regions = NoduleRegions()
+        self.OnePixel = False
     
     def __del__(self):
         del self.Regions
@@ -39,7 +40,6 @@ class Nodule:
             nodule.Malignancy = int(chars.find("{http://www.nih.gov}malignancy").text)
         
         #parse regions of interest
-        #TODO ignore 1px Nodules
         regionList = xml.findall("{http://www.nih.gov}roi")
         nbRegions = len(regionList)
         if nbRegions > 0:
@@ -48,6 +48,8 @@ class Nodule:
                 z = cc.getPixelZ(worldZ)
                 #pizelZ = int(round(pizelZ))
                 edgeMapList = roi.findall("{http://www.nih.gov}edgeMap")
+                if nbRegions == 1 and len(edgeMapList) == 1:
+                    nodule.OnePixel = True
                 coordList = []
                 for edgeMap in edgeMapList:
                     voxelX = int(edgeMap.find("{http://www.nih.gov}xCoord").text)

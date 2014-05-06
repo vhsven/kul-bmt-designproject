@@ -1,5 +1,5 @@
 from XmlAnnotationReader import XmlAnnotationReader
-from Constants import ProbTreshold
+from Constants import PROBABILITY_THRESHOLD
 from scipy import ndimage
 import numpy as np
 
@@ -10,7 +10,7 @@ class Validator:
         
     def ClusteringData(self, probImage, scannumber):
         
-        mask = probImage > ProbTreshold 
+        mask = probImage > PROBABILITY_THRESHOLD 
         
         #clusterdata
         label_im,_ = ndimage.label(mask)
@@ -101,3 +101,6 @@ class Validator:
         AmountFN = RestAm
         
         return NodGegT, NodGegF, lijstje, AmountTP, AmountFP, AmountFN
+
+# sensitivity = (aantal echt positieven) / (aantal echt positieven + aantal fout negatieven)
+# specificity = (aantal echt negatieven) / (aantal echt negatieven + aantal fout negatieven)

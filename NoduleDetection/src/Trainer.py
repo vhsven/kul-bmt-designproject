@@ -6,8 +6,8 @@ from sklearn import cross_validation
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 from sklearn.grid_search import GridSearchCV
-from sklearn.metrics.metrics import classification_report
-from sklearn.cross_validation import StratifiedKFold
+#from sklearn.metrics.metrics import classification_report
+#from sklearn.cross_validation import StratifiedKFold
 from Constants import NB_VALIDATION_FOLDS
 
 class Trainer:
@@ -28,7 +28,8 @@ class Trainer:
         vshape = dfr.getVoxelShape()
         fgen = FeatureGenerator(setID, data, vshape, level)
         nbNodules = len(finder.Reader.Nodules)
-        print("\tFound {} nodules.".format(nbNodules))
+        print("\tFound {} nodule(s).".format(nbNodules))
+        assert nbNodules > 0
         
         #pixelsP, pixelsN = finder.getLists(shape, radiusFactor=0.33)
         print("\tProcessing pixels...")
@@ -90,9 +91,8 @@ class Trainer:
     def trainAndValidate(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
-        print("Training level {} classifier...".format(level))
-        rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1
-        print rf.get_params()        
+        print("Training and validating level {} classifier...".format(level))
+        rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1 
         #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
         #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
         tuned_parameters = [{'min_samples_leaf': np.arange(5, 100, 10),  
@@ -105,8 +105,8 @@ class Trainer:
         print(rfGrid.best_params_)
         
 #        Level 1: (4 trainingsets)
-#           Accuracy: 0.833718244804
-#           Params: {'min_samples_split': 85, 'min_samples_leaf': 25}
+#           Accuracy: 0.801369484787
+#           Params: {'min_samples_split': 85/95, 'min_samples_leaf': 25/95}
 
 #        Level 2: min_samples_leaf=1, min_samples_split=21, n_estimators=31
 #           Accuracy: 0.991339491917
@@ -117,15 +117,18 @@ class Trainer:
     def train(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
-        print("Training level {} classifier...".format(level)) #TODO set params
-        if level == 1:
+        print("Training level {} classifier...".format(level))
+        #TODO set params
+        #input, trainset=30 (1-40), testset=50
+        
+        if level == 1: #accuracy = 0.804201427279
             n_estimators = 30
-            min_samples_split = 2
-            min_samples_leaf = 1
-        elif level == 2:
+            min_samples_split = 95 #TODO shouldn't this be at least double of 95?
+            min_samples_leaf = 95
+        elif level == 2: #accuracy: 0.975852717221
             n_estimators = 30
-            min_samples_split = 2
-            min_samples_leaf = 1
+            min_samples_split = 5
+            min_samples_leaf = 5
         elif level == 3:
             n_estimators = 30
             min_samples_split = 2
@@ -145,19 +148,21 @@ class Trainer:
         return model
     
     @staticmethod
-    def save(clf, level):
+    def save(model, level):
         myFile = "../data/models/model_{}.pkl".format(level)
-        joblib.dump(clf, myFile)
+        print("\tSaved level {} classifier".format(level))
+        joblib.dump(model, myFile)
         
     @staticmethod
     def load(level):
         myFile = "../data/models/model_{}.pkl".format(level)
-        return joblib.load(myFile)
+        model = joblib.load(myFile)
+        print("\tLoaded level {} classifier".format(level))
+        return model
     
     def loadOrTrain(self, level):
         try:
-            clf = Trainer.load(level)
-            print("Loaded level {} classifier".format(level))
-            return clf
+            model = Trainer.load(level)
+            return model
         except:
             return self.train(level)

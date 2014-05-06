@@ -1,17 +1,18 @@
 #import numpy as np
 import pylab as pl
 from matplotlib.widgets import Slider
-#from sklearn.cross_validation import cross_val_score
 from DicomFolderReader import DicomFolderReader
 from Preprocessor import Preprocessor
 from Trainer import Trainer
 from Classifier import Classifier
 from Validator import Validator
+from Constants import CASCADE_THRESHOLD
+from XmlAnnotationReader import XmlAnnotationReader
 
-#TODO validation + optimale params
-#TODO check 1px nodules
+#remove datasets because only 1 voxel nodules: 2,19,22,25,28,29,32,35,38
+#TODO validation + optimale params -> level 3+
 #TODO check wall nodules
-#TODO delete set 43
+#Report: better reuse featurevectors from previous level 
 
 class Main:
     def __init__(self, rootPath, testSet, maxPaths=999999):
@@ -22,11 +23,20 @@ class Main:
         self.dfr = DicomFolderReader(myPath)
         self.dfr.compress()
     
-    def main(self):
-        trainer = Trainer(self.RootPath, self.TestSet, maxPaths=self.MaxPaths)
+    def printInfo(self):
+        cc = self.dfr.getCoordinateConverter()
+        reader = XmlAnnotationReader(self.dfr.Path, cc)
+        print("Nodule positions and radii in dataset {}: ".format(self.TestSet))
+        for c, r in reader.getNodulePositions():
+            print c, r
+        print("")
         
+    def main(self):
+        self.printInfo()
+    
         data = self.dfr.getVolumeData()
         vshape = self.dfr.getVoxelShape()
+        trainer = Trainer(self.RootPath, self.TestSet, maxPaths=self.MaxPaths)
         clf = Classifier(self.TestSet, data, vshape)
         
         #mask3D = Preprocessor.getThresholdMask(data)
@@ -34,14 +44,20 @@ class Main:
         for level in range(1, 5):
             print("Cascade level {}".format(level))
             #Phase 1: training
+            #if level <= 2: #use when previous run failed but saved some models
+            #    model = trainer.load(level)
+            #else:
             model = trainer.trainAndValidate(level)
             Trainer.save(model, level)
-            #model = trainer.loadOrTrain(level)
+            
+            #use when testing:
+            #model = trainer.train(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)
-                        
-            probImg3D, mask3D = clf.generateProbabilityVolume(mask3D, threshold=0.03)
+
+            probImg3D, mask3D = clf.generateProbabilityVolume(mask3D, threshold=CASCADE_THRESHOLD)
+
             fig, _ = pl.subplots()
             pl.subplots_adjust(bottom=0.20)
              
@@ -93,7 +109,7 @@ class Main:
         print('amount of FN')
         print AmountFN
         
-testSet = int(raw_input("Enter dataset # to be classified: "))
-maxPaths = int(raw_input("Enter # training datasets: "))+1
+testSet = int(raw_input("Enter dataset # to be classified (50): "))
+maxPaths = int(raw_input("Enter # training datasets (30): "))
 m = Main("../data/LIDC-IDRI", testSet, maxPaths)
 m.main()

@@ -54,7 +54,7 @@ class FeatureGenerator:
             return self.getIntensityByMask(mask3D)
         if level == 2:
             N = mask3D.sum()
-            start,stop = 2,10 #TODO roughly 15 seems promising
+            start,stop = 2,15 #TODO roughly 15 seems promising
             result = np.empty((N,stop-start+1))
             for sigma in np.arange(start,stop):
                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
@@ -65,6 +65,9 @@ class FeatureGenerator:
             #return FeatureGenerator.getWindowFunctionByMask(mask3D, self.averaging3D)
             return self.averaging3DByMask(mask3D, windowSize=3)
         if level == 4:
+            #return FeatureGenerator.getWindowFunctionByMask(mask3D, self.averaging3D)
+            return self.averaging3DByMask2(mask3D, windowSize=3)
+        if level == 5:
             return FeatureGenerator.getWindowFunctionByMask(mask3D, self.getStats)
         else:
             raise ValueError("Unsupported level")
@@ -111,9 +114,11 @@ class FeatureGenerator:
     ############################################################
     # 3D averaging (Keshani et al.)
     ############################################################    
-    def averaging3DByMask(self, mask3D, windowSize=3, vesselSize=5):
+    def averaging3DByMask(self, mask3D, windowSize=3, vesselSize=2.5):
         Q = int(vesselSize // self.VoxelShape[2]) # mm to pixels
         
+        
+        # vesselSize 1
         #Q=4 -> 2Q+1 = 9 -> [0-8] -> center = 4 = Q
         selem = np.zeros((windowSize,windowSize,2*Q+1)) #3x3 mask Q slices above and Q slices below current pixel
         selem[:,:,0:Q] = 1 #only take Q slices below center into account
@@ -131,6 +136,33 @@ class FeatureGenerator:
             #meanPlus = avgSlices[x,y,z+1:z+Q+1].sum() / float(Q)
             
             result[i,0] = meanMin * meanPlus
+        
+                   
+        return result
+    
+    def averaging3DByMask2(self, mask3D, windowSize=3, vesselSize=5):
+        Q = int(vesselSize // self.VoxelShape[2]) # mm to pixels
+        
+        # vesselSize 1
+        #Q=4 -> 2Q+1 = 9 -> [0-8] -> center = 4 = Q
+        selem = np.zeros((windowSize,windowSize,2*Q+1)) #3x3 mask Q slices above and Q slices below current pixel
+        selem[:,:,0:Q] = 1 #only take Q slices below center into account
+        selem = selem / (windowSize*windowSize*Q) #average
+        avgSlices = nd.filters.convolve(self.Data, selem) #can probably be more efficient by using origin param
+        
+        xs,ys,zs = np.where(mask3D)
+        nbVoxels = len(xs)
+        result = np.zeros(nbVoxels).reshape((nbVoxels,1))
+        for i in range(nbVoxels):
+            x,y,z = xs[i],ys[i],zs[i]
+            meanMin = avgSlices[x,y,z].astype(np.int32)
+            meanPlus = avgSlices[x,y,z+Q+1].astype(np.int32)
+            #meanMin = avgSlices[x,y,z-Q:z].sum() / float(Q)
+            #meanPlus = avgSlices[x,y,z+1:z+Q+1].sum() / float(Q)
+            
+            result[i,0] = meanMin * meanPlus
+        
+                   
         return result
     
     def averaging3D (self, x,y,z, windowSize=3):

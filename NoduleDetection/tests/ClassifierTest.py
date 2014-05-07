@@ -41,14 +41,14 @@ class Main:
         
         #mask3D = Preprocessor.getThresholdMask(data)
         mask3D = Preprocessor.loadThresholdMask(self.TestSet)
-        for level in range(1, 5):
+        for level in range(1, 6):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            #if level <= 2: #use when previous run failed but saved some models
-            #    model = trainer.load(level)
-            #else:
-            model = trainer.trainAndValidate(level)
-            Trainer.save(model, level)
+            if level <= 2: #use when previous run failed but saved some models
+                model = trainer.load(level)
+            else:
+                model = trainer.trainAndValidate(level)
+                Trainer.save(model, level)
             
             #use when testing:
             #model = trainer.train(level)
@@ -71,6 +71,8 @@ class Main:
             
             def update(val):
                 _threshold = tSlider.val
+                print('value threshold slider')
+                print(_threshold)
                 _mySlice = int(sSlider.val)
                 _data = self.dfr.getSliceDataRescaled(_mySlice)
                 _probImg = probImg3D[:,:,_mySlice]

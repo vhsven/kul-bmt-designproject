@@ -112,7 +112,15 @@ class Trainer:
 #           Params: {'min_samples_split': 35, 'min_samples_leaf': 5} 
         
         return model
-        
+    
+    @staticmethod
+    def pruneFeatures(allFeatures, allClasses, oldMask, newMask):
+        """Selects current level feature out of previous level features based on masks."""
+        oldIndices = np.where(oldMask.ravel())[0]
+        newIndices = np.where(newMask.ravel())[0]
+        indices = np.searchsorted(oldIndices, newIndices)
+        return allFeatures[indices,:], allClasses[indices,:]
+    
     def train(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
@@ -121,15 +129,16 @@ class Trainer:
         #input, trainset=30 (1-40), testset=50
         
         n_estimators = 30
+        min_samples_leaf = 1
         if level == 1: #accuracy = 0.802394890899
             min_samples_leaf = 85
-        elif level == 2: #accuracy: 0.980574773816
+        elif level == 2: #accuracy = 0.980574773816
             min_samples_leaf = 5
-        elif level == 3:
+        elif level == 3: #accuracy = 0.982597126131
+            min_samples_leaf = 5
+        elif level == 4: #accuracy = 
             min_samples_leaf = 1
-        elif level == 4:
-            min_samples_leaf = 1
-        else:
+        elif level == 5: #accuracy = 
             min_samples_leaf = 1
             
         rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf)

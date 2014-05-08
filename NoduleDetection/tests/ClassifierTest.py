@@ -12,6 +12,7 @@ from XmlAnnotationReader import XmlAnnotationReader
 #remove datasets because only 1 voxel nodules: 2,19,22,25,28,29,32,35,38
 #TODO validation + optimale params -> level 3+
 #TODO check wall nodules
+#TODO calculate nodule radius stats
 #Report: better reuse featurevectors from previous level 
 
 class Main:
@@ -44,11 +45,13 @@ class Main:
         for level in range(1, 6):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            if level <= 0: #use when previous run failed but saved some models
-                model = trainer.load(level)
-            else:
-                model = trainer.trainAndValidate(level)
-                Trainer.save(model, level)
+            #if level <= 0: #use when previous run failed but saved some models
+            #    model = trainer.load(level)
+            #else:
+            #    model = trainer.trainAndValidate(level)
+            #    Trainer.save(model, level)
+            
+            model = trainer.train(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)

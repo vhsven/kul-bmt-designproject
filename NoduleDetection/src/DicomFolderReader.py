@@ -23,6 +23,8 @@ class DicomFolderReader:
                 return dirPath
         #return list(DicomFolderReader.findPaths(rootPath))[index-1] #LIDC-IDRI-0001 has index 0
     
+    #TODO method to get test sets
+    
     @staticmethod
     def create(rootPath, setID):
         myPath = DicomFolderReader.findPath(rootPath, setID)

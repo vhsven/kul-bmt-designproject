@@ -54,7 +54,7 @@ class FeatureGenerator:
             return self.getIntensityByMask(mask3D)
         if level == 2:
             N = mask3D.sum()
-            start,stop = 2,15 #TODO roughly 15 seems promising
+            start,stop = 2,15
             result = np.empty((N,stop-start+1))
             for sigma in np.arange(start,stop):
                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
@@ -62,21 +62,13 @@ class FeatureGenerator:
             result[:,stop-start] = self.getEdgeDistByMask(mask3D, self.SetID, sigma=4.5)
             return result
         if level == 3:
-            #return FeatureGenerator.getWindowFunctionByMask(mask3D, self.averaging3D)
-            return self.averaging3DByMask(mask3D, windowSize=3)
+            return self.averaging3DByMask(mask3D, windowSize=3, vesselSize=2.5)
         if level == 4:
-            #return FeatureGenerator.getWindowFunctionByMask(mask3D, self.averaging3D)
-            return self.averaging3DByMask2(mask3D, windowSize=3)
+            return self.averaging3DByMask(mask3D, windowSize=3, vesselSize=5.0)
         if level == 5:
             return FeatureGenerator.getWindowFunctionByMask(mask3D, self.getStats)
         else:
             raise ValueError("Unsupported level")
-            #print("Falling back on features per pixel method.")
-            #result = deque()
-            #for x,y,z in zip(np.where(mask3D)):
-            #    feature = self.getLevelFeature(level, x, y, z)
-            #    result.append(feature)
-            #return np.array(result).reshape((-1, 1))
         
     def getAllFeaturesByMask(self, mask3D):
         """Returns a ndarray (NxL) with the rows containing the features vector, up to the current level, per datapoint."""
@@ -111,36 +103,7 @@ class FeatureGenerator:
         result = morph.distance_transform_cdt(result, metric='taxicab').astype(np.float32)
         return result[mask3D]
     
-    ############################################################
-    # 3D averaging (Keshani et al.)
-    ############################################################    
-    def averaging3DByMask(self, mask3D, windowSize=3, vesselSize=2.5):
-        Q = int(vesselSize // self.VoxelShape[2]) # mm to pixels
-        
-        
-        # vesselSize 1
-        #Q=4 -> 2Q+1 = 9 -> [0-8] -> center = 4 = Q
-        selem = np.zeros((windowSize,windowSize,2*Q+1)) #3x3 mask Q slices above and Q slices below current pixel
-        selem[:,:,0:Q] = 1 #only take Q slices below center into account
-        selem = selem / (windowSize*windowSize*Q) #average
-        avgSlices = nd.filters.convolve(self.Data, selem) #can probably be more efficient by using origin param
-        
-        xs,ys,zs = np.where(mask3D)
-        nbVoxels = len(xs)
-        result = np.zeros(nbVoxels).reshape((nbVoxels,1))
-        for i in range(nbVoxels):
-            x,y,z = xs[i],ys[i],zs[i]
-            meanMin = avgSlices[x,y,z].astype(np.int32)
-            meanPlus = avgSlices[x,y,z+Q+1].astype(np.int32)
-            #meanMin = avgSlices[x,y,z-Q:z].sum() / float(Q)
-            #meanPlus = avgSlices[x,y,z+1:z+Q+1].sum() / float(Q)
-            
-            result[i,0] = meanMin * meanPlus
-        
-                   
-        return result
-    
-    def averaging3DByMask2(self, mask3D, windowSize=3, vesselSize=5):
+    def averaging3DByMask(self, mask3D, windowSize=3, vesselSize=2.5): #Keshani et al.
         Q = int(vesselSize // self.VoxelShape[2]) # mm to pixels
         
         # vesselSize 1
@@ -165,30 +128,30 @@ class FeatureGenerator:
                    
         return result
     
-    def averaging3D (self, x,y,z, windowSize=3):
-        # square windowSize x windowSize
-        valdown = windowSize // 2
-        valup   = valdown + 1
-        
-        # nodules will continue in preceeding/succeeding slices but bronchioles will not
-        # assume: nodules have minimum length of 5 mm
-        Q = int(5 // self.VoxelShape[2]) # = c / T = 5mm / thickness of slices
-    
-        def getWindowMean(p):
-            if p >= self.Data.shape[2]:
-                print("Value p={} is too large.".format(p))
-                return getWindowMean(p-1)
-            
-            return self.Data[x-valdown:x+valup,y-valdown:y+valup,p].mean()
-        
-        meanMin = 0
-        for p in range(z-Q, z):
-            meanMin += getWindowMean(p)
-        meanPlus = 0
-        for p in range(z+1, z+Q+1):
-            meanPlus += getWindowMean(p)
-        
-        return (meanMin/Q) * (meanPlus/Q)
+#     def averaging3D (self, x,y,z, windowSize=3):
+#         # square windowSize x windowSize
+#         valdown = windowSize // 2
+#         valup   = valdown + 1
+#         
+#         # nodules will continue in preceeding/succeeding slices but bronchioles will not
+#         # assume: nodules have minimum length of 5 mm
+#         Q = int(5 // self.VoxelShape[2]) # = c / T = 5mm / thickness of slices
+#     
+#         def getWindowMean(p):
+#             if p >= self.Data.shape[2]:
+#                 print("Value p={} is too large.".format(p))
+#                 return getWindowMean(p-1)
+#             
+#             return self.Data[x-valdown:x+valup,y-valdown:y+valup,p].mean()
+#         
+#         meanMin = 0
+#         for p in range(z-Q, z):
+#             meanMin += getWindowMean(p)
+#         meanPlus = 0
+#         for p in range(z+1, z+Q+1):
+#             meanPlus += getWindowMean(p)
+#         
+#         return (meanMin/Q) * (meanPlus/Q)
         
     def getStats(self, x,y,z, windowSize=3):
         valdown = windowSize // 2

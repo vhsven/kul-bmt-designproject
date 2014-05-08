@@ -2,7 +2,7 @@ import numpy as np
 from FeatureGenerator import FeatureGenerator
 from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
-from sklearn import cross_validation
+#from sklearn import cross_validation
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals import joblib
 from sklearn.grid_search import GridSearchCV
@@ -95,8 +95,7 @@ class Trainer:
         rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1 
         #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
         #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
-        tuned_parameters = [{'min_samples_leaf': np.arange(5, 100, 10),  
-                             'min_samples_split': np.arange(5, 100, 10)}]
+        tuned_parameters = [{'min_samples_leaf': np.arange(5, 200, 10)}] #, 'min_samples_split': np.arange(5, 100, 10)
         rfGrid = GridSearchCV(rf, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
         rfGrid.fit(allFeatures, allClasses)
         model = rfGrid.best_estimator_
@@ -121,28 +120,19 @@ class Trainer:
         #TODO set params
         #input, trainset=30 (1-40), testset=50
         
-        if level == 1: #accuracy = 0.804201427279
-            n_estimators = 30
-            min_samples_split = 95 #TODO shouldn't this be at least double of 95?
-            min_samples_leaf = 95
-        elif level == 2: #accuracy: 0.975852717221
-            n_estimators = 30
-            min_samples_split = 5
+        n_estimators = 30
+        if level == 1: #accuracy = 0.802394890899
+            min_samples_leaf = 85
+        elif level == 2: #accuracy: 0.980574773816
             min_samples_leaf = 5
         elif level == 3:
-            n_estimators = 30
-            min_samples_split = 2
             min_samples_leaf = 1
         elif level == 4:
-            n_estimators = 30
-            min_samples_split = 2
             min_samples_leaf = 1
         else:
-            n_estimators = 30
-            min_samples_split = 2
             min_samples_leaf = 1
             
-        rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_split=min_samples_split, min_samples_leaf=min_samples_leaf)
+        rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf)
         model = rf.fit(allFeatures, allClasses)
         
         return model

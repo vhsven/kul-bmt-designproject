@@ -44,14 +44,11 @@ class Main:
         for level in range(1, 6):
             print("Cascade level {}".format(level))
             #Phase 1: training
-            if level <= 2: #use when previous run failed but saved some models
+            if level <= 0: #use when previous run failed but saved some models
                 model = trainer.load(level)
             else:
                 model = trainer.trainAndValidate(level)
                 Trainer.save(model, level)
-            
-            #use when testing:
-            #model = trainer.train(level)
             
             #Phase 2: test model
             clf.setLevel(level, model)
@@ -67,12 +64,10 @@ class Main:
              
             #axes: left, bottom, width, height
             sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, self.dfr.getNbSlices()-1, 50, valfmt='%1.0f')
-            tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, 0.01)
+            tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, CASCADE_THRESHOLD)
             
             def update(val):
                 _threshold = tSlider.val
-                print('value threshold slider')
-                print(_threshold)
                 _mySlice = int(sSlider.val)
                 _data = self.dfr.getSliceDataRescaled(_mySlice)
                 _probImg = probImg3D[:,:,_mySlice]
@@ -101,6 +96,7 @@ class Main:
         ratio = 100.0 * nbVoxels / totalVoxels
         print("Done, {0} ({1:.2f}%) voxels remaining.".format(nbVoxels, ratio))
         
+        #TODO use validator on multiple test sets 
         val = Validator(self.dfr.Path, self.dfr.getCoordinateConverter())
         nodSeg = val.ClusteringData(probImg3D, self.TestSet)
         NodGegT, NodGegF, lijstje, AmountTP, AmountFP, AmountFN = val.ValidateData(nodSeg)
@@ -111,7 +107,7 @@ class Main:
         print('amount of FN')
         print AmountFN
         
-testSet = int(raw_input("Enter dataset # to be classified (50): "))
-maxPaths = int(raw_input("Enter # training datasets (30): "))
+testSet = int(raw_input("Enter dataset # to be classified: "))
+maxPaths = int(raw_input("Enter # training datasets: "))
 m = Main("../data/LIDC-IDRI", testSet, maxPaths)
 m.main()

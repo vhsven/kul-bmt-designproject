@@ -22,4 +22,3 @@ pl.imshow(result, cmap=pl.cm.bone)  # @UndefinedVariable
 pl.show()
 
 #TODO avg3D: right effect?
-#TODO find best Q value

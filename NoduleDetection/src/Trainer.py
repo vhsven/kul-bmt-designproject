@@ -8,7 +8,7 @@ from sklearn.externals import joblib
 from sklearn.grid_search import GridSearchCV
 #from sklearn.metrics.metrics import classification_report
 #from sklearn.cross_validation import StratifiedKFold
-from Constants import NB_VALIDATION_FOLDS
+from Constants import NB_VALIDATION_FOLDS, RADIUS_FACTOR
 
 class Trainer:
     def __init__(self, rootPath, setID, maxPaths=99999):
@@ -20,7 +20,7 @@ class Trainer:
         dfr = DicomFolderReader(myPath)
         dfr.compress()
         setID = dfr.getSetID()
-        print("Processing set {}: '{}'".format(setID, myPath))
+        print("Processing training set {}: '{}'".format(setID, myPath))
         cc = dfr.getCoordinateConverter()
         finder = PixelFinder(myPath, cc)
         data = dfr.getVolumeData()
@@ -31,25 +31,7 @@ class Trainer:
         print("\tFound {} nodule(s).".format(nbNodules))
         assert nbNodules > 0
         
-        #pixelsP, pixelsN = finder.getLists(shape, radiusFactor=0.33)
-        print("\tProcessing pixels...")
-        
-        #Calculate features of nodule pixels
-        #nbNodulePixels = len(pixelsP)
-        #x,y,z = pixelsP[0]
-        #setFeatures = fgen.getAllFeatures(x,y,z)
-        #for x,y,z in pixelsP[1:]:
-        #    pixelFeatures = fgen.getAllFeatures(x, y, z) #1xL ndarray
-        #    setFeatures = np.vstack([setFeatures, pixelFeatures])
-        #print("\tProcessed {} nodules pixels.".format(nbNodulePixels))
-        
-        #Calculate allFeatures of random non -nodule pixels
-        #for x,y,z in pixelsN:
-        #    pixelFeatures = fgen.getAllFeatures(x, y, z)
-        #    setFeatures = np.vstack([setFeatures, pixelFeatures])
-        #print("\tProcessed {} random non-nodules pixels.".format(nbNodulePixels))
-        
-        maskP, maskN, nbNodulePixels = finder.getMasks(shape, radiusFactor=0.33)
+        maskP, maskN, nbNodulePixels = finder.getMasks(shape, radiusFactor=RADIUS_FACTOR)
         featuresP = fgen.getAllFeaturesByMask(maskP)
         print("\tProcessed {} nodules pixels.".format(nbNodulePixels))
         featuresN = fgen.getAllFeaturesByMask(maskN)
@@ -88,6 +70,30 @@ class Trainer:
         
         return allFeatures, allClasses
     
+    def trainAndValidateAll(self, maxLevel, save=False):
+        print("Training and validating classifier up to level {}.".format(maxLevel))
+        allFeatures, allClasses = self.calculateAllTrainingFeatures(maxLevel)
+        
+        models = {}
+        levelSlices = [0, 1, 1+10, 1+10+1, 1+10+1+1, 1+10+1+1+6]
+        for level in range(1, maxLevel+1):
+            levelSlice = levelSlices[level]
+            features = allFeatures[:, 0:levelSlice]
+            rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1 
+            #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
+            #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
+            tuned_parameters = [{'min_samples_leaf': np.arange(5, 200, 10)}]
+            rfGrid = GridSearchCV(rf, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
+            rfGrid.fit(features, allClasses)
+            models[level] = rfGrid.best_estimator_
+            print(rfGrid.best_score_)
+            print(rfGrid.best_params_)
+            
+        if save:
+            Trainer.saveAll(models)
+            
+        return models
+    
     def trainAndValidate(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
         
@@ -95,31 +101,34 @@ class Trainer:
         rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1 
         #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
         #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
-        tuned_parameters = [{'min_samples_leaf': np.arange(5, 200, 10)}] #, 'min_samples_split': np.arange(5, 100, 10)
+        tuned_parameters = [{'min_samples_leaf': np.arange(5, 200, 10)}]
         rfGrid = GridSearchCV(rf, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
         rfGrid.fit(allFeatures, allClasses)
         model = rfGrid.best_estimator_
-        #print(rfGrid.best_estimator_)
         print(rfGrid.best_score_)
         print(rfGrid.best_params_)
         
-#        Level 1: (4 trainingsets)
-#           Accuracy: 0.801369484787
-#           Params: {'min_samples_split': 85/95, 'min_samples_leaf': 25/95}
-
-#        Level 2: min_samples_leaf=1, min_samples_split=21, n_estimators=31
-#           Accuracy: 0.991339491917
-#           Params: {'min_samples_split': 35, 'min_samples_leaf': 5} 
-        
         return model
     
-    @staticmethod
-    def pruneFeatures(allFeatures, allClasses, oldMask, newMask):
-        """Selects current level feature out of previous level features based on masks."""
-        oldIndices = np.where(oldMask.ravel())[0]
-        newIndices = np.where(newMask.ravel())[0]
-        indices = np.searchsorted(oldIndices, newIndices)
-        return allFeatures[indices,:], allClasses[indices,:]
+    def trainAll(self, maxLevel, save=False):
+        allFeatures, allClasses = self.calculateAllTrainingFeatures(maxLevel)
+        
+        #TODO set params
+        n_estimators = 30
+        min_samples_leaf = 1
+        
+        models = {}
+        levelSlices = [0, 1, 1+10, 1+10+1, 1+10+1+1, 1+10+1+1+6]
+        for level in range(1, maxLevel+1):
+            levelSlice = levelSlices[level]
+            features = allFeatures[:, 0:levelSlice]
+            rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf)
+            models[level] = rf.fit(features, allClasses)
+            
+        if save:
+            Trainer.saveAll(models)
+        
+        return models
     
     def train(self, level):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
@@ -131,7 +140,7 @@ class Trainer:
         n_estimators = 30
         min_samples_leaf = 1
         if level == 1: #accuracy = 0.802394890899
-            min_samples_leaf = 85
+            min_samples_leaf = 145
         elif level == 2: #accuracy = 0.980574773816
             min_samples_leaf = 5
         elif level == 3: #accuracy = 0.982597126131
@@ -150,7 +159,14 @@ class Trainer:
     def save(model, level):
         myFile = "../data/models/model_{}.pkl".format(level)
         print("\tSaved level {} classifier".format(level))
-        joblib.dump(model, myFile)
+        joblib.dump(model, myFile, 3)
+        
+    @staticmethod
+    def saveAll(models):
+        for level in models:
+            myFile = "../data/models/model_{}.pkl".format(level)
+            joblib.dump(models[level], myFile, 3)
+        print("\tSaved models up to level {}.".format(level))
         
     @staticmethod
     def load(level):
@@ -158,6 +174,16 @@ class Trainer:
         model = joblib.load(myFile)
         print("\tLoaded level {} model".format(level))
         return model
+    
+    @staticmethod
+    def loadAll(maxLevel):
+        models = {}
+        for level in range(1, maxLevel+1):
+            myFile = "../data/models/model_{}.pkl".format(level)
+            models[level] = joblib.load(myFile)
+        
+        print("\tLoaded models up to level {}.".format(maxLevel))
+        return models
     
     def loadOrTrain(self, level):
         try:

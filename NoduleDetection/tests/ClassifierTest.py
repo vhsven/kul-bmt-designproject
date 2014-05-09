@@ -1,4 +1,3 @@
-#import numpy as np
 import pylab as pl
 from matplotlib.widgets import Slider
 from DicomFolderReader import DicomFolderReader
@@ -7,12 +6,8 @@ from Trainer import Trainer
 from Classifier import Classifier
 from Validator import Validator
 from Constants import CASCADE_THRESHOLD, MAX_LEVEL
-from XmlAnnotationReader import XmlAnnotationReader
 
-#remove datasets because only 1 voxel nodules: 2,19,22,25,28,29,32,35,38
-#TODO validation + optimale params -> level 4+
 #TODO check wall nodules
-#Report: better reuse featurevectors from previous level 
 
 class Main:
     def __init__(self, rootPath, maxPaths=999999, maxLevel=-1):
@@ -24,32 +19,26 @@ class Main:
             self.MaxLevel = maxLevel
         
     def main(self):    
-        #Phase 1: train models
-        trainer = Trainer(self.RootPath, 0, maxPaths=self.MaxPaths) #TODO why level per level?
-        models = {}
-        for level in range(1, self.MaxLevel+1):
-            print("Training cascade level {}".format(level))
-            #if level <= 0: #use when previous run failed but saved some models
-            #    model = trainer.load(level)
-            #else:
-            #    model = trainer.trainAndValidate(level)
-            #    Trainer.save(model, level)
-            #model = trainer.loadOrTrain(level)
-            model = trainer.train(level)
-            
-            models[level] = model
+        trainer = Trainer(self.RootPath, 0, maxPaths=self.MaxPaths)
+        print("Phase 1: training all datasets up to level {}.".format(self.MaxLevel))
+        #models = trainer.trainAll(self.MaxLevel, save=False)
+        models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
+        #models = Trainer.loadAll(self.MaxLevel)
         del trainer
-        print("Training phase completed, start testing phase...")
-    
+        print("Training phase completed, start testing phase.")
+        
         #Phase 2: test models
         totalTP = 0
         totalFP = 0
         totalFN = 0
-        for testSet in range(31,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
+        nbTestSets = 0
+        for testSet in range(41,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
             try:
                 dfr = DicomFolderReader.create(self.RootPath, testSet)
+                nbTestSets += 1
             except:
                 continue
+            print("Processing test set {}: '{}'".format(testSet, dfr.Path))
             dfr.printInfo()
             data = dfr.getVolumeData()
             vshape = dfr.getVoxelShape()
@@ -99,24 +88,25 @@ class Main:
             nbVoxels = mask3D.sum()
             totalVoxels = h*w*d
             ratio = 100.0 * nbVoxels / totalVoxels
-            print("Done processing test set {0}, {1} ({2:.2f}%) voxels remaining.".format(testSet, nbVoxels, ratio))
+            print("Finished classifying test set {0}, {1} ({2:.2f}%) voxels remaining.".format(testSet, nbVoxels, ratio))
             
             val = Validator(dfr.Path, dfr.getCoordinateConverter())
-            nodSeg = val.ClusteringData(probImg3D, testSet)
-            NodGegT, NodGegF, lijstje, nbTP, nbFP, nbFN = val.ValidateData(nodSeg)
+            clusterData = val.ClusteringData(probImg3D, testSet)
+            _, nbTP, nbFP, nbFN = val.ValidateData(clusterData)
             print "TP: {}, FP: {}, FN: {}".format(nbTP, nbFP, nbFN)
             totalTP += nbTP
             totalFP += nbFP
             totalFN += nbFN
-            
-        print "Totals: TP: {}, FP: {}, FN: {}".format(totalTP, totalFP, totalFN)
         
-        #TODO totalTN
-        totalTN = 0
+        meanTP = totalTP / float(nbTestSets)
+        meanFP = totalFP / float(nbTestSets)
+        meanFN = totalFN / float(nbTestSets)
         sensitivity = totalTP / float(totalTP + totalFN)
-        specificity = totalTN / float(totalTN + totalFN)
-        
-maxPaths = int(raw_input("Enter # training datasets: "))
-maxLevel = int(raw_input("Enter max training level: "))
-m = Main("../data/LIDC-IDRI", maxPaths, maxLevel)
-m.main()
+        print "Means: TP: {}, FP: {}, FN: {}, Sensitivity: {}".format(meanTP, meanFP, meanFN, sensitivity)
+        #specificity = totalTN / float(totalTN + totalFN)
+    
+if __name__ == "__main__":
+    maxPaths = int(raw_input("Enter # training datasets: "))
+    maxLevel = int(raw_input("Enter max training level: "))
+    m = Main("../data/LIDC-IDRI", maxPaths, maxLevel)
+    m.main()

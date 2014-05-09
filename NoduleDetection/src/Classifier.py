@@ -43,11 +43,19 @@ class Classifier:
 #         del x,y,z
 #         return points
     
+    @staticmethod
+    def pruneFeatures(allFeatures, allClasses, oldMask, newMask):
+        """Selects current level feature out of previous level features based on masks."""
+        oldIndices = np.where(oldMask.ravel())[0]
+        newIndices = np.where(newMask.ravel())[0]
+        indices = np.searchsorted(oldIndices, newIndices)
+        return allFeatures[indices,:], allClasses[indices,:]
+    
     def generateProbabilityVolume(self, mask3D, threshold=0.01):
         if not self.isLevelset():
             raise ValueError("Level not set")
         
-        testFeatures = self.fgen.getAllFeaturesByMask(mask3D)
+        testFeatures = self.fgen.getAllFeaturesByMask(mask3D) #reusing previous features might be possible
         
         m,n = testFeatures.shape
         maxChunk = 1000000

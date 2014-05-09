@@ -46,7 +46,10 @@ class Main:
         totalFP = 0
         totalFN = 0
         for testSet in range(31,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
-            dfr = DicomFolderReader.create(self.RootPath, testSet)
+            try:
+                dfr = DicomFolderReader.create(self.RootPath, testSet)
+            except:
+                continue
             dfr.printInfo()
             data = dfr.getVolumeData()
             vshape = dfr.getVoxelShape()

@@ -72,7 +72,7 @@ class Trainer:
     def calculateAllTrainingFeatures(self, level):
         allFeatures = None
         allClasses = None
-        for myPath in DicomFolderReader.findPaths(self.RootPath, self.MaxPaths):
+        for myPath in DicomFolderReader.findAllPaths(self.RootPath, self.MaxPaths):
             if self.IgnorePath in myPath:
                 continue        
             setFeatures, setClasses = self.calculateSetTrainingFeatures(myPath, level)
@@ -156,7 +156,7 @@ class Trainer:
     def load(level):
         myFile = "../data/models/model_{}.pkl".format(level)
         model = joblib.load(myFile)
-        print("\tLoaded level {} classifier".format(level))
+        print("\tLoaded level {} model".format(level))
         return model
     
     def loadOrTrain(self, level):

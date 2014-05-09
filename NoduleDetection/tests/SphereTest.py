@@ -4,7 +4,7 @@ from FeatureGenerator import FeatureGenerator
 from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
 
-myPath = DicomFolderReader.findPath("../data/LIDC-IDRI/", 5)
+myPath = DicomFolderReader.findPathByID("../data/LIDC-IDRI/", 5)
 dfr = DicomFolderReader(myPath)
 matrix = dfr.getWorldMatrix()
 print(matrix)

@@ -54,7 +54,7 @@ class FeatureGenerator:
             return self.getIntensityByMask(mask3D)
         if level == 2:
             N = mask3D.sum()
-            start,stop = 13,15 #TODO do we really need values as low as 2?
+            start,stop = 1,9
             result = np.empty((N,stop-start+1))
             for sigma in np.arange(start,stop):
                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
@@ -94,7 +94,9 @@ class FeatureGenerator:
         (xstart, ystart, zstart), (xstop, ystop, zstop) = B.min(0)-2, B.max(0)+3 
         data = self.Data[xstart:xstop, ystart:ystop, zstart:zstop]
         mask = mask3D[xstart:xstop, ystart:ystop, zstart:zstop]
-        return nd.filters.gaussian_laplace(data, sigmas)[mask]
+        data = -nd.filters.gaussian_laplace(data, sigmas)[mask]
+        data[data < 0] = 0 
+        return data
             
     def getEdgeDistByMask(self, mask3D, setID, sigma=4.5):
         result = Preprocessor.loadThresholdMask(setID)

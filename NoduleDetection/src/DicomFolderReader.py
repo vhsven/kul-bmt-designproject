@@ -5,10 +5,11 @@ from os import listdir, walk
 from os.path import isfile, join
 from CoordinateConverter import CoordinateConverter
 from collections import deque
+from XmlAnnotationReader import XmlAnnotationReader
 
 class DicomFolderReader:
     @staticmethod
-    def findPaths(rootPath, maxPaths=99999):
+    def findAllPaths(rootPath="../data/LIDC-IDRI", maxPaths=99999):
         """Returns the list of lowest possible subdirectories under rootPath that have files in them."""
         count = 0
         for dirPath, dirs, files in walk(rootPath):
@@ -17,17 +18,26 @@ class DicomFolderReader:
                 yield dirPath
                 
     @staticmethod
-    def findPath(rootPath, setID):
+    def findPathByID(rootPath, setID):
         for dirPath, dirs, files in walk(rootPath):
-            if files and not dirs and "LIDC-IDRI-{0:0>4d}".format(setID) in dirPath:
-                return dirPath
-        #return list(DicomFolderReader.findPaths(rootPath))[index-1] #LIDC-IDRI-0001 has index 0
-    
-    #TODO method to get test sets
-    
+            if files and not dirs:
+                m = re.search('LIDC-IDRI-(\d\d\d\d)', dirPath)
+                mySetID = int(m.group(1))
+                if mySetID == setID:
+                    return dirPath
+                    
+    @staticmethod
+    def findPathsByID(rootPath, setIDs):
+        for dirPath, dirs, files in walk(rootPath):
+            if files and not dirs:
+                m = re.search('LIDC-IDRI-(\d\d\d\d)', dirPath)
+                mySetID = int(m.group(1))
+                if mySetID in setIDs:
+                    yield dirPath
+        
     @staticmethod
     def create(rootPath, setID):
-        myPath = DicomFolderReader.findPath(rootPath, setID)
+        myPath = DicomFolderReader.findPathByID(rootPath, setID)
         return DicomFolderReader(myPath, True)
     
     def getSetID(self):
@@ -144,3 +154,12 @@ class DicomFolderReader:
             self.compress()
          
         return self.Data
+    
+    def printInfo(self):
+        cc = self.getCoordinateConverter()
+        reader = XmlAnnotationReader(self.Path, cc)
+        print "Voxel shape:", self.getVoxelShape()
+        print("Nodule positions and radii in dataset {}: ".format(self.getSetID()))
+        for c, r in reader.getNodulePositions():
+            print c, r
+        print("")

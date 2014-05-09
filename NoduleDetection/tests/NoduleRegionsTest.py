@@ -1,24 +1,35 @@
-import pylab
+import pylab as pl
 import numpy as np
-import numpy.ma as ma
 from XmlAnnotationReader import XmlAnnotationReader
 from DicomFolderReader import DicomFolderReader
 
-for myPath in DicomFolderReader.findPaths("../data/LIDC-IDRI"):
-    
-    dfr = DicomFolderReader(myPath)
-    #m,n,_ = dfr.getVolumeShape()
-    cc = dfr.getCoordinateConverter()
-    reader = XmlAnnotationReader(myPath, cc)
-    
-    if len(reader.Nodules) == 0:
-        print myPath
-    else:
-        print "."
+def yieldMaxRadii():
+    for myPath in DicomFolderReader.findAllPaths("../data/LIDC-IDRI"):
+        dfr = DicomFolderReader(myPath, False)
+        cc = dfr.getCoordinateConverter()
+        reader = XmlAnnotationReader(myPath, cc)
         
-    # for c,r2 in reader.getNodulePositions():
-    #     print(c,r2)
-    
+        for nodule in reader.Nodules:
+            _, regionRs = nodule.Regions.getRegionCenters()
+            r = max(regionRs.values())
+            r *= dfr.getVoxelShape()[0] #convert to mm
+            #if r < 5:
+            #    print dfr.getSetID()
+            yield r
+            
+radii = np.array(list(yieldMaxRadii()))
+
+print len(radii) #85
+
+#2.6799464451 4.72682497817 6.32230086901 3.82981531547 18.3922190848
+print radii.min(), np.median(radii), radii.mean(), radii.std(), radii.max()
+
+pl.hist(radii)
+pl.title("Nodule Radius")
+pl.xlabel("Radius (mm)")
+pl.ylabel("Count")
+pl.show()
+
 #     for nodule in reader.Nodules:
 #         print(nodule.ID)
 #         #nodule.Regions.printRegions()

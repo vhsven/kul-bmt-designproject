@@ -1,40 +1,61 @@
-\section{Algorithms}
-% TODO number of scans and slices for training and testing
-The RF algorithm was trained and validated on \ldots and \ldots CT scans,
-subsampled from the LIDC/IDRI database\footnote{Freely available at
-\url{http://cancerimagingarchive.net}.}, consisting of \ldots and \ldots slices
-respectively. The pixel size of the scans varied between 0,586 and 0,963 mm,
-while the slice thickness varied between 1,25 or 2,50 mm. Together with the
-original DICOM images the associated XML files were obtained. These XML files
-provided a set of characteristics for each nodule found: region, subtlety,
-spiculation, internal structure, lobulation, shape (sphericity), solidity,
-margin, and likelihood of malignancy \cite{lidcbase}.
-
-% TODO AANTAL NODULES IN SCANS (MAX AND MIN GROOTTE?)
-
+\section{Methodology}
+\subsection{Acquisition of the datasets}
 The LIDC/IDRI database consists of 1018 thoracic CT scans that are obtained from
 a heterogeneous range of scanner models (seven GE Medical Systems LightSpeed
 scanner models, four Philips Brilleance scanner models, five Siemens Definition,
 Emotion, and Sensation scanner models and one Toshiba Aquilion scanner model).
 The database includes only one scan per patient so the scans are not correlated.
 The nodules in the scans were delineated by at least four different expert
-radiologists to indentificate as much nodules as possible. For this purpose the
+radiologists to identify as much nodules as possible. For this purpose the
 indentification process was also subdivided into two phases: a blinded read
 phase and an unblinded read phase. During the initial blinded read phase each
 radiologist independently reviewed all scans and indicated the nodules in the
-range of 3 to 30 mm, the nodules smaller than 3 mm (if not clearly benign) and
-the non-nodules (other pulmonary lesions such as apical scars) larger or equal to
-3 mm. In the subsequent unblinded read phase the anonymized blinded read results
-of all radiologists were revealed to each of the radiologists who then
+range of 3 to 30 mm and nodules smaller than 3 mm (if not clearly benign).
+In the subsequent unblinded read phase the anonymized blinded read results of
+all radiologists were revealed to each of the radiologists who then
 independently reviewed their marks along with the anonymous marks of their
 colleagues. The delineation of the nodules was done completely manually or in a
 semiautomated way. This was allowed as a study on this topic showed that the
-variation in nodule delineation done by different radiologists
-substantially exceeded the variation derived from different software tools
-\cite{lidcbase}.
-%TODO hadden we die non-nodule data moeten gebruiken?
-%TODO wat is indentification?
+variation in nodule delineation done by different radiologists substantially
+exceeded the variation derived from different software tools \cite{lidcbase}.
 
+50 CT scans were obtained from the LIDC/IDRI database \footnote{Freely available
+at \url{http://cancerimagingarchive.net}.}. 12 scans were removed as they only
+contained 1-voxel nodules. The pixel size of the scans varied between 0,586 and
+0,963 mm and the slice thickness varied between 1,25 or 2,50 mm. This means the
+diameter of the annotated 1-voxel nodules was less than 1 mm (micronodules).
+These nodules are difficult to detect for a radiologist, especially if they are
+hidden in a maze of vessels of the same magnitude. Therefore, some databases do
+not require the radiologist to mark such small findings. In the Nelson Trail
+database for example the radiologists do not have to mark nodules of which the
+volume calculated by the Siemens LungCARE workstation software is less than 15
+$mm^3$ \cite{mur}. This volume corresponds to a sphere with a diameter of about
+3 mm, which is obviously more the 1 mm diameter from our 1-voxel nodules.
+In the LIDC/IDRI database there were no limitations set on the diameters of the
+nodules to be marked. However, the chance the radiologists marked every single
+micronodule is very small. The training of the CAD algorithm can therefore not
+be done properly as the annotations of the datasets are most propably incomplete
+for nodules with a diameter less than 1 mm. Therefore, the datasets containing
+only 1-voxel micronodules and the annotations of 1-voxel nodules in the
+remaining datasets were removed. Furthermore, focussing on the detection of
+these micronodules limits the level of thresholding that can be performed during
+the classification of the datasets. Retaining these micronodules would prevent
+us from eliminating a substantial part of the false positive findings. So
+after eliminating these 38 scans remained for training and testing.
+The RF algorithm was trained and validated on 30 and 8 CT scans respectively,
+consisting of 5168 and 1249 slices with a average of 172 and 156 slices per
+scan. Together with the original DICOM images the associated XML files
+were obtained. These XML files provided a set of characteristics for each nodule
+found: region, subtlety, spiculation, internal structure, lobulation, shape
+(sphericity), solidity, margin, and likelihood of malignancy \cite{lidcbase}.
+The trainingsdataset contained 64 nodules with each nodule containing 150 voxels
+on average. The minimum and maximum radii of the annotated nodules was 2 mm and
+18 mm respectively.
+
+% TODO AANTAL NODULES IN SCAns test
+% TODO processing time: for training, testing and for 1 average dataset
+
+\subsection{Preprocessing of the data}
 The initial exploration of the data and the generation of a mask to perform a
 lung segmentation were done in MeVisLab 2.5.1 (VC11-64) (MeVis Medical Solutions
 AG, Bremen, Germany). Further processing of the data and the implementation of
@@ -42,21 +63,24 @@ the RF algorithm were carried out in Python 2.7.6 (Python Software Foundation,
 Delaware, U.S.A).  The training and testing of the RF based algorithm was
 performed on a computer with Intel Core i5 CPU (1,8 GHz) and 8 GB of RAM. The
 processing of a medium large dataset (\ldots slices) takes \ldots minutes.
-% TODO processing time
 
-\subsection{Training of algorithm}
-First the scans and the associated annotations were pre-processed in Python. The
-annotations were partially provided in pixelcoordinates -- x and y values -- and
-partially in worldcoordinates -- z values -- so the z coordinates were converted
-into pixelcoordinates to find the nodule regions.
+\subsubsection{Processing of the annotations in Python}
+The annotations were partially provided in pixelcoordinates -- x and y values --
+and partially in worldcoordinates -- z values -- so the z coordinates were
+converted into pixelcoordinates to find the nodule regions. The annotations
+existed of a list of x and y coordinates to indicate the position of each
+pixel belonging to the contour of each nodule per slice. From these
+coordinates the center of gravity and the minimum radius of each nodule was
+calculated per slice. The 1-voxel nodules were removed from the list of
+annotations. In the rest of the algorithm each nodule was represented by its
+center of gravity and its minimum radius.
 
 \subsubsection{Lung segmentation}
 It was assumed that, if the whole 3D scan was fed to the cascaded classifier,
-only the soft tissue would remain after the first cascade. As only one feature
--- the greyvalue of each voxel -- would be taken into account on the first level
-of the cascaded classifier, this was not expected to become a problem concerning
-memory storage. Unfortunately, it did pose a problem so a second option was
-taken into consideration: a proper lung segmentation.
+only the soft tissue would remain after the first cascade. The grey value of
+each voxel was used as a feature on this first level.
+Unfortunately, this method did not prove to be efficient, so a second option was
+taken into consideration: a proper lung segmentation as a pre-processing step.
 
 By performing a lung segmentation, the amount of voxels that have to be
 processed further on is significantly reduced by about 85\%. Furthermore, it has
@@ -65,42 +89,47 @@ accuracy of the nodule detection system is increased. Therefore, it is the first
 step that is performed in a lot of papers \cite{keshani, elbaz, teramoto}. We
 started with implementing a lung segmentation algorithm based on \cite{keshani}.
 The first part of this algorithm consists of obtaining a binary lung CT image by
-adaptive fuzzy thresholding. Then two windows of different sizes are applied to
-close all the gaps in the mask and the initial lung mask is obtained by sweeping
-a rotated window over the entire binary image. This sweeping is necessary to
-transfer non-isolated nodules into isolated ones. Finally the mask is used to
-initiate an active contour model automatically for segmenting the lung area. As
-stated the first step of this algorithm was supposed to provide us with a
-variable, but accurate threshold to make the binary image. The performance of
-this first step was assessed by applying the algorithm on 42 slices -- 28 slices
-with lungs and 14 without lungs -- equally distributed over 7 scans. The results
-varied among the scans. In some cases the algorithm selected the appropriate
-threshold, in other cases the soft tissue around the lungs was not eliminated
-well. Instead, a fixed threshold of 1600 was emperically established to perform a
-body segmentation. The lungs were not present in this body mask. Therefore, the
-gaps (lungs) in the body maks were closed again by hole filling so a mask of the
-entire body was obtained. As this body segmentation already eliminated 55\% of
-all voxels and no complex calculations had to be done to obtain the binary image, this
-result was found satisfying. Despite this reduced amount of voxels, applying
-the algorithm still raised memory errors depending on the dimensions of the scan.
+adaptive fuzzy thresholding. In the binary image the lungs and the background
+are separated from the soft tissues of the body.
+Then two windows of different sizes are applied to close all the gaps in the
+mask and the initial lung mask is obtained by sweeping a rotated window over the
+entire binary image.
+This sweeping is necessary to transfer non-isolated nodules into isolated ones.
+Finally the mask is used to initiate an active contour model automatically for
+segmenting the lung area. As stated the first step of this algorithm was
+supposed to provide us with a variable, but accurate threshold to make the
+binary image. The performance of this first step was assessed by applying the
+algorithm on 42 slices -- 28 slices with lungs and 14 without lungs -- equally
+distributed over 7 scans. The results varied among the scans. In some cases the
+algorithm selected the appropriate threshold, in other cases the soft tissue
+around the lungs was not eliminated well. Furthermore, performing the lung
+segmentation as was described above would take a considerable amount of time
+(minutes). Instead, a fixed threshold of 1600 was emperically established to
+perform a body segmentation and to separate the soft body tissues from the rest
+of the image. Then gaps (lungs) in the body mask were closed by hole filling so
+a mask of the entire body was obtained. As this body segmentation already
+eliminated 55\% of all voxels and no complex calculations had to be done to
+obtain the binary image, this result was found satisfying enough.
+
 % TODO tabel met experimenten om vaste threshold te bepalen er nog inzetten?
 % TODO duidelijker maken vanaf welk punt we afgeweken hebben van het paper?
+Despite the reduced amount of voxels, applying the algorithm still raised
+memory errors depending on the dimensions of the scan.
+In order to reduce the amount of voxels even further in the pre-processing
+phase, a full lung segmentation was performed in a semiautomatic way in
+MeVisLab. After the scans were loaded in MeVisLab, the user manually indicates
+three points inside the lung area. Based on these points region growing is
+performed and a binary mask for the lung area is generated. The gaps in the
+binary mask -- which represent nodules in the lung area and nodules hidden in
+the lung wall -- are closed by dilation. This mask is then exported to Python
+for further processing of the images. An alternative way of performing a lung
+segmentation in Python would be calculating the body mask at the fixed
+threshold of 1600 and substract this mask from a similar mask but with the lung
+gaps closed. In this way only the lung area is retained. Then a dilation and
+erosion should be performed as well to include the nodules hidden in the lung
+wall.
 
- In order to reduce the amount of voxels even further in the pre-processing
- phase, a full lung segmentation was performed in a semiautomatic way in
- MeVisLab. After the scans were loaded in MeVisLab, the user manually indicates
- three points inside the lung area. Based on these points region growing is
- performed and a binary mask for the lung area is generated. The gaps in the
- binary mask -- which represent nodules in the lung area and nodules hidden in
- the lung wall -- are closed by dilation. This mask is then exported to Python
- for further processing of the images. An alternative way of performing a lung
- segmentation in Python would be calculating the body mask at the fixed
- threshold of 1600 and substract this mask from a similar mask but with the lung
- gaps closed. In this way only the lung area is retained. Then a dilation and
- erosion should be performed as well to include the nodules hidden in the lung
- wall.
-
-
+\subsection{Training of the classifier}
 \subsubsection{Preparation of training dataset}
 Based on the associated annotations the center of gravity and the maximum radius
 of each nodule was calculated. Using this information a sphere was constructed
@@ -118,9 +147,8 @@ However, instead of a sphere -- which defines the nodules in 3D -- this concept
 was applied per slice as it was noticed that the delineation of the nodules was
 not always done properly so a lot of nodules showed a flattened shape
 (\autoref{fig:flatNodule}).
-% TODO maximum of minimum radius
-Therefore, the maximum radii of the nodule in each slice were separately
-determined and one third of these radii was taken to select the central volume
+Therefore, the minimum radii of the nodule in each slice were separately
+determined and two third of these radii was taken to select the central volume
 of the nodule. A list of positive voxels per scan was constructed this way.
 \begin{figure}[htp]
  \begin{center}
@@ -130,13 +158,13 @@ of the nodule. A list of positive voxels per scan was constructed this way.
  \end{center}
 \end{figure} %TODO use more LaTeX-friendly image format (pdf, eps)
 
-To train a classifier, one does not only need positive example, also negative
+To train a classifier, a list of positive and negative
 examples are necessary. Therefore, a second list of voxels was constructed. The
 amount of voxels was taken the same as in the list of positive voxels to obtain
 a balanced traning dataset. The positions of the negative voxels were selected
 at random over the entire image. The only constraint was that they were not
-allowed the be situated within two times the maximum radius of each nodule.
-%This constraint was imposed to avoid ambigous training data.
+allowed the be situated within two times the maximum radius of each nodule. This
+constraint was imposed to avoid ambigous training data.
 
 Then features were calculated for both the positive and the negative voxels. The
 features that were used are discussed in \ref{sec:featureExtraction}. This
@@ -144,35 +172,133 @@ resulted in a list of features and a class (nodule or non-nodule) per voxel.
 This whole process was repeated for all scans and the results were then
 concatenated to obtain a dataset to train the ensemble classifier.
 
-\subsubsection{Training Cascaded classifier}
-The trainingsdataset is fed to the first level of a cascaded RF classifier. This
-means that the classifier has different levels on which different amounts of
-features are implemented. On a lower level, less features and less complex
-features are implemented. The first feature for example is the greyvalue of each
-voxel. This is a feature we get ``for free'' as it is readily available without
-calculations. The algorithm simply decides on which threshold it uses to
-separate nodules from non-nodules. Using this trivial feature a large part of
-the voxels can already be eliminated. The voxels with a nodule probability that
-is lower than a certain threshold are considered not to be nodules. These voxels
-are also removed from the trainingset and only the remaining voxels are taken to
-the next level in the cascaded classifier. The threshold is set very low to make
-sure we do not discard positive voxels. 
+\subsubsection{Feature extraction and selection} \label{sec:featureExtraction}
+% TODO feature selection: empirisch
+The \textbf{greyvalue} of each voxel was the only feature of the
+cascaded classifier at level one. 
+At level two two features were implemented: a blobdetector and a distance map
+of the lung masks. The \textbf{blobdetector} was implemented as 
+% TODO sven: Laplacians with different sigma values are applied on the remaining
+% voxels + formule x =sqrt(2sigma)
+% + uitleg welke sigma's -> statistieken
 
-The second feature is more complex and therefore it requires more computational
-power. However, this is not a problem anymore as the amount of voxels to be
-processed is reduced. At the second level again a number of voxels are
-eliminated and removed from the dataset. The number of levels, and therefore the
-number of features, can be increased until the end results are satisfying.
-This however is to be decided by the user. The classifier is organised this way
-as both memory and CPU time are limited. The result of this step is the creation
-of a RF classifier model. This model is then tested in the next step on new data
-to assess the performance.
+% TODO sven: uitleg distance map in 2 zinnen + fig
 
-% TODO crossvalidatie
 
-\subsubsection{Testing Cascaded classifier}
-The model that was generated in the previous step is now applied on new data to
-estimate the value of the added feature in the next level of the classifier.
+At the third and fourth level a \textbf{3D averaging method} \cite{keshani} was
+implemented to get rid of the bronchi and bronchioles that were still not entirely eliminated. The
+3D averaging method is based on the fact that nodules are more or less spherical
+and bronchi and bronchioles are oblong. This might not be visible in a 2D image
+where both may appear as spheres depending on the orientation of the
+bronchioles, but it certainly is if a 3D volume around a finding is taken into account.
+Larger nodules will repeat themselves in the preceding and/or succeeding slices
+at the same place while the smaller bronchi and bronchioles will not. For small
+nodules hidden in a maze of brionchioles of the same diameter, the separation is
+done based on the fact that the small nodules will not continue in preceeding
+and/or succeeding slices while the bronchioles will. Thus, by comparing the
+greyvalue of the target voxel with the greyvalues found in the neighbour slices
+at the same place and by taking into account the difference in length between
+nodules and bronchioles the nodules can be separated from the other findings.
+The comparison was made by calculating the mean value of each window in the
+target slice, the average of the mean values of the same coordinates in the
+succeeding and preceeding slices:
+\begin{equation}
+M_{ij}^p = \frac{1}{9} {\Sigma}_{k,l = -1}^{+1} L^p(i+k,j+l)
+\end{equation}
+\begin{equation}
+M_{ij}^{+} = \frac{1}{q} {\Sigma}_{p=p+1}^{p+q} M^p_{ij}
+\end{equation}
+\begin{equation}
+M_{ij}^{-} = \frac{1}{q} {\Sigma}_{p=p-q}^{p-1} M^p_{ij}
+\end{equation}
+\begin{equation}
+3D averaging = M^{-}_{ij} M^{+}_{ij}
+\end{equation}
+
+The index p indicates the level of the slice and the parameter q is the number
+of slices that are considered. The latter parameter is calculated as the ratio of the estimated nodule length to the
+thickness of the slices.
+\begin{equation}
+q=\frac{c}{T}
+\end{equation}
+To differentiate between larger nodules and small bronchioles and between
+smaller nodules and similar bronchioles the parameter c was set at 5 and 2,5
+respectively. The window around each voxel was set at 3x3. In case of a high q a
+high 3D averaging score will classify a voxel as belonging to a nodule whereas a
+low score will classify a voxel as a non-nodule. For the low q value it is the
+opposite.
+
+At a fifth level the \textbf{skewness and kurtosis} of a 3D window around each
+voxel was calculated as a measure for the texture of a certain part of the image. The
+skewness is a measure of the asymmetry of the probability distribution
+distribution of a real-valued random variable (grey value) about its mean. The
+kurtosis is a measure of the peakedness of the probability distribution of a
+real-valued random variable. However, the implementation of these first order
+statistics in the final classifier was prohibited by the time needed (hours) to
+calculate these features for every voxel in the image.
+
+% TODO subsectie
+The rest of this paragraph provides an overview of other features that were
+tested but that were not implemented in the final classifier because of several
+reasons.
+
+Another obvious feature, apart from the greyvalue of each voxel, is the
+\textbf{position} $(X, Y, Z)$ of each voxel in the 3D image. An even better
+feature is the \textbf{relative position} $(X/Xmax, Y/Ymax, Z/Zmax)$ as it takes
+into account that the size of the datasets might change. However, after testing it appeared that
+these features would only be useful if a very large amount of trainingdata was
+used. The trainingset had to be large enough so almost every possible
+noduleposition inside the lungs was covered by the trainingdata. As it is very
+difficult to estimate how many scans are needed for this purpose and training
+on this large amount of data would take a lot of time, the feature 'position'
+and 'relative position' were exluded from the featureset. Instead the distance
+map was implemented as a feature.
+
+A \textbf{3D Sobel filter} for edge detection was implemented as well. A Sobel
+filter uses three 3x3 kernels which are convolved with the image to find
+gradients in the image. To be really usefull for the nodule detection, the
+distances from each voxel to neighbouring edges had to be calculated. However,
+due to a lack of time this was not feasible anymore. However, the
+distance map is some kind of a substitute.
+
+The \textbf{entropy} of an image is a measure for the chaos of the image
+in a certain neighbourhoor. Low
+entropy images are images where vast areas of pixels have the same grey
+values. Images with high entropy show a large contrast between neighbouring
+pixels. Therefore, it is a measure for the texture of an image. The entropy of
+the entire 3D image was calculated and then the values for each voxel were
+extracted. However, the time demand for these calculations were non negligable
+and therefore this feature was eliminated again.
+
+A feature \textbf{neighbours} calculated the sum, the substraction, the
+multiplication and the quotient of the voxel in front and behind, left and right
+and above and below a target voxel. Each of these operations where also
+performed with the target voxel itself and the neighbouring voxel. Another
+substantial amount of features were based on calculations within \textbf{3D
+windows} that were sweeped over the lung mask of the image. The same operations
+as in neighbours were executed on a larger scale: the neigbouring voxels
+were determined by a certain adaptable window around the target voxel. Except
+for these basic operations the mean, the standard variance, the minimum and the
+maximum of the grey values of each window were calculated. Then these parameters
+and the grey value of the target voxel were used for performing the basic
+operations (sum, subtraction, multiplication, quotient) on. The same idea was
+applied on the rows and columns in each window. The mean of different rows and
+columns were determined and compared to each other by means of summing them up,
+substracting them, dividing one by another and multiplicating them. In these
+windows a frequency count was performed for each grey value in the window. These
+frequencies were again compared. The results that were obtained this way could
+be compared to one another by comparing the results for subwindows within larger
+windows or within the entire image. However, none of these features was
+implemented in the final classifier as calculating features for each
+individual voxel in an image takes too much time (hours).
+
+\subsubsection{Training of the classifier}
+
+
+\subsection{Testing and validation of the classifier}
+The model that was generated in the previous step is now applied on new data
+to estimate the value of the added feature in the next level of the
+classifier.
 The question we ask ourselves here is whether a substantial amount of
 non-nodule voxels are again removed from the dataset without removing the nodule
 voxels as well. If this is the case the feature is kept at that level, otherwise
@@ -183,39 +309,6 @@ the model is applied on the new dataset. For each voxel in this dataset a
 feature vector is calculated and this feature vector is then pushed down the
 trees of the RF classifier. After each voxel is given a certain probability, the
 probability image is generated.
-
-
-\subsubsection{Feature extraction} \label{sec:featureExtraction}
-The first feature that is implemented in the cascaded classifier is the
-greyvalue of the voxels. The mask that was generated in MeVisLab is now projected on the image
-and the greyvalues in the mask are taken into account by the classifier.
-
-The second feature is a kind of a blobdetector: Laplacians with different sigma
-values are applied on the remaining voxels. % getblurrededges?
-
-
-
-
-
-
-welke features
-hoe berekend
-
-\subsection{Validation of algorithm}
-nieuwe datasets van lidc ingeladen
-
-sensitivity
-specificity
-FP
-
-
-\subsection{Comparison with SVM}
-
-VERGELIJKEN MET SVM?
-
-
-
-
 
 
 klassendiagram: hoe is programma opgebouwd?

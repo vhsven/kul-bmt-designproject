@@ -1,3 +1,4 @@
+import datetime
 import pylab as pl
 from matplotlib.widgets import Slider
 from DicomFolderReader import DicomFolderReader
@@ -22,8 +23,8 @@ class Main:
         trainer = Trainer(self.RootPath, 0, maxPaths=self.MaxPaths)
         print("Phase 1: training all datasets up to level {}.".format(self.MaxLevel))
         #models = trainer.trainAll(self.MaxLevel, save=False)
-        models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
-        #models = Trainer.loadAll(self.MaxLevel)
+        #models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
+        models = Trainer.loadAll(self.MaxLevel)
         del trainer
         print("Training phase completed, start testing phase.")
         
@@ -39,6 +40,7 @@ class Main:
             except:
                 continue
             print("Processing test set {}: '{}'".format(testSet, dfr.Path))
+            print datetime.datetime.now()
             dfr.printInfo()
             data = dfr.getVolumeData()
             vshape = dfr.getVoxelShape()

@@ -1,0 +1,137 @@
+Fr 09/05/2014
+Trained with Rmin bug
+Ended in Memory Error
+---
+Phase 1: training all datasets up to level 4.
+	Loaded models up to level 4.
+Training phase completed, start testing phase.
+Processing test set 41: '../data/LIDC-IDRI\LIDC-IDRI-0041\1.3.6.1.4.1.14519.5.2.1.6279.6001.212292046142156223429795319169\000000'
+Voxel shape: ('0.820312', '0.820312', '2.500000')
+Nodule positions and radii in dataset 41: 
+[ 321.96610169  338.52542373   46.5       ] 4.02609271872
+[ 321.54761905  337.78571429   47.5       ] 8.51682342069
+[ 321.12987013  336.55844156   48.5       ] 7.60836150451
+[ 320.09803922  333.8627451    51.5       ] 5.8468207892
+[ 318.859375  336.         50.5     ] 6.97234002259
+[ 320.49275362  336.57971014   49.5       ] 8.68193362302
+
+Test cascade level 1
+	Generating features for 6856515 (17.554%) voxels.
+Test cascade level 2
+	Generating features for 2812436 (7.200%) voxels.
+Test cascade level 3
+	Generating features for 2203762 (5.642%) voxels.
+Test cascade level 4
+	Generating features for 2066490 (5.291%) voxels.
+Finished classifying test set 41, 2005741 (5.14%) voxels remaining.
+Discarded 4558 1px clusters.
+TP: 1, FP: 16438, FN: 0
+Processing test set 42: '../data/LIDC-IDRI\LIDC-IDRI-0042\1.3.6.1.4.1.14519.5.2.1.6279.6001.284028192986684647771628933377\000000'
+Voxel shape: ('0.703125', '0.703125', '2.500000')
+Nodule positions and radii in dataset 42: 
+[ 177.03225806  267.58064516   48.5       ] 3.28478344633
+[ 177.61290323  266.32258065   49.5       ] 4.49684824302
+[ 288.16666667  365.05555556   77.5       ] 2.41011244039
+[ 288.04347826  366.17391304   78.5       ] 3.01257603501
+[ 287.77272727  366.45454545   79.5       ] 3.10191889424
+
+Test cascade level 1
+	Generating features for 5239419 (16.249%) voxels.
+Test cascade level 2
+	Generating features for 2782125 (8.628%) voxels.
+Test cascade level 3
+	Generating features for 2025035 (6.280%) voxels.
+Test cascade level 4
+	Generating features for 1879000 (5.827%) voxels.
+Finished classifying test set 42, 1819246 (5.64%) voxels remaining.
+Discarded 4687 1px clusters.
+TP: 1, FP: 15725, FN: 1
+Processing test set 44: '../data/LIDC-IDRI\LIDC-IDRI-0044\1.3.6.1.4.1.14519.5.2.1.6279.6001.211592828197214585826096300114\000000'
+Voxel shape: ('0.703125', '0.703125', '2.500000')
+Nodule positions and radii in dataset 44: 
+[ 348.7260274   384.65753425   62.5       ] 7.10878397004
+[ 347.3   382.45   63.5 ] 7.45603782179
+[ 347.09782609  384.79347826   64.5       ] 9.97867527793
+[ 346.88888889  383.06481481   67.5       ] 11.5781511338
+[ 347.44329897  384.93814433   65.5       ] 12.8015917944
+[ 343.46491228  382.77192982   69.5       ] 9.54425066923
+[ 341.39130435  380.89130435   71.5       ] 8.39200830568
+[ 344.14754098  382.2704918    68.5       ] 10.5082254929
+[ 342.09243697  382.16806723   70.5       ] 8.09418203302
+[ 339.37931034  379.59770115   72.5       ] 8.38896216585
+[ 346.61682243  382.1588785    66.5       ] 11.7641985063
+[ 137.48275862  314.82758621   63.5       ] 4.48607304526
+[ 136.60869565  313.41304348   64.5       ] 5.62388405229
+[ 138.3   309.75   67.5 ] 1.77552809046
+[ 136.80952381  314.47619048   65.5       ] 5.53570148488
+[ 137.51351351  313.59459459   66.5       ] 3.75908930115
+[ 105.15217391  222.47826087   72.5       ] 5.82271966286
+[ 104.35416667  222.60416667   73.5       ] 6.00961324786
+[ 104.27083333  222.5          74.5       ] 5.34930064224
+[ 103.94871795  223.23076923   75.5       ] 5.05655068198
+
+Test cascade level 1
+	Generating features for 7288019 (18.913%) voxels.
+Test cascade level 2
+	Generating features for 3469641 (9.004%) voxels.
+Test cascade level 3
+	Generating features for 2586535 (6.712%) voxels.
+Test cascade level 4
+	Generating features for 2387080 (6.195%) voxels.
+Finished classifying test set 44, 2295264 (5.96%) voxels remaining.
+Discarded 5226 1px clusters.
+TP: 2, FP: 62464, FN: 1
+Exception AttributeError: "DicomFolderReader instance has no attribute 'Path'" in <bound method DicomFolderReader.__del__ of <DicomFolderReader.DicomFolderReader instance at 0x01D5DC88>> ignored
+Processing test set 46: '../data/LIDC-IDRI\LIDC-IDRI-0046\1.3.6.1.4.1.14519.5.2.1.6279.6001.181398349112343043834924846577\000000'
+Voxel shape: ('0.742188', '0.742188', '2.500000')
+Nodule positions and radii in dataset 46: 
+[  81.78571429  345.           32.5       ] 1.21428571429
+[  83.93103448  346.06896552   33.5       ] 2.32879917309
+[  82.85185185  346.44444444   34.5       ] 3.25420483504
+[  82.09090909  345.95454545   35.5       ] 2.92502737149
+[ 146.94444444  234.5          36.5       ] 1.83417489102
+[ 147.375  235.125   37.5  ] 2.6279745052
+[ 147.7  234.5   38.5] 1.39283882772
+[  82.23809524  338.76190476   37.5       ] 2.77214849101
+[  82.58333333  338.5          38.5       ] 2.06323640052
+[  77.6875  219.5      40.5   ] 1.76001598004
+[  78.59090909  220.36363636   41.5       ] 2.15944973095
+[  81.90909091  219.36363636   44.5       ] 1.36666330712
+[  78.64516129  220.12903226   42.5       ] 2.89281286728
+[  80.41176471  219.05882353   43.5       ] 1.90882126348
+[ 429.32  330.64   40.5 ] 2.75535841589
+[ 428.4   329.24   41.5 ] 3.40846006284
+[ 375.34782609  366.17391304   47.5       ] 2.46257430583
+[ 375.40740741  365.92592593   48.5       ] 2.95415357076
+[ 376.22727273  367.45454545   49.5       ] 2.27318177274
+
+Test cascade level 1
+	Generating features for 6128310 (18.264%) voxels.
+Test cascade level 2
+	Generating features for 3067369 (9.141%) voxels.
+Test cascade level 3
+	Generating features for 2211441 (6.591%) voxels.
+Test cascade level 4
+	Generating features for 2040297 (6.081%) voxels.
+Finished classifying test set 46, 1947341 (5.80%) voxels remaining.
+Discarded 5020 1px clusters.
+TP: 2, FP: 56531, FN: 4
+Processing test set 47: '../data/LIDC-IDRI\LIDC-IDRI-0047\1.3.6.1.4.1.14519.5.2.1.6279.6001.262595324886254011362748468025\000000'
+Voxel shape: ('0.781250', '0.781250', '2.500000')
+Nodule positions and radii in dataset 47: 
+[ 138.5         288.46428571   75.5       ] 1.61505986494
+[ 141.1641791   282.74626866   76.5       ] 4.9037290151
+[ 142.08196721  281.63934426   77.5       ] 3.93459699083
+[ 141.08163265  284.42857143   78.5       ] 3.95981480347
+
+Test cascade level 1
+	Generating features for 4763506 (13.663%) voxels.
+Test cascade level 2
+	Generating features for 2861193 (8.206%) voxels.
+Test cascade level 3
+	Generating features for 2014203 (5.777%) voxels.
+Test cascade level 4
+	Generating features for 1855204 (5.321%) voxels.
+Finished classifying test set 47, 1784690 (5.12%) voxels remaining.
+Discarded 4808 1px clusters.
+TP: 1, FP: 11257, FN: 0

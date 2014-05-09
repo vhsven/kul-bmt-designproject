@@ -54,7 +54,7 @@ class FeatureGenerator:
             return self.getIntensityByMask(mask3D)
         if level == 2:
             N = mask3D.sum()
-            start,stop = 1,9
+            start,stop = 1,10
             result = np.empty((N,stop-start+1))
             for sigma in np.arange(start,stop):
                 sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
@@ -154,7 +154,7 @@ class FeatureGenerator:
 #             meanPlus += getWindowMean(p)
 #         
 #         return (meanMin/Q) * (meanPlus/Q)
-        
+    
     def getStats(self, x,y,z, windowSize=3):
         valdown = windowSize // 2
         valup   = valdown + 1

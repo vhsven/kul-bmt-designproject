@@ -63,7 +63,7 @@ class Preprocessor:
         #make sure mask is false at top and bottom to prevent out of bounds errors
         mask[:,:,0:6] = False
         mask[:,:,z-6:z] = False
-        print("\tLoaded lung mask for dataset {}.".format(setID))
+        #print("\tLoaded lung mask for dataset {}.".format(setID))
         return mask
     
     @staticmethod

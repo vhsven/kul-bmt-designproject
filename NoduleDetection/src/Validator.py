@@ -8,18 +8,23 @@ class Validator:
         self.Path = myPath
         self.cc = cc
         
-    def ClusteringData(self, probImage, scannumber):
+    def ClusteringData(self, probImg, setID):
         
-        mask = probImage > PROBABILITY_THRESHOLD 
+        mask = probImg > PROBABILITY_THRESHOLD 
         
         #clusterdata
         label_im,_ = ndimage.label(mask)
         
         # Find enclosing object:
         BB = ndimage.find_objects(label_im) # provides array of tuples: 3 tuples in 3D per bounding box (3 hoekpunten)
-        NodGeg = []
-        Nr = scannumber
+        clusterData = []
+        nbDiscarded = 0
         for bb in BB:
+            probWindow = probImg[bb]
+            if probWindow.shape <= (1,1,1):
+                nbDiscarded += 1
+                continue
+            
             point1 = [ f.start for f in bb]
             point2 = [ f.stop for f in bb]
             
@@ -29,78 +34,48 @@ class Validator:
             zm = (point1[2] + point2[2]) // 2
             
             # mean probability
-            AllProb = probImage[point1[0]:point2[0], point1[1]:point2[1],point1[2]:point2[2]]
-            Mprob = AllProb.mean()
+            #probWindow = probImg[point1[0]:point2[0], point1[1]:point2[1],point1[2]:point2[2]]
+            meanProb = probWindow.mean()
             
             
-            if len(NodGeg) == 0:
-                NodGeg = [Nr,xm,ym,zm,Mprob]
+            if len(clusterData) == 0:
+                clusterData = [setID,xm,ym,zm,meanProb]
             else:
-                NodGeg = np.vstack((NodGeg, [Nr,xm,ym,zm,Mprob]))
+                clusterData = np.vstack((clusterData, [setID,xm,ym,zm,meanProb]))
             
-            
-        return NodGeg
+        print("Discarded {} 1px clusters.".format(nbDiscarded))   
+        return clusterData
 
         
-    def ValidateData(self, NodGeg):
-        # INPUT
-        # array with scannumber, 3D position (x,y,z), probability p
-        #
-        # 3D position= centre of gravity from bounding box
-        # probability= mean of all probabilities of voxels in bouding box
-        
-        #dfr = DicomFolderReader.create("../data/LIDC-IDRI", 1)
-        #cc = dfr.getCoordinateConverter()
+    def ValidateData(self, clusterData):
+        """
+        Input
+        -----
+        Array with setID, 3D position (x,y,z), probability p
+          -> 3D position= centre of gravity from bounding box
+          -> probability= mean of all probabilities of voxels in bouding box
+        """
         reader = XmlAnnotationReader(self.Path, self.cc)
-        
-        # amount of nodules
-        InitAmountN = len(reader.Nodules)
-        RestAm = InitAmountN
-        
-        # amount of FP
-        FalseP = 0
-        
-        lijstje = list()
-        NodGegT = []
-        NodGegF = []
+        foundNodules = set()
+        nbNodules = len(reader.Nodules)
+        nbFP = 0
         
         #for c,r in reader.getNodulePositions(): #this only works if we use world coordinates, and the nodules are nice spheres
         for nodule in reader.Nodules:
-            print(nodule.ID)
             regionCenters, regionRs = nodule.Regions.getRegionCenters()
             for pixelZ in regionCenters.keys():
                 c = regionCenters[pixelZ]
                 r = regionRs[pixelZ]
-                print(len(NodGeg))
-                for cluster in NodGeg:
-                    #NodGeg = Nr,xm,ym,zm,Mprob
-                    v=cluster[1:3]
+                for cluster in clusterData:
+                    #clusterData = setID,xm,ym,zm,meanProb
+                    v=cluster[1:3] #xm,ym
                     
-                                            
-                    if sum((v-c)**2) < (4*r)**2:
-                                                                        
-                        if nodule not in lijstje:
-                            lijstje.append(nodule)
-                            RestAm -= 1
-                            
-                        if len(NodGegT) == 0:
-                            NodGegT = cluster
-                        else:
-                            NodGegT = np.vstack((NodGegT, cluster))
-                                          
+                    if sum((v-c)**2) < (2*r)**2:
+                        foundNodules.add(nodule)
                     else:
-                        FalseP += 1
-                        if len(NodGegF) == 0:
-                            NodGegF = cluster
-                        else:
-                            NodGegF = np.vstack((NodGegF, cluster))
+                        nbFP += 1
                                           
+        nbTP = len(foundNodules) #nbNodulesFound
+        nbFN = nbNodules - nbTP #nbNodulesLost
         
-        AmountTP = InitAmountN - RestAm
-        AmountFP = FalseP
-        AmountFN = RestAm
-        
-        return NodGegT, NodGegF, lijstje, AmountTP, AmountFP, AmountFN
-
-# sensitivity = (aantal echt positieven) / (aantal echt positieven + aantal fout negatieven)
-# specificity = (aantal echt negatieven) / (aantal echt negatieven + aantal fout negatieven)
+        return foundNodules, nbTP, nbFP, nbFN

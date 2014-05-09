@@ -20,5 +20,3 @@ pl.imshow(data[:,:,mySlice], cmap=pl.cm.bone)  # @UndefinedVariable
 pl.subplot(122)
 pl.imshow(result, cmap=pl.cm.bone)  # @UndefinedVariable
 pl.show()
-
-#TODO avg3D: right effect?

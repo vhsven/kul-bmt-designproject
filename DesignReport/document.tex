@@ -43,186 +43,6 @@
 
 \input{sections/architecture.tex}
 
-\section{TODO}
-\begin{algorithm}[H]
-	\DontPrintSemicolon
-	\caption{Training Phase\label{alg:train}}
-	\ForEach{$dataset \in folder$}{
-		load DICOM files\;
-		load XML annotations\;
-		\ForEach{$nodule \in annotations$}{
-			\ForEach{$slice \in nodule$}{
-				select positive voxels ($d < 0.66R_{min}$)
-			}
-		}
-		\While {negative pixels $<$ positive pixels}
-		{	select random pixel in volume\;
-			\If{not too close to any nodule}{
-				select negative voxel
-			}
-		}
-	}
-	\ForEach{selected pixel}{
-		\For{level from 1 to max level}{
-			generate feature vector up to level\;
-			train classifier\;
-			save classifier model\;
-		}
-	}
-\end{algorithm}
-
-\begin{algorithm}[H]
-	\DontPrintSemicolon
-	\caption{Testing \& Validation Phase\label{alg:test}}
-	\ForEach{$dataset \in folder$}{
-		load DICOM files\;
-		mask $\longleftarrow$ load lung mask\;
-		\For{level from 1 to max level}{
-			load classifier model\;
-			\ForEach{$pixel \in mask$}{
-				generate feature vector\;
-				probability $\longleftarrow$ classify\;
-			}
-			combine into probability image\;
-			mask $\longleftarrow$ (probability image $>$ cascade threshold)\;
-		}
-		discard non-nodule voxels ($p < 50$\%)\;
-		cluster remaining voxels\;
-		load XML annotations\;
-		\ForEach{$nodule \in annotations$}{
-			\eIf{any cluster $\in$ nodule ($d < 2R_{min}$)}{
-				$TP++$\tcc*[r]{nodule detected}
-				delete cluster\;
-			}{
-				$FN++$\tcc*[r]{nodule not detected}
-				delete cluster\;
-			}
-		}
-		\ForEach{remaining cluster}{
-			$FP++$\tcc*[r]{spurious cluster}
-		}
-		calculate statistics
-	}
-\end{algorithm}
-
-\subsection{Statistical Measurements}
-In order to evaluate the performance of a binary classifier, we introduce some
-statistical concepts. The reader should be familiar with Type I and Type II
-errors. A Type I error occurs when the model predicts something to be there
-while in reality it is not. In this text we call these occurences false
-positives (FP). In our scenario, this corresponds with a classifier indicating
-that a nodule is present when there is really none.
-
-Vice versa, a Type II error occurs when the model predicts somethig to be absent
-when in reality it present. We call them false negatives (FN). False negatives
-in our scenario represent nodules not detected by the classifier.
-
-Of course the classifier does not always have to be wrong. True positives (TP)
-and true negatives (TN) respresent the cases where the classifier properly
-detected the presence or absence of the nodule respectively.
-
-
-\autoref{tbl:stats} summarizes these definitions.
-\begin{table}[htp]
-\begin{center}
-	\begin{tabular}{r | c c}
-						& Nodule 	& Non-Nodule \\
-		    \hline
-		    Positive 	& TP 		& FP\\
-		    Negative 	& FN 		& TN \\
-	\end{tabular}
-	\caption{Summary of some basic statistical measures.}
-	\label{tbl:stats}
-\end{center}
-\end{table}
-
-Because the terms above are in absolute numbers, they are difficult to compare
-across studies. That is where sensitivity and specifictiy come in. Sensitivity
-compares the amount of true positives with the total amount of positives.
-Synonyms include the true positive rate or the recall rate. Specificity does the
-same for the negatives. It's sometimes also called true negative rate.
-
-\begin{equation}
-	sensitivity = \frac{TP}{TP + FP}
-\end{equation}
-
-\begin{equation}
-	specificity = \frac{TN}{TN + FN}
-\end{equation}
-
-Ideally both measures should be 100\%, but that is an unrealistic expectation.
-There is also an inherent trade-off between the two: when the sensitivity is
-increased to make sure no false positives are detected, this will also increase
-the false negatives, which in turn lowers specificity. In our case there is a
-clear preference for a higher sensitivity, even though it may cost us some
-specificity.
-
-One last important measure is the accuracy. It is the ratio of all correctly
-classified occurrences over all occurrences.
-
-\begin{equation}
-	accuracy = \frac{TP + TN}{TP + FP + TN + FN}
-\end{equation}
-
-%TODO voxels vs clusters vs nodules
-
-\subsection{Laplacian}
-One common feature in nodule detection is the laplacian -- also called blob
-detector. The laplacian operator applied to a continuous 3D function is
-defined as:
-
-\begin{equation}
-	\nabla^2f(x,y,z) = \left(\frac{\partial^2 f}{\partial x^2} + \frac{\partial^2
-	f}{\partial y^2} + \frac{\partial^2 f}{\partial z^2}\right)
-\end{equation}
-
-To be applied to images, it must first be discretized into a 3D convolution
-mask. That mask typically has a large negative number in the center, surrounded
-by positive ones.
-
-However, because we are dealing with second derivatives, this operation is very
-sensitive to noise. One solution to this problem is to convolve the image with a
-gaussian kernel first. Because this kernel has a low-pass effect, noise will be
-reduced.
-
-\begin{equation}
-	g(x,y,z;t) = \frac{1}{(\sqrt{2\pi} t)^3}e^{-\frac{x^2+y^2+z^2}{2t^2}}
-\end{equation}
-
-It can be represented by bionomial filters -- repeated convolutions for [1 1]
-with itself -- in the discrete domain, making it rather cheap operation
-compution-wise.
-
-Convolution has some interesting properties, which allow this calculation to be
-further optimized:
-
-\begin{equation}
-	\nabla^2(g * f) = (\nabla^2 g) * f %TODO continue
-\end{equation}
-
-Alternatively to the Laplacian, one can also use the Hessian matrix of second
-partial derivatives as a feature. The laplacian is simply the sum of the
-elements on the main diagonal. In that sense it is more complete, but also much
-more computationally expensive. For this reason, we stick with the laplacian
-operator.
-
-
-\subsection{Cross-validation}
-During the training phase, we already want to get an idea about the future
-performance of our classifier. Of course we could use the whole feature set in
-the training, and use the same features afterwards to check if our classifier is
-performing well. However, this is considered a form of cheating, and the test
-would not tell us much about the predictive power of the classifier on new data.
-That is why it is important to reserve a fraction of the feature vectors for
-cross-validation. A strategy called stratified K-fold is used to repeatedly
-split the feature set randomly in a train and a test fraction.
-The stratified adjective means that the proportion of nodules to non-nodules are
-similar in both fractions. Each time -- also called \textit{fold} -- the
-classifier is trained with the train fraction and performance is checked with
-the test fraction. After a number of folds, these results are combined to give a
-proper estimate of the classifier performance in terms of accuracy (or other
-score metric).
-
 \input{sections/results.tex}
 
 \input{sections/conclusions.tex}
@@ -231,13 +51,13 @@ score metric).
 \appendix
 \section{Appendix}
 \subsection{Meetings}
-%\includepdf[pages={-}]{meetings/1.pdf}
-%\includepdf[pages={-}]{meetings/2.pdf}
-%\includepdf[pages={-}]{meetings/3.pdf}
-%\includepdf[pages={-}]{meetings/4.pdf}
-%\includepdf[pages={-}]{meetings/5.pdf}
-%\includepdf[pages={-}]{meetings/6.pdf}
-%\includepdf[pages={-}]{meetings/7.pdf}
+\includepdf[pages={-}]{meetings/1.pdf}
+\includepdf[pages={-}]{meetings/2.pdf}
+\includepdf[pages={-}]{meetings/3.pdf}
+\includepdf[pages={-}]{meetings/4.pdf}
+\includepdf[pages={-}]{meetings/5.pdf}
+\includepdf[pages={-}]{meetings/6.pdf}
+\includepdf[pages={-}]{meetings/7.pdf}
 %TODO include logbook
 %TODO include mission definition
 

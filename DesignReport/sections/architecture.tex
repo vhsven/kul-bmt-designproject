@@ -186,47 +186,7 @@ of the lung masks. The \textbf{blobdetector} was implemented as
 
 
 At the third and fourth level a \textbf{3D averaging method} \cite{keshani} was
-implemented to get rid of the bronchi and bronchioles that were still not entirely eliminated. The
-3D averaging method is based on the fact that nodules are more or less spherical
-and bronchi and bronchioles are oblong. This might not be visible in a 2D image
-where both may appear as spheres depending on the orientation of the
-bronchioles, but it certainly is if a 3D volume around a finding is taken into account.
-Larger nodules will repeat themselves in the preceding and/or succeeding slices
-at the same place while the smaller bronchi and bronchioles will not. For small
-nodules hidden in a maze of brionchioles of the same diameter, the separation is
-done based on the fact that the small nodules will not continue in preceeding
-and/or succeeding slices while the bronchioles will. Thus, by comparing the
-greyvalue of the target voxel with the greyvalues found in the neighbour slices
-at the same place and by taking into account the difference in length between
-nodules and bronchioles the nodules can be separated from the other findings.
-The comparison was made by calculating the mean value of each window in the
-target slice, the average of the mean values of the same coordinates in the
-succeeding and preceeding slices:
-\begin{equation}
-M_{ij}^p = \frac{1}{9} {\Sigma}_{k,l = -1}^{+1} L^p(i+k,j+l)
-\end{equation}
-\begin{equation}
-M_{ij}^{+} = \frac{1}{q} {\Sigma}_{p=p+1}^{p+q} M^p_{ij}
-\end{equation}
-\begin{equation}
-M_{ij}^{-} = \frac{1}{q} {\Sigma}_{p=p-q}^{p-1} M^p_{ij}
-\end{equation}
-\begin{equation}
-3D averaging = M^{-}_{ij} M^{+}_{ij}
-\end{equation}
-
-The index p indicates the level of the slice and the parameter q is the number
-of slices that are considered. The latter parameter is calculated as the ratio of the estimated nodule length to the
-thickness of the slices.
-\begin{equation}
-q=\frac{c}{T}
-\end{equation}
-To differentiate between larger nodules and small bronchioles and between
-smaller nodules and similar bronchioles the parameter c was set at 5 and 2,5
-respectively. The window around each voxel was set at 3x3. In case of a high q a
-high 3D averaging score will classify a voxel as belonging to a nodule whereas a
-low score will classify a voxel as a non-nodule. For the low q value it is the
-opposite.
+implemented to get rid of the bronchi and bronchioles that were still not entirely eliminated. 
 
 At a fifth level the \textbf{skewness and kurtosis} of a 3D window around each
 voxel was calculated as a measure for the texture of a certain part of the image. The
@@ -293,7 +253,48 @@ implemented in the final classifier as calculating features for each
 individual voxel in an image takes too much time (hours).
 
 \subsubsection{Training of the classifier}
+\begin{algorithm}[H]
+	\DontPrintSemicolon
+	\caption{Training Phase\label{alg:train}}
+	\ForEach{$dataset \in folder$}{
+		load DICOM files\;
+		load XML annotations\;
+		\ForEach{$nodule \in annotations$}{
+			\ForEach{$slice \in nodule$}{
+				select positive voxels ($d < 0.66R_{min}$)
+			}
+		}
+		\While {negative pixels $<$ positive pixels}
+		{	select random pixel in volume\;
+			\If{not too close to any nodule}{
+				select negative voxel
+			}
+		}
+	}
+	\ForEach{selected pixel}{
+		\For{level from 1 to max level}{
+			generate feature vector up to level\;
+			train classifier\;
+			save classifier model\;
+		}
+	}
+\end{algorithm}
 
+\paragraph{Cross-validation}
+During the training phase, we already want to get an idea about the future
+performance of our classifier. Of course we could use the whole feature set in
+the training, and use the same features afterwards to check if our classifier is
+performing well. However, this is considered a form of cheating, and the test
+would not tell us much about the predictive power of the classifier on new data.
+That is why it is important to reserve a fraction of the feature vectors for
+cross-validation. A strategy called stratified K-fold is used to repeatedly
+split the feature set randomly in a train and a test fraction.
+The stratified adjective means that the proportion of nodules to non-nodules are
+similar in both fractions. Each time -- also called \textit{fold} -- the
+classifier is trained with the train fraction and performance is checked with
+the test fraction. After a number of folds, these results are combined to give a
+proper estimate of the classifier performance in terms of accuracy (or other
+score metric).
 
 \subsection{Testing and validation of the classifier}
 The model that was generated in the previous step is now applied on new data
@@ -310,6 +311,39 @@ feature vector is calculated and this feature vector is then pushed down the
 trees of the RF classifier. After each voxel is given a certain probability, the
 probability image is generated.
 
+\begin{algorithm}[H]
+	\DontPrintSemicolon
+	\caption{Testing \& Validation Phase\label{alg:test}}
+	\ForEach{$dataset \in folder$}{
+		load DICOM files\;
+		mask $\longleftarrow$ load lung mask\;
+		\For{level from 1 to max level}{
+			load classifier model\;
+			\ForEach{$pixel \in mask$}{
+				generate feature vector\;
+				probability $\longleftarrow$ classify\;
+			}
+			combine into probability image\;
+			mask $\longleftarrow$ (probability image $>$ cascade threshold)\;
+		}
+		discard non-nodule voxels ($p < 50$\%)\;
+		cluster remaining voxels\;
+		load XML annotations\;
+		\ForEach{$nodule \in annotations$}{
+			\eIf{any cluster $\in$ nodule ($d < 2R_{min}$)}{
+				$TP++$\tcc*[r]{nodule detected}
+				delete cluster\;
+			}{
+				$FN++$\tcc*[r]{nodule not detected}
+				delete cluster\;
+			}
+		}
+		\ForEach{remaining cluster}{
+			$FP++$\tcc*[r]{spurious cluster}
+		}
+		calculate statistics
+	}
+\end{algorithm}
 
 klassendiagram: hoe is programma opgebouwd?
 TRAINING + TEST

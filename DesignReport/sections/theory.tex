@@ -5,7 +5,7 @@ features for all the voxels in an image are used to describe the entire image.
 
 \subsubsection{Feature extraction}
 Feature extraction involves obtaining a list of feature from a resource -- an
-image or a another dataset -- to describe that dataset in an accurate way which
+image or another dataset -- to describe that dataset in an accurate way which
 allows it to be analysed by proper software.
 
 In image processing a wide range of features can be extracted. Some features are
@@ -13,7 +13,7 @@ very trivial: the grey value or colour of pixels, the position of pixels, the
 intensity of certain grey values, etc. Features also can be shape based:
 template matching, blob detection, edge detection, detection of lines and
 circles by means of a Hough transform, etc. Once certain objects are detected in
-the image their area, curvature, size, etc. can be determined.
+the image, their area, curvature, size, etc. can be determined.
 
 We will now highlight some of the most important features.
 \paragraph{Distance Map} %TODO distmap
@@ -33,11 +33,11 @@ by positive ones.
 
 However, because we are dealing with second derivatives, this operation is very
 sensitive to noise. One solution to this problem is to convolve the image with a
-gaussian kernel first. Because this kernel has a low-pass effect, noise will be
+gaussian kernel of scale $t$ first. Because this kernel has a low-pass effect, noise will be
 reduced.
 
 \begin{equation}
-	g(x,y,z;t) = \frac{1}{(\sqrt{2\pi} t)^3}e^{-\frac{x^2+y^2+z^2}{2t^2}}
+	G_t(x,y,z) = \frac{1}{(\sqrt{2\pi} t)^3}e^{-\frac{x^2+y^2+z^2}{2t^2}}
 \end{equation}
 
 It can be represented by bionomial filters -- repeated convolutions for [1 1]
@@ -48,7 +48,7 @@ Convolution has some interesting properties, which allow this calculation to be
 further optimized:
 
 \begin{equation}
-	\nabla^2(g * f) = (\nabla^2 g) * f %TODO continue
+	\nabla^2[G_t(x,y,z) * f(x,y,z)] = \nabla^2 G_t(x,y,z) * f(x,y,z) %TODO continue
 \end{equation}
 
 Alternatively to the Laplacian, one can also use the Hessian matrix of second
@@ -74,37 +74,37 @@ be separated from the other findings. The comparison was made by calculating the
 mean value of each window in the target slice, the average of the mean values of
 the same coordinates in the succeeding and preceeding slices:
 \begin{equation}
-M_{ij}^p = \frac{1}{9} {\Sigma}_{k,l = -1}^{+1} L^p(i+k,j+l)
+M_{ij}^p = \frac{1}{9} \sum_{k,l = -1}^{+1} L^p(i+k,j+l)
 \end{equation}
 \begin{equation}
-M_{ij}^{+} = \frac{1}{q} {\Sigma}_{p=p+1}^{p+q} M^p_{ij}
+M_{ij}^{+} = \frac{1}{q} \sum_{p=p+1}^{p+q} M^p_{ij}
 \end{equation}
 \begin{equation}
-M_{ij}^{-} = \frac{1}{q} {\Sigma}_{p=p-q}^{p-1} M^p_{ij}
+M_{ij}^{-} = \frac{1}{q} \sum_{p=p-q}^{p-1} M^p_{ij}
 \end{equation}
 \begin{equation}
-3D averaging = M^{-}_{ij} M^{+}_{ij}
+\text{3D averaging} = M^{-}_{ij} M^{+}_{ij} 
 \end{equation}
 
-The index p indicates the level of the slice and the parameter q is the number
+The index $p$ indicates the z-index of the slice and the parameter $q$ is the number
 of slices that are considered. The latter parameter is calculated as the ratio
 of the estimated nodule length to the thickness of the slices.
 \begin{equation}
 q=\frac{c}{T}
 \end{equation}
 To differentiate between larger nodules and small bronchioles and between
-smaller nodules and similar bronchioles the parameter c was set at 5 and 2,5
-respectively. The window around each voxel was set at 3x3. In case of a high q a
+smaller nodules and similar bronchioles the parameter $c$ was set at 5 and 2,5
+respectively. The window around each voxel was set at $3 \times 3$. In case of a high $q$ a
 high 3D averaging score will classify a voxel as belonging to a nodule whereas a
-low score will classify a voxel as a non-nodule. For the low q value it is the
+low score will classify a voxel as a non-nodule. For the low $q$ value it is the
 opposite.
 
 \subsubsection{Feature selection}
 A problem that may arise when analysing a dataset based on list of features, is
-that the amount of features is too high. Performing an analysis on large amounts
+that the amount of features is too large. Performing an analysis on large amounts
 of datasets requires a large amount of memory and computational power.
 Furthermore, a classification algorithm that is used to analyse the data may
-overfit the trainingsdata and will not be able to generalisation anymore.
+overfit the trainingsdata and will not be able to generalise anymore.
 Therefore, a range of dimension reduction techniques can be applied to extract
 the uncorrelated and most important features of a list. Examples of these
 reduction techniques are principal component analysis and partial least squares
@@ -251,7 +251,7 @@ optimised, but still we had to cut in the amount of features that were used in
 the final version of the classifier as the amount of memory available remained a
 problem during the whole project.
 
-\subsection{Validation: Statistical Measurements}
+\subsection{Validation: statistical measurements}
 In order to evaluate the performance of a binary classifier, we introduce some
 statistical concepts. The reader should be familiar with Type I and Type II
 errors. A Type I error occurs when the model predicts something to be there
@@ -259,7 +259,7 @@ while in reality it is not. In this text we call these occurences false
 positives (FP). In our scenario, this corresponds with a classifier indicating
 that a nodule is present when there is really none.
 
-Vice versa, a Type II error occurs when the model predicts somethig to be absent
+Vice versa, a Type II error occurs when the model predicts something to be absent
 when in reality it present. We call them false negatives (FN). False negatives
 in our scenario represent nodules not detected by the classifier.
 
@@ -289,11 +289,11 @@ Synonyms include the true positive rate or the recall rate. Specificity does the
 same for the negatives. It's sometimes also called true negative rate.
 
 \begin{equation}
-	sensitivity = \frac{TP}{TP + FP}
+	\text{sensitivity} = \frac{TP}{TP + FP}
 \end{equation}
 
 \begin{equation}
-	specificity = \frac{TN}{TN + FN}
+	\text{specificity} = \frac{TN}{TN + FN}
 \end{equation}
 
 Ideally both measures should be 100\%, but that is an unrealistic expectation.
@@ -307,7 +307,7 @@ One last important measure is the accuracy. It is the ratio of all correctly
 classified occurrences over all occurrences.
 
 \begin{equation}
-	accuracy = \frac{TP + TN}{TP + FP + TN + FN}
+	\text{accuracy} = \frac{TP + TN}{TP + FP + TN + FN}
 \end{equation}
 
 %TODO voxels vs clusters vs nodules

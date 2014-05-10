@@ -65,10 +65,10 @@ performed on a computer with Intel Core i5 CPU (1,8 GHz) and 8 GB of RAM. The
 processing of a medium large dataset (\ldots slices) takes \ldots minutes.
 
 \subsubsection{Processing of the annotations in Python}
-The annotations were partially provided in pixelcoordinates -- x and y values --
-and partially in worldcoordinates -- z values -- so the z coordinates were
-converted into pixelcoordinates to find the nodule regions. The annotations
-existed of a list of x and y coordinates to indicate the position of each
+The annotations were partially provided in pixel coordinates -- x and y values --
+and partially in world coordinates -- z values -- so the z coordinates were
+converted into pixel coordinates to find the nodule regions. The annotations
+contained a list of x and y coordinates to indicate the position of each
 pixel belonging to the contour of each nodule per slice. From these
 coordinates the center of gravity and the minimum radius of each nodule was
 calculated per slice. The 1-voxel nodules were removed from the list of
@@ -130,7 +130,7 @@ erosion should be performed as well to include the nodules hidden in the lung
 wall.
 
 \subsection{Training of the classifier}
-\subsubsection{Preparation of training dataset}
+\subsubsection{Preparation of the training dataset}
 Based on the associated annotations the center of gravity and the maximum radius
 of each nodule was calculated. Using this information a sphere was constructed
 which comprised the whole nodule. To select the central volume of the nodule,

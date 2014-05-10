@@ -72,11 +72,6 @@ class FeatureGenerator:
         
     def getAllFeaturesByMask(self, mask3D):
         """Returns a ndarray (NxL) with the rows containing the features vector, up to the current level, per datapoint."""
-        nbVoxels = mask3D.sum()
-        h,w,d = mask3D.shape
-        totalVoxels = h*w*d
-        ratio = 100.0 * nbVoxels / totalVoxels
-        print("\tGenerating features for {0} ({1:.3f}%) voxels.".format(nbVoxels, ratio))
         allFeatures = self.getLevelFeatureByMask(1, mask3D)
         for level in range(2, self.Level+1):
             lvlFeature = self.getLevelFeatureByMask(level, mask3D) #Nxl

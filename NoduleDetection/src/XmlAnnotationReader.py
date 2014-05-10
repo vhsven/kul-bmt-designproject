@@ -46,16 +46,16 @@ class XmlAnnotationReader:
             
         return nodules 
     
-    def getNodulePositions(self): #in pixel coordinates
+    def getNodulePositions(self, minOrMax): #in pixel coordinates
         for nodule in self.Nodules:
-            regionCenters, regionRs = nodule.Regions.getRegionCenters()
-            for pixelZ in regionCenters.keys():                
+            regionCenters, regionRs = nodule.Regions.getRegionCenters(minOrMax)
+            for pixelZ in nodule.Regions.getSortedZIndices():                
                 yield np.append(regionCenters[pixelZ], pixelZ), regionRs[pixelZ]
                 
-    def getNodulePositionsInSlice(self, mySlice):
+    def getNodulePositionsInSlice(self, mySlice, minOrMax):
         for nodule in self.Nodules:
-            regionCenters, regionRs = nodule.Regions.getRegionCenters()
-            for pixelZ in regionCenters.keys():
+            regionCenters, regionRs = nodule.Regions.getRegionCenters(minOrMax)
+            for pixelZ in nodule.Regions.getSortedZIndices():
                 if int(pixelZ) == int(mySlice):
                     yield regionCenters[pixelZ], regionRs[pixelZ]
             

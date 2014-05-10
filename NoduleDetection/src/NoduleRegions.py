@@ -49,23 +49,21 @@ class NoduleRegions:
         return paths, masks
 
     
-    def getRegionCenters(self):
+    def getRegionCenters(self, minOrMax):
         centers = {}
         r = {}
         for z in self.getSortedZIndices():
             coords = self.getRegionCoords(z) #list of x,y,z tuples
             coords = np.array(coords)[:,[0,1]] #save x,y in numpy array
             centers[z] = coords.mean(axis=0)
-            r[z] = math.sqrt(min(((coords - centers[z])**2).sum(axis=1)))
-            
-            #if r[z] < MIN_NODULE_RADIUS:
-            #    r[z] = MIN_NODULE_RADIUS
-            
+            ssd = ((coords - centers[z]) ** 2).sum(axis=1)
+            r[z] = math.sqrt(minOrMax(ssd))
+        
         return centers, r
         
-    def getRegionMasksCircle(self,m,n, radiusFactor=1.0):
+    def getRegionMasksCircle(self, m, n, minOrMax, radiusFactor=1.0):
         masks = {}
-        centers, r = self.getRegionCenters()
+        centers, r = self.getRegionCenters(minOrMax)
         for z in self.getSortedZIndices():            
             x, y = np.meshgrid(np.arange(m), np.arange(n))
             x, y = x.flatten(), y.flatten()
@@ -74,6 +72,29 @@ class NoduleRegions:
             masks[z] = masks[z].reshape(m, n)
                 
         return masks, centers, r
+    
+    def getRegionMask3D(self, shape, minOrMax, radiusFactor=1.0):
+        h,w,_ = shape
+        mask3D = np.zeros(shape, dtype=np.bool)
+        masks, _, _ = self.getRegionMasksCircle(h, w, minOrMax, radiusFactor)
+        for z in masks:
+            mask3D[:,:,int(z)] = masks[z]
+            
+        return mask3D
+    
+    def isPointInsideCircles(self, p, minOrMax, radiusFactor=1.0):
+        x,y,z = p
+        z += 0.5 
+        if not z in self.Regions:
+            return False #no factor for top/bottom
+        
+        v = np.array([x,y])
+        coords = [(c[0], c[1]) for c in self.getRegionCoords(z)] #list of x,y,z tuples -> x,y
+        coords = np.array(coords)
+        center = coords.mean(axis=0)
+        ssd = ((coords - center) ** 2).sum(axis=1)
+        r = math.sqrt(minOrMax(ssd)) * radiusFactor
+        return sum((v - center)**2) < r**2
     
 #     def getRegionMasksSphere(self, h, w, d, cc):
 #         masks = {}

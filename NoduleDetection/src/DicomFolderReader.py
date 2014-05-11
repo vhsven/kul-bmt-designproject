@@ -6,6 +6,7 @@ from os.path import isfile, join
 from CoordinateConverter import CoordinateConverter
 from collections import deque
 from XmlAnnotationReader import XmlAnnotationReader
+from PixelFinder import PixelFinder
 
 class DicomFolderReader:
     @staticmethod
@@ -132,6 +133,9 @@ class DicomFolderReader:
     
     def getAnnotationReader(self):
         return XmlAnnotationReader(self.Path, self.getCoordinateConverter())
+    
+    def getPixelFinder(self):
+        return PixelFinder(self.Path, self.getCoordinateConverter())
     
     def getNbSlices(self):
         return len(self.Slices)

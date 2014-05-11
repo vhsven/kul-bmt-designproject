@@ -154,16 +154,16 @@ determined and two third of these radii was taken to select the central volume
 of the nodule. A list of positive voxels per scan was constructed this way.
 \begin{figure}[htp]
  \begin{center}
-    \includegraphics[width=90mm]{img/spherenodule_001.png}
-    \caption{Flattened shape of nodule (LIDC scan 007)}
+    \includegraphics[width=0.6\textwidth]{img/NoduleSphereTest_0001.pdf}
+    \caption{Flattened shape of nodule (LIDC scan 0001)}
     \label{fig:flatNodule}
  \end{center}
-\end{figure} %TODO use more LaTeX-friendly image format (pdf, eps)
+\end{figure}
 
 To train a classifier, a list of positive and negative
 examples are necessary. Therefore, a second list of voxels was constructed. The
 amount of voxels was taken the same as in the list of positive voxels to obtain
-a balanced traning dataset. The positions of the negative voxels were selected
+a balanced training dataset. The positions of the negative voxels were selected
 at random over the entire image. The only constraint was that they were not
 allowed the be situated within two times the maximum radius of each nodule. This
 constraint was imposed to avoid ambigous training data.
@@ -175,20 +175,45 @@ This whole process was repeated for all scans and the results were then
 concatenated to obtain a dataset to train the ensemble classifier.
 
 \subsubsection{Feature extraction and selection} \label{sec:featureExtraction}
-% TODO feature selection: empirisch
-The \textbf{greyvalue} of each voxel was the only feature of the
-cascaded classifier at level one. 
-At level two two features were implemented: a blobdetector and a distance map
-of the lung masks. The \textbf{blobdetector} was implemented as 
-% TODO sven: Laplacians with different sigma values are applied on the remaining
-% voxels + formule x =sqrt(2sigma)
-% + uitleg welke sigma's -> statistieken
+The \textbf{grey value} of each voxel is the only feature of the cascaded
+classifier at level one. From this, the classifier learns that nodules are
+always part of the soft tissue window. When asked to identify nodules with this
+information alone, the classifier will simply highlight all soft tissue in the
+image. Remember that during the preprocessing we applied a lung mask. Hence all
+soft tissue outside of the lungs -- save for a thin edge caused by dilation --
+is already discarded. By combining the two results, we are left only with thin
+lung edges, nodules and bronchi/bronchioli. The task of the next classifiers in
+the cascade will be to further distinguish between these different structures.
 
-% TODO sven: uitleg distance map in 2 zinnen + fig
+In level two, our focus goes to discarding the remaining lung edges and
+highlighting the nodules. We do this by combining a LoG \textbf{blob detector}
+with a \textbf{distance map}. As explained in \autoref{sec:laplace_theory}, the
+LoG operator is very good in detecting light blobs on a darker background such
+as nodules. The remaining lung edges in contrast do not fit this description at
+all. To find out which sigma would work best, we performed a couple of tests.
+First, we know that larger sigmas work better on larger nodules and vice versa.
+To that end, we searched for the smallest and largest nodule over all our
+datasets. Next, we empirically established the sigmas that yielded the best
+results for each. Because we do not know ahead of time how big the nodule we
+have to detect will be, we calculate the LoG for all intermediary values. The
+results of our test show that nodules radii lie roughly between \ldots mm and \ldots mm
+and that we need sigmas between 2mm and 10mm to cover this range.
 
+To make the difference even more clear to the classifier, a distance map was
+calculated based on the original lung mask. Alternatively, one could also work
+with an ordinary edge detector, e.g. sobel. By blurring that output with a
+Gaussian, we get a similar distance-to-edge feature. However, we chose the
+distance map over this approach because it simply contained more information. Of
+course we can't blindly discard any voxels too close to the edges, because
+nodules can be closeby as well. That is why a distance map alone is not enough.
+
+% TODO Sven: nodule r range.
 
 At the third and fourth level a \textbf{3D averaging method} \cite{keshani} was
-implemented to get rid of the bronchi and bronchioles that were still not entirely eliminated. 
+implemented to get rid of the bronchi and bronchioles that were still present.
+See \autoref{sec:3davg} for more information. With the help of all the features
+above, the classifier should have enough information to separate the nodules
+from other structures in and around the lung.
 
 At a fifth level the \textbf{skewness and kurtosis} of a 3D window around each
 voxel was calculated as a measure for the texture of a certain part of the image. The
@@ -204,7 +229,7 @@ The rest of this paragraph provides an overview of other features that were
 tested but that were not implemented in the final classifier because of several
 reasons.
 
-Another obvious feature, apart from the greyvalue of each voxel, is the
+Another obvious feature, apart from the grey value of each voxel, is the
 \textbf{position} $(X, Y, Z)$ of each voxel in the 3D image. An even better
 feature is the \textbf{relative position} $(\tfrac{X}{X_{max}}, \tfrac{Y}{Y_{max}}, \tfrac{Z}{Z_{max}})$ as
 it takes into account that the size of the datasets might change. However, after
@@ -213,7 +238,7 @@ amount of training data was used. The training set had to be large enough so
 almost every possible nodule position inside the lungs was covered by the
 training data. As it is very difficult to estimate how many scans are needed for
 this purpose and training on this large amount of data would take a lot of time,
-the feature 'position' and 'relative position' were exluded from the featureset.
+the feature 'position' and 'relative position' were exluded from the feature set.
 Instead a distance map based on the lung mask was implemented as a feature.
 
 A \textbf{3D Sobel filter} for edge detection was implemented as well. A Sobel
@@ -285,14 +310,14 @@ voxel in an image took too much time (hours).
 	}
 \end{algorithm}
 
-\paragraph{Cross-validation}
+\paragraph{Cross validation}
 During the training phase, we already want to get an idea about the future
 performance of our classifier. Of course we could use the whole feature set in
 the training, and use the same features afterwards to check if our classifier is
 performing well. However, this is considered a form of cheating, and the test
 would not tell us much about the predictive power of the classifier on new data.
 That is why it is important to reserve a fraction of the feature vectors for
-cross-validation. A strategy called stratified K-fold is used to repeatedly
+cross validation. A strategy called stratified K-fold is used to repeatedly
 split the feature set randomly in a train and a test fraction.
 The stratified adjective means that the proportion of nodules to non-nodules are
 similar in both fractions. Each time -- also called \textit{fold} -- the
@@ -300,6 +325,16 @@ classifier is trained with the train fraction and performance is checked with
 the test fraction. After a number of folds, these results are combined to give a
 proper estimate of the classifier performance in terms of accuracy (or other
 score metric).
+
+This cross validation can also be used to determine the optimal hyperparameters
+of the classifier. By generating a grid of parameters and corresponding value
+ranges, all combinations can be tested, and the one with the highest score can
+be retained. In case of RF, it is important to configure it in such a way that
+overfitting does not occur. This can be done by increasing either the tree
+depth, the minimum number of samples per leaf or the minimum number of samples
+before a split occurs. We chose the former and found that for all levels except
+the first, a value of 5 yields optimal results. For level 1, this optimal value
+was significantly higher at 55. %TODO explain optimal params
 
 \subsection{Testing and validation of the classifier}
 The model that was generated in the previous step is now applied on new data
@@ -349,16 +384,8 @@ probability image is generated.
 	}
 \end{algorithm}
 
-klassendiagram: hoe is programma opgebouwd?
-TRAINING + TEST
 \begin{enumerate}
 \item stappen die doorlopen worden + fig
 \item welke algorithmes gebruikt + wat doen ze + waarom die keuze?
 \item vergelijken keuzes met literatuur/commerciele systemen?
 \end{enumerate}
-
-
-trainingstage + teststage
-tussenresultaten: moeilijkheden, opl, \ldots
-
-

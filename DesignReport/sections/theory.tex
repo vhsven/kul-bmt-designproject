@@ -19,18 +19,27 @@ etc. can be determined.
 
 We will now highlight some of the most relevant features for our purpose.
 
-\paragraph{Distance Map} %TODO distance map image
-A binary image containing either foreground or background pixels can be
-transformed into a distance map. In this process, every foreground pixel is
-assigned the distance to nearest background pixel, while the background pixels
+\paragraph{Distance Map}
+A binary image containing either foreground (1) or background (0) voxels can be
+transformed into a distance map. In this process, every foreground voxel is
+assigned the distance to nearest background voxel, while the background voxels
 are simply set to zero. In that regard, distance maps can be seen as
-generalisations of edges: they contain the same information, and more.
+generalisations of edges: they contain the same information, and more. An
+exanple of a distance map can be found in \autoref{fig:distmap}.
+
+\begin{figure}[htp]
+\begin{center}
+  \includegraphics[width=0.5\textwidth]{img/distmap.png}
+  \caption{Example of a distance map}
+  \label{fig:distmap}
+\end{center}
+\end{figure}
 
 The distance metric must not necessarily be the Euclidean distance. Other
 metrics such as the Manhattan distance are also acceptable and easier to compute
 on top of that.
 
-\paragraph{Laplacian}
+\paragraph{Laplacian}\label{sec:laplace_theory}
 One common feature in nodule detection is the laplacian -- also called blob
 detector. The laplacian operator applied to a continuous 3D function is
 defined as:
@@ -82,13 +91,20 @@ To make this computationally expensive operation more bearable, the laplacian is
 often approximated by the difference between two levels in a gaussian scale
 pyramid. The result is called the Difference-of-Gaussians (DoG).
 
+There is one last technicality we must address. The above formulas all assumed
+that the blobs were isotropic and thus that the LoG could be so as well.
+However, because we perform most of our calculations in voxel space and voxels
+are not perfect cubes, this assumption does not hold. To compensate for this
+fact, we define a unique sigma per dimension that is a rescaled variant of the
+original based on the corresponding voxel dimension.
+
 Alternatively to the laplacian, one can also use the Hessian matrix of second
 partial derivatives as a feature. The laplacian is simply the sum of the
 elements on the Hessian's main diagonal. In that sense the latter is more
 complete, but also much more computationally expensive. For this reason, we
 stick with the laplacian operator.
 
-\paragraph{3D Averaging} 
+\paragraph{3D Averaging}\label{sec:3davg} 
 The 3D averaging method \cite{keshani} is based on the fact that nodules are
 more or less spherical while bronchi and bronchioles are oblong. This might not be
 visible in a 2D image where both appear as spheres depending on the

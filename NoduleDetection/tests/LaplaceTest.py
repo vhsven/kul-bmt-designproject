@@ -60,6 +60,15 @@ vLap = None
 # slSlider.on_changed(update_slice)
 
 mySlice = 95
+
+# import scipy.ndimage.morphology as morph
+# distmap = morph.distance_transform_cdt(mask3D, metric='taxicab').astype(np.float32)
+# fig = pylab.figure()
+# ax = pylab.imshow(distmap[:,:,mySlice], cmap=pylab.cm.bone)  # @UndefinedVariable
+# #fig.colorbar(ax)
+# pylab.title("Distance Map")
+# pylab.show()
+    
 sMask = mask3D[:,:,mySlice]
 for sigma in np.arange(1, 10):
     sigmas = np.array([sigma, sigma, sigma]) / voxelShape #convert to pixels
@@ -74,4 +83,5 @@ for sigma in np.arange(1, 10):
     ax = pylab.imshow(msLap, pylab.cm.bone)  # @UndefinedVariable
     fig.colorbar(ax)
     pylab.title("Laplacian ($\sigma$ = {})".format(sigmas))
-    pylab.show()
+    pylab.show()    
+    

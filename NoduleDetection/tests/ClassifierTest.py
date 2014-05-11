@@ -23,8 +23,8 @@ class Main:
     def main(self):    
         trainer = Trainer(self.RootPath, 0, maxPaths=self.MaxPaths)
         print("Phase 1: training all datasets up to level {}.".format(self.MaxLevel))
-        models = trainer.trainAll(self.MaxLevel, save=False)
-        #models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
+        #models = trainer.trainAll(self.MaxLevel, save=False)
+        models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
         #models = Trainer.loadAll(self.MaxLevel)
         del trainer
         print("Training phase completed, start testing phase.")

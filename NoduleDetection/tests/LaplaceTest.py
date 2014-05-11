@@ -59,13 +59,13 @@ vLap = None
 # #siSlider.on_changed(update_sigma)
 # slSlider.on_changed(update_slice)
 
-mySlice = 89
+mySlice = 95
 sMask = mask3D[:,:,mySlice]
 for sigma in np.arange(1, 10):
     sigmas = np.array([sigma, sigma, sigma]) / voxelShape #convert to pixels
-    vLap = nd.filters.gaussian_laplace(vData, sigmas) #TODO normalize: *t
-    vLap[vLap > 0] = 0
-    vLap *= -1
+    f = -sigmas.mean()
+    vLap = nd.filters.gaussian_laplace(vData, sigmas) * f
+    vLap[vLap < 0] = 0
     
     sLap = vLap[:,:,mySlice]
     msLap = ma.masked_array(sLap, mask=~sMask)

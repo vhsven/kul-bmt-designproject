@@ -54,19 +54,18 @@ class FeatureGenerator:
             return self.getIntensityByMask(mask3D)
         if level == 2:
             N = mask3D.sum()
-            start,stop = 1,10
+            start,stop = 2,10
             result = np.empty((N,stop-start+1))
             for sigma in np.arange(start,stop):
-                sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
-                result[:,sigma-start] = self.getLaplacianByMask(mask3D, sigmas)
+                result[:,sigma-start] = self.getLaplacianByMask(mask3D, sigma)
             result[:,stop-start] = self.getEdgeDistByMask(mask3D, self.SetID, sigma=4.5)
             return result
         if level == 3:
             return self.averaging3DByMask(mask3D, windowSize=3, vesselSize=2.5)
         if level == 4:
             return self.averaging3DByMask(mask3D, windowSize=3, vesselSize=5.0)
-        if level == 5:
-            return FeatureGenerator.getWindowFunctionByMask(mask3D, self.getStats)
+        #if level == 5:
+        #    return FeatureGenerator.getWindowFunctionByMask(mask3D, self.getStats)
         else:
             raise ValueError("Unsupported level")
         
@@ -84,12 +83,14 @@ class FeatureGenerator:
         intensities = self.Data[mask3D]
         return intensities.reshape((-1, 1))
     
-    def getLaplacianByMask(self, mask3D, sigmas):
+    def getLaplacianByMask(self, mask3D, sigma):
+        sigmas = np.array([sigma]*3) / np.array(self.VoxelShape)
+        normFactor = -sigmas.mean()
         B = argwhere(mask3D)
         (xstart, ystart, zstart), (xstop, ystop, zstop) = B.min(0)-2, B.max(0)+3 
         data = self.Data[xstart:xstop, ystart:ystop, zstart:zstop]
         mask = mask3D[xstart:xstop, ystart:ystop, zstart:zstop]
-        data = -nd.filters.gaussian_laplace(data, sigmas)[mask]
+        data = nd.filters.gaussian_laplace(data, sigmas)[mask] * normFactor
         data[data < 0] = 0 
         return data
             

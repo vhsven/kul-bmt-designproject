@@ -75,14 +75,12 @@ class Trainer:
         allFeatures, allClasses = self.calculateAllTrainingFeatures(maxLevel)
         
         models = {}
-        levelSlices = [0, 1, 1+10, 1+10+1, 1+10+1+1, 1+10+1+1+6]
+        levelSlices = [0, 1, 1+9, 1+9+1, 1+9+1+1, 1+9+1+1+6]
         for level in range(1, maxLevel+1):
             levelSlice = levelSlices[level]
             features = allFeatures[:, 0:levelSlice]
-            rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1 
-            #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
-            #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
-            tuned_parameters = [{'min_samples_leaf': np.arange(5, 200, 10)}]
+            rf = RandomForestClassifier(n_estimators=30)
+            tuned_parameters = [{'min_samples_leaf': np.arange(5, 100, 10)}]
             rfGrid = GridSearchCV(rf, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
             rfGrid.fit(features, allClasses)
             models[level] = rfGrid.best_estimator_
@@ -94,32 +92,35 @@ class Trainer:
             
         return models
     
-    def trainAndValidate(self, level):
-        allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
-        
-        print("Training and validating level {} classifier...".format(level))
-        rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1 
-        #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
-        #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
-        tuned_parameters = [{'min_samples_leaf': np.arange(5, 200, 10)}]
-        rfGrid = GridSearchCV(rf, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
-        rfGrid.fit(allFeatures, allClasses)
-        model = rfGrid.best_estimator_
-        print(rfGrid.best_score_)
-        print(rfGrid.best_params_)
-        
-        return model
+#     def trainAndValidate(self, level):
+#         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
+#         
+#         print("Training and validating level {} classifier...".format(level))
+#         rf = RandomForestClassifier(n_estimators=30) #, n_jobs=-1 
+#         #cross_validation.KFold(len(x), n_folds=10, indices=True, shuffle=True, random_state=4)
+#         #X_train, X_test, y_train, y_test = cross_validation.train_test_split(allFeatures, allClasses, test_size=0.5, random_state=0)
+#         tuned_parameters = [{'min_samples_leaf': np.arange(5, 200, 10)}]
+#         rfGrid = GridSearchCV(rf, tuned_parameters, cv=NB_VALIDATION_FOLDS)        
+#         rfGrid.fit(allFeatures, allClasses)
+#         model = rfGrid.best_estimator_
+#         print(rfGrid.best_score_)
+#         print(rfGrid.best_params_)
+#         
+#         return model
     
     def trainAll(self, maxLevel, save=False):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(maxLevel)
         
         #TODO set params
         n_estimators = 30
-        min_samples_leaf = 1
         
         models = {}
-        levelSlices = [0, 1, 1+10, 1+10+1, 1+10+1+1, 1+10+1+1+6]
+        levelSlices = [0, 1, 1+9, 1+9+1, 1+9+1+1, 1+9+1+1+6]
         for level in range(1, maxLevel+1):
+            if level == 1:
+                min_samples_leaf = 55
+            else:
+                min_samples_leaf = 5
             levelSlice = levelSlices[level]
             features = allFeatures[:, 0:levelSlice]
             rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf)
@@ -130,30 +131,30 @@ class Trainer:
         
         return models
     
-    def train(self, level):
-        allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
-        
-        print("Training level {} classifier...".format(level))
-        #TODO set params
-        #input, trainset=30 (1-40), testset=50
-        
-        n_estimators = 30
-        min_samples_leaf = 1
-        if level == 1: #accuracy = 0.802394890899
-            min_samples_leaf = 145
-        elif level == 2: #accuracy = 0.980574773816
-            min_samples_leaf = 5
-        elif level == 3: #accuracy = 0.982597126131
-            min_samples_leaf = 5
-        elif level == 4: #accuracy = 
-            min_samples_leaf = 1
-        elif level == 5: #accuracy = 
-            min_samples_leaf = 1
-            
-        rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf)
-        model = rf.fit(allFeatures, allClasses)
-        
-        return model
+#     def train(self, level):
+#         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
+#         
+#         print("Training level {} classifier...".format(level))
+#         #TODO set params
+#         #input, trainset=30 (1-40), testset=50
+#         
+#         n_estimators = 30
+#         min_samples_leaf = 1
+#         if level == 1: #accuracy = 
+#             min_samples_leaf = 55
+#         elif level == 2: #accuracy = 
+#             min_samples_leaf = 5
+#         elif level == 3: #accuracy = 
+#             min_samples_leaf = 5
+#         elif level == 4: #accuracy = 
+#             min_samples_leaf = 1
+#         #elif level == 5: #accuracy = 
+#         #    min_samples_leaf = 1
+#             
+#         rf = RandomForestClassifier(n_estimators=n_estimators, min_samples_leaf=min_samples_leaf)
+#         model = rf.fit(allFeatures, allClasses)
+#         
+#         return model
     
     @staticmethod
     def save(model, level):

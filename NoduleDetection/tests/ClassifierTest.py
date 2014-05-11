@@ -9,6 +9,7 @@ from Validator import Validator
 from Constants import CASCADE_THRESHOLD, MAX_LEVEL
 from XmlAnnotationReader import XmlAnnotationReader
 
+#TODO delete set 48 (too big -> memory errors)
 #TODO check wall nodules
 
 class Main:
@@ -20,12 +21,13 @@ class Main:
         else:
             self.MaxLevel = maxLevel
         
-    def main(self):    
+    def main(self):
+        print datetime.datetime.now()
         trainer = Trainer(self.RootPath, 0, maxPaths=self.MaxPaths)
         print("Phase 1: training all datasets up to level {}.".format(self.MaxLevel))
         #models = trainer.trainAll(self.MaxLevel, save=False)
-        models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
-        #models = Trainer.loadAll(self.MaxLevel)
+        #models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
+        models = Trainer.loadAll(self.MaxLevel)
         del trainer
         print("Training phase completed, start testing phase.")
         
@@ -35,7 +37,7 @@ class Main:
         totalFN = 0
         nbTestSets = 0
         print datetime.datetime.now()
-        for testSet in range(41,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
+        for testSet in range(48,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
             try:
                 dfr = DicomFolderReader.create(self.RootPath, testSet)
                 nbTestSets += 1
@@ -45,6 +47,7 @@ class Main:
             dfr.printInfo(prefix="\t")
             data = dfr.getVolumeData()
             vshape = dfr.getVoxelShape()
+            #dfr.getAnnotationReader()
             mask3D = Preprocessor.loadThresholdMask(testSet) #getThresholdMask(data)
             clf = Classifier(testSet, data, vshape)
             
@@ -66,7 +69,7 @@ class Main:
                 ratio = 100.0 * nbVoxels / totalVoxels
                 print("\t{0} voxels ({1:.3f}%) remaining after level {2}.".format(nbVoxels, ratio, level))
         
-                show = False
+                show = True
                 if show:
                     fig, _ = pl.subplots()
                     pl.subplots_adjust(bottom=0.20)

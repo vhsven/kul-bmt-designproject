@@ -65,12 +65,12 @@ performed on a computer with Intel Core i5 CPU (1,8 GHz) and 8 GB of RAM. The
 processing of a medium large dataset (\ldots slices) takes \ldots minutes.
 
 \subsubsection{Processing of the annotations in Python}
-The annotations were partially provided in pixel coordinates -- x and y values --
-and partially in world coordinates -- z values -- so the z coordinates were
+The annotations were partially provided in pixel coordinates -- x and y values
+-- and partially in world coordinates -- z values -- so the z coordinates were
 converted into pixel coordinates to find the nodule regions. The annotations
-contained a list of x and y coordinates to indicate the position of each
-pixel belonging to the contour of each nodule per slice. From these
-coordinates the center of gravity and the minimum radius of each nodule was
+contained a list of x and y coordinates to indicate the position of each pixel
+belonging to the contour of each nodule per slice. From these coordinates the
+center of gravity plus the minimum and maximum radius of each nodule was
 calculated per slice. The 1-voxel nodules were removed from the list of
 annotations. In the rest of the algorithm each nodule was represented by its
 center of gravity and its minimum radius.
@@ -78,9 +78,9 @@ center of gravity and its minimum radius.
 \subsubsection{Lung segmentation}
 It was assumed that, if the whole 3D scan was fed to the cascaded classifier,
 only the soft tissue would remain after the first cascade. The grey value of
-each voxel was used as a feature on this first level.
-Unfortunately, this method did not prove to be efficient, so a second option was
-taken into consideration: a proper lung segmentation as a pre-processing step.
+each voxel was used as a feature on this first level. Unfortunately, this method
+did not prove to be efficient, so a second option was taken into consideration:
+a proper lung segmentation as a preprocessing step.
 
 By performing a lung segmentation, the amount of voxels that have to be
 processed further on is significantly reduced by about 85\%. Furthermore, it has
@@ -104,17 +104,18 @@ distributed over 7 scans. The results varied among the scans. In some cases the
 algorithm selected the appropriate threshold, in other cases the soft tissue
 around the lungs was not eliminated well. Furthermore, performing the lung
 segmentation as was described above would take a considerable amount of time
-(minutes). Instead, a fixed threshold of 1600 was emperically established to
+(minutes). Instead, a fixed threshold of 1600 was empirically established to
 perform a body segmentation and to separate the soft body tissues from the rest
-of the image. Then gaps (lungs) in the body mask were closed by hole filling so
-a mask of the entire body was obtained. As this body segmentation already
-eliminated 55\% of all voxels and no complex calculations had to be done to
-obtain the binary image, this result was found satisfying enough.
+of the image. This is permitted because CT scanners have a carefully calibrated
+output. Then gaps (lungs) in the body mask were closed by hole filling so a mask
+of the entire body was obtained. As this body segmentation already eliminated
+55\% of all voxels and no complex calculations had to be done to obtain the
+binary image, this result was found satisfying enough.
 
 % TODO tabel met experimenten om vaste threshold te bepalen er nog inzetten?
 % TODO duidelijker maken vanaf welk punt we afgeweken hebben van het paper?
-Despite the reduced amount of voxels, applying the algorithm still raised
-memory errors depending on the dimensions of the scan.
+Despite the reduced amount of voxels, applying the algorithm still raised memory
+errors depending on the dimensions of the scan.
 In order to reduce the amount of voxels even further in the pre-processing
 phase, a full lung segmentation was performed in a semiautomatic way in
 MeVisLab. After the scans were loaded in MeVisLab, the user manually indicates
@@ -122,12 +123,13 @@ three points inside the lung area. Based on these points region growing is
 performed and a binary mask for the lung area is generated. The gaps in the
 binary mask -- which represent nodules in the lung area and nodules hidden in
 the lung wall -- are closed by dilation. This mask is then exported to Python
-for further processing of the images. An alternative way of performing a lung
-segmentation in Python would be calculating the body mask at the fixed
-threshold of 1600 and substract this mask from a similar mask but with the lung
-gaps closed. In this way only the lung area is retained. Then a dilation and
-erosion should be performed as well to include the nodules hidden in the lung
-wall.
+for further processing of the images. 
+
+An alternative way of performing a lung segmentation in Python would be
+calculating the body mask at the fixed threshold of 1600 and subtracting this
+mask from a similar mask in which the lung gaps are closed. In this way only the
+lung area is retained. Then a dilation and erosion should be performed as well
+to include the nodules hidden in the lung wall.
 
 \subsection{Training of the classifier}
 \subsubsection{Preparation of the training dataset}
@@ -204,53 +206,56 @@ reasons.
 
 Another obvious feature, apart from the greyvalue of each voxel, is the
 \textbf{position} $(X, Y, Z)$ of each voxel in the 3D image. An even better
-feature is the \textbf{relative position} $(X/Xmax, Y/Ymax, Z/Zmax)$ as it takes
-into account that the size of the datasets might change. However, after testing it appeared that
-these features would only be useful if a very large amount of trainingdata was
-used. The trainingset had to be large enough so almost every possible
-noduleposition inside the lungs was covered by the trainingdata. As it is very
-difficult to estimate how many scans are needed for this purpose and training
-on this large amount of data would take a lot of time, the feature 'position'
-and 'relative position' were exluded from the featureset. Instead the distance
-map was implemented as a feature.
+feature is the \textbf{relative position} $(\tfrac{X}{X_{max}}, \tfrac{Y}{Y_{max}}, \tfrac{Z}{Z_{max}})$ as
+it takes into account that the size of the datasets might change. However, after
+testing it appeared that these features would only be useful if a very large
+amount of training data was used. The training set had to be large enough so
+almost every possible nodule position inside the lungs was covered by the
+training data. As it is very difficult to estimate how many scans are needed for
+this purpose and training on this large amount of data would take a lot of time,
+the feature 'position' and 'relative position' were exluded from the featureset.
+Instead a distance map based on the lung mask was implemented as a feature.
 
 A \textbf{3D Sobel filter} for edge detection was implemented as well. A Sobel
-filter uses three 3x3 kernels which are convolved with the image to find
-gradients in the image. To be really usefull for the nodule detection, the
-distances from each voxel to neighbouring edges had to be calculated. However,
-due to a lack of time this was not feasible anymore. However, the
-distance map is some kind of a substitute.
+filter is typically a $3 \times 3$ convolution mask that approximates the
+partial derivative of an image along an axis. The results of multiple sobel
+filters can be combined to calculate the gradient magnitude of each pixel. A
+high magnitude usually corresponds with an edge in the original image.
 
-The \textbf{entropy} of an image is a measure for the chaos of the image
-in a certain neighbourhoor. Low
-entropy images are images where vast areas of pixels have the same grey
-values. Images with high entropy show a large contrast between neighbouring
-pixels. Therefore, it is a measure for the texture of an image. The entropy of
-the entire 3D image was calculated and then the values for each voxel were
-extracted. However, the time demand for these calculations were non negligable
-and therefore this feature was eliminated again.
+To be really useful in nodule detection, the distance from each voxel to
+neighbouring edges had to be calculated. However, due to a lack of time this was
+not feasible anymore. Instead, the distance map mentioned above was used as a
+substitute.
 
-A feature \textbf{neighbours} calculated the sum, the substraction, the
+The \textbf{entropy} of an image is a measure for the chaos of the image in a
+certain neighbourhood. Low entropy images are images where vast areas of pixels
+have the same grey values. Images with high entropy show a large contrast
+between neighbouring pixels. Therefore, it is a measure for the texture of an
+image. The entropy of the entire 3D image was calculated and then the values for
+each voxel were extracted. However, the time demand for these calculations were
+far from negligible and as a consequence this feature was eliminated again.
+
+A feature \textbf{neighbours} calculated the sum, the subtraction, the
 multiplication and the quotient of the voxel in front and behind, left and right
 and above and below a target voxel. Each of these operations where also
 performed with the target voxel itself and the neighbouring voxel. Another
 substantial amount of features were based on calculations within \textbf{3D
-windows} that were sweeped over the lung mask of the image. The same operations
-as in neighbours were executed on a larger scale: the neigbouring voxels
-were determined by a certain adaptable window around the target voxel. Except
-for these basic operations the mean, the standard variance, the minimum and the
+windows} that were swept over the lung mask of the image. The same operations
+as in neighbours were executed on a larger scale: the neigbouring voxels were
+determined by a certain adaptable window around the target voxel. Except for
+these basic operations the mean, the standard variance, the minimum and the
 maximum of the grey values of each window were calculated. Then these parameters
 and the grey value of the target voxel were used for performing the basic
 operations (sum, subtraction, multiplication, quotient) on. The same idea was
 applied on the rows and columns in each window. The mean of different rows and
 columns were determined and compared to each other by means of summing them up,
-substracting them, dividing one by another and multiplicating them. In these
-windows a frequency count was performed for each grey value in the window. These
+subtracting them, dividing one by another and multiplying them. In these windows
+a frequency count was performed for each grey value in the window. These
 frequencies were again compared. The results that were obtained this way could
 be compared to one another by comparing the results for subwindows within larger
-windows or within the entire image. However, none of these features was
-implemented in the final classifier as calculating features for each
-individual voxel in an image takes too much time (hours).
+windows or within the entire image. However, none of these features were
+implemented in the final classifier as calculating features for each individual
+voxel in an image took too much time (hours).
 
 \subsubsection{Training of the classifier}
 \begin{algorithm}[H]
@@ -266,17 +271,17 @@ individual voxel in an image takes too much time (hours).
 		}
 		\While {negative pixels $<$ positive pixels}
 		{	select random pixel in volume\;
-			\If{not too close to any nodule}{
+			\If{not near nodules ($d > 2R_{max}$)}{
 				select negative voxel
 			}
 		}
 	}
-	\ForEach{selected pixel}{
-		\For{level from 1 to max level}{
-			generate feature vector up to level\;
-			train classifier\;
-			save classifier model\;
+	\For{level from 1 to max}{
+		\ForEach{selected pixel}{
+			generate feature vectors up to level\;
 		}
+		train classifier\;
+		save classifier model\;
 	}
 \end{algorithm}
 
@@ -317,7 +322,7 @@ probability image is generated.
 	\ForEach{$dataset \in folder$}{
 		load DICOM files\;
 		mask $\longleftarrow$ load lung mask\;
-		\For{level from 1 to max level}{
+		\For{level from 1 to max}{
 			load classifier model\;
 			\ForEach{$pixel \in mask$}{
 				generate feature vector\;
@@ -330,16 +335,15 @@ probability image is generated.
 		cluster remaining voxels\;
 		load XML annotations\;
 		\ForEach{$nodule \in annotations$}{
-			\eIf{any cluster $\in$ nodule ($d < 2R_{min}$)}{
-				$TP++$\tcc*[r]{nodule detected}
-				delete cluster\;
+			\eIf{any cluster $\in$ nodule ($d < 1.5R_{max}$)}{
+				$TP{+}{+}$\tcc*[r]{nodule detected}
+				delete clusters\;
 			}{
-				$FN++$\tcc*[r]{nodule not detected}
-				delete cluster\;
+				$FN{+}{+}$\tcc*[r]{nodule not detected}
 			}
 		}
 		\ForEach{remaining cluster}{
-			$FP++$\tcc*[r]{spurious cluster}
+			$FP{+}{+}$\tcc*[r]{spurious cluster}
 		}
 		calculate statistics
 	}

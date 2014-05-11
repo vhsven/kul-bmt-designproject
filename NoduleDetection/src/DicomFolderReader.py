@@ -165,8 +165,9 @@ class DicomFolderReader:
     def printInfo(self, prefix=""):
         reader = self.getAnnotationReader()
         print("")
-        print(prefix + "Voxel shape:", self.getVoxelShape())
-        print(prefix + "Nodule positions and radii in dataset: ", self.getSetID())
+        print prefix, "Volume shape:", self.getVolumeShape()
+        print prefix, "Voxel shape:", self.getVoxelShape()
+        print prefix, "Nodule positions and radii:"
         for c, r in reader.getNodulePositions(max):
             print "{}{} -> {}".format(prefix, c, r)
         print("")

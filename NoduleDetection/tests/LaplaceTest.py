@@ -63,7 +63,7 @@ mySlice = 89
 sMask = mask3D[:,:,mySlice]
 for sigma in np.arange(1, 10):
     sigmas = np.array([sigma, sigma, sigma]) / voxelShape #convert to pixels
-    vLap = nd.filters.gaussian_laplace(vData, sigmas)
+    vLap = nd.filters.gaussian_laplace(vData, sigmas) #TODO normalize: *t
     vLap[vLap > 0] = 0
     vLap *= -1
     

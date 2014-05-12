@@ -154,9 +154,9 @@ of datasets requires a large amount of memory and computational power.
 Furthermore, a classification algorithm that is used to analyse the data may
 overfit the training data and will not be able to generalise anymore.
 Therefore, a range of dimension reduction techniques can be applied to extract
-the uncorrelated and most important features of a list. Examples of these
-reduction techniques are principal component analysis and partial least squares
-regression. %TODO relevant?
+the uncorrelated and most important features of a list. A second option
+is determining the best features in an empirical way. A probability image can be
+used for a visual inspection.
 
 \subsubsection{Features in nodule detection} \label{sec:featureselection}
 A non-exhaustive literature review revealed some commonly used features used in
@@ -311,7 +311,7 @@ Vice versa, a Type II error occurs when the model predicts something to be absen
 when in reality it present. We call them false negatives (FN). False negatives
 in our scenario represent nodules not detected by the classifier.
 
-Of course the classifier does not always have to be wrong. True positives (TP)
+On the other hand, true positives (TP)
 and true negatives (TN) respresent the cases where the classifier properly
 detected the presence or absence of the nodule respectively.
 

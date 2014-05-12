@@ -1,4 +1,4 @@
-%voor Kim: http://thesaurus.com/browse/therefore
+% voor Kim: http://thesaurus.com/browse/therefore
 
 \section{Theoretical background}
 \subsection{Features}
@@ -27,22 +27,17 @@ are simply set to zero. In that regard, distance maps can be seen as
 generalisations of edges: they contain the same information, and more. An
 exanple of a distance map can be found in \autoref{fig:distmap}.
 
-\begin{figure}[htp]
-\begin{center}
-  \includegraphics[width=\linewidth]{img/distmap.png}
-  \caption{Example of a distance map}
-  \label{fig:distmap}
-\end{center}
-\end{figure}
+\begin{figure}[htp] \begin{center}  
+\includegraphics[width=\linewidth]{img/distmap.png}   \caption{Example of a
+distance map}   \label{fig:distmap} \end{center} \end{figure}
 
 The distance metric must not necessarily be the Euclidean distance. Other
 metrics such as the Manhattan distance are also acceptable and easier to compute
 on top of that.
 
-\paragraph{Laplacian}\label{sec:laplace_theory}
-One common feature in nodule detection is the laplacian -- also called blob
-detector. The laplacian operator applied to a continuous 3D function is
-defined as:
+\paragraph{Laplacian}\label{sec:laplace_theory} One common feature in nodule
+detection is the laplacian -- also called blob detector. The laplacian operator
+applied to a continuous 3D function is defined as:
 
 \begin{equation}
 	\nabla^2f(x,y,z) = \left(\frac{\partial^2 f}{\partial x^2} + \frac{\partial^2
@@ -216,7 +211,7 @@ SVM are widely used in the development of nodule detection CAD systems
 \cite{keshani, lee2010, ozekes}. According to \cite{ash} SVM even outperforms
 RF. However, SVM has some disadvantages. First of all, the featues to be used
 need to be determined in advance and there is no such thing as a standard
-feature set (see also \autoref{sec:featureselection} ). In the ideal case these
+feature set (see also section \ref{sec:featureselection}). In the ideal case these
 features should all have the same dimensions and/or magnitudes. With SVM
 problems may arise with noisy data and images are very often quite noisy. The
 time complexity of SVM is $O(n^2)$ \cite{svmcompex}.
@@ -302,7 +297,7 @@ available remained a problem during the whole project.
 In order to evaluate the performance of a binary classifier, we introduce some
 statistical concepts. The reader should be familiar with Type I and Type II
 errors. A Type I error occurs when the model predicts something to be there
-while in reality it is not. In this text we call these occurences false
+while in reality it is not. In this text we call these occurrences false
 positives (FP). In our scenario, this corresponds with a classifier indicating
 that a nodule is present when there is really none.
 
@@ -310,13 +305,11 @@ Vice versa, a Type II error occurs when the model predicts something to be absen
 when in reality it present. We call them false negatives (FN). False negatives
 in our scenario represent nodules not detected by the classifier.
 
-On the other hand, true positives (TP)
-and true negatives (TN) respresent the cases where the classifier properly
-detected the presence or absence of the nodule respectively.
+On the other hand, true positives (TP) and true negatives (TN) represent the
+cases where the classifier properly detected the presence or absence of the
+nodule respectively.
 
-
-\autoref{tbl:stats} summarizes these definitions.
-\begin{table}[htp]
+\begin{table}[ht]
 \begin{center}
 	\begin{tabular}{r | c c}
 						& Nodule 	& Non-Nodule \\
@@ -329,29 +322,38 @@ detected the presence or absence of the nodule respectively.
 \end{center}
 \end{table}
 
+\autoref{tbl:stats} summarizes these definitions, it is sometimes called the
+confusion matrix.
+
 Because the terms above are in absolute numbers, they are difficult to compare
-across studies. That is where sensitivity and specifictiy come in. Sensitivity
-compares the amount of true positives with the total amount of positives.
-Synonyms include the true positive rate or the recall rate. Specificity does the
-same for the negatives. It is sometimes also called true negative rate.
+across studies. That is where sensitivity and precision come in. Sensitivity
+compares the amount of true positives with the total amount of actual positives.
+Synonyms include the true positive rate or the recall rate. Precision also
+focuses on the true positives, but this time in comparison to the total
+predicted positives.
 
 \begin{equation}
 	\text{sensitivity} = \frac{TP}{TP + FN}
 \end{equation}
 
 \begin{equation}
-	\text{specificity} = \frac{TN}{TN + FP}
+	\text{precision} = \frac{TP}{TP + FP}
 \end{equation}
 
 Ideally both measures should be 100\% but that is an unrealistic expectation.
-There is also an inherent trade-off between the two: when the specificity is
-increased to make sure no false positives are detected, this will also increase
-the false negatives, which in turn lowers sensitivity. In our case there is a
-clear preference for a higher sensitivity, even though it may cost us some
-specificity.
+There is an inherent trade-off between the two. For example when the
+algorithm is made more strict in order to detect less false positives, precision
+rises. At the same time false negatives likely increase as well, causing
+sensitivity to drop. In our case there is a clear preference for a higher
+sensitivity, even though it may cost us some precision.
 
-One last important measure is the accuracy. It is the ratio of all correctly
-classified occurrences over all occurrences.
+One other important measure is the accuracy. It is the ratio of all correctly
+classified occurrences over all occurrences. Note that it is much less
+meaningful in unbalanced classifications like ours where one class is far more
+prevalent than the other. Indeed, even a trivial classifier always returning the
+most common class can score very high on this. Alternatives for accuracy include
+the $F_1$ score and the log loss, but these are considered out of scope for the
+project.
 
 \begin{equation}
 	\text{accuracy} = \frac{TP + TN}{TP + FP + TN + FN}
@@ -362,8 +364,7 @@ voxels or nodules. Pure voxel classification schemes can simply calculate how
 many voxels were correctly identified, while classification schemes working with
 nodules can use the number of nodules. However, our approach is a hybrid of the
 two. We don't require all voxels of the nodule to be detected to label the
-nodule as TP, one (or a couple) should be plenty. Hence, our TP and FN are
-expressed in number of nodules. This leaves us with a problem for FP and TN, as
-these cannot be expressed in an amount of nodules. We somewhat alleviate this
-problem by grouping clusters of voxels together, but the impact on our
-measurements is still significant.
+nodule as TP, just a couple should be enough. Hence, our TP and FN are expressed
+in number of nodules. This leaves us with a problem for FP and TN, as these
+cannot be expressed in an amount of nodules. We somewhat alleviate this problem
+by grouping clusters of voxels together, turning them into ``potential nodules''.

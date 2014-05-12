@@ -1,4 +1,4 @@
-\documentclass[twoside, 10pt]{article} %, draft
+\documentclass[twoside, 10pt, twoside]{article} %, draft
 
 \usepackage{amsmath}
 \usepackage{graphicx} %[pdftex]
@@ -21,6 +21,11 @@
 
 \setlength{\headheight}{15.2pt}
 \pagestyle{fancy}
+\fancyhf{}
+\fancyhf[HLE]{\leftmark}
+\fancyhf[HRO]{\rightmark}
+\fancyhf[FLE,FRO]{\thepage}
+
 \numberwithin{equation}{section}
 
 \begin{document}

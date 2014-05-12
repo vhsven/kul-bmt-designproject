@@ -59,27 +59,46 @@ lung segmentation were done in MeVisLab 2.5.1 (VC11-64) (MeVis Medical Solutions
 AG, Bremen, Germany). Further processing of the data and the implementation of
 the RF algorithm were carried out in Python 2.7.6 (Python Software Foundation,
 Delaware, U.S.A).  The training and testing of the RF based algorithm was
-performed on a computer with Intel Core2 DUO CPU (2,27 GHz) and 3 GB of RAM.
+performed on a computer with Intel Core 2 Duo CPU (2,27 GHz) and 3 GB of RAM.
 
 \subsubsection{Processing of the annotations}
 %convention: x,y,z = pixel, X,Y,Z = world
 
-The annotations were partially provided in pixel coordinates -- x and y values
--- and partially in world coordinates -- Z values -- so the Z coordinates were
-converted into pixel coordinates to find the nodule regions. The annotations
-contained a list of x and y coordinates to indicate the position of each pixel
-belonging to the contour of each nodule per slice. From these coordinates the
-center of gravity plus the minimum and maximum radius of each nodule was
-calculated per slice. The 1-voxel nodules were removed from the list of
-annotations. In the rest of the algorithm each nodule was represented by its
-center of gravity and its minimum radius.
+The annotations contain a list of readings by different radiologist. For
+convenience, we always worked with the first reading in the annotations. Each
+reading contains a list of nodules, defined using contour points per slice.
+These contour points were provided in pixel coordinates (x,y), while the slice
+index was provided in word coordinates (Z). By reconstructing the world matrix
+from the DICOM header, we converted the world Z-value back to its pixel
+z-coordinate counterpart.
+
+From these (x,y,z) coordinates the center of gravity plus the minimum and
+maximum radius of each nodule was calculated per slice. The 1-voxel nodules were
+ignored. In the rest of the algorithm each nodule was represented by its center
+of gravity and either its minimum or maximum radius per slice.
+
+We also considered modeling the nodules as perfect spheres in 3D, but this
+turned out to be more complicated than expected. The nodules can only be
+represented by spheres in world coordinates, as they instead form ellipsoids in
+pixel coordinates. However, we perform the bulk of our calculations in the
+latter frame of reference. Even when all slices are converted to a world frame
+of reference, the nodules are not always perfect spheres. Figure
+\ref{fig:flatNodule} illustrates this.
+
+\begin{figure}[ht]
+ \begin{center}
+    \includegraphics[width=\linewidth, trim=150 0 0 0]{img/NoduleSphereTest_0001.pdf}
+    \caption{Flattened shape of nodule (LIDC scan 0001)}
+    \label{fig:flatNodule}
+ \end{center}
+\end{figure}
 
 \subsubsection{Lung segmentation}
 It was assumed that, if the whole 3D scan was fed to the cascaded classifier,
 only the soft tissue would remain after the first cascade. The grey value of
 each voxel was used as a feature on this first level. Unfortunately, this method
-did not prove to be efficient, so a second option was taken into consideration:
-a proper lung segmentation as a preprocessing step.
+did not prove to be efficient enough, so a second option was taken into
+consideration: a proper lung segmentation as a preprocessing step.
 
 By performing a lung segmentation, the amount of voxels that have to be
 processed further on is significantly reduced by about 85\%. Furthermore, it has
@@ -89,11 +108,10 @@ step that is performed in a lot of papers \cite{keshani, elbaz, teramoto}. We
 started with implementing a lung segmentation algorithm based on \cite{keshani}.
 The first part of this algorithm consists of obtaining a binary lung CT image by
 adaptive fuzzy thresholding. In the binary image the lungs and the background
-are separated from the soft tissues of the body.
-Then two windows of different sizes are applied to close all the gaps in the
-mask and the initial lung mask is obtained by sweeping a rotated window over the
-entire binary image.
-This sweeping is necessary to transfer non-isolated nodules into isolated ones.
+are separated from the soft tissues of the body. Then two windows of different
+sizes are applied to close all the gaps in the mask and the initial lung mask is
+obtained by sweeping a rotated window over the entire binary image. This
+sweeping is necessary to transfer non-isolated nodules into isolated ones.
 Finally the mask is used to initiate an active contour model automatically for
 segmenting the lung area. As stated the first step of this algorithm was
 supposed to provide us with a variable, but accurate threshold to make the
@@ -112,15 +130,14 @@ of the entire body was obtained. As this body segmentation already eliminated
 binary image, this result was found satisfying enough.
 
 Despite the reduced amount of voxels, applying the algorithm still raised memory
-errors depending on the dimensions of the scan.
-In order to reduce the amount of voxels even further in the pre-processing
-phase, a full lung segmentation was performed in a semiautomatic way in
-MeVisLab. After the scans were loaded in MeVisLab, the user manually indicates
-three points inside the lung area. Based on these points region growing is
-performed and a binary mask for the lung area is generated. The gaps in the
-binary mask -- which represent nodules in the lung area and nodules hidden in
-the lung wall -- are closed by dilation. This mask is then exported to Python
-for further processing of the images. 
+errors depending on the dimensions of the scan. In order to reduce the amount of
+voxels even further in the pre-processing phase, a full lung segmentation was
+performed in a semiautomatic way in MeVisLab. After the scans were loaded in
+MeVisLab, the user manually indicates three points inside the lung area. Based
+on these points region growing is performed and a binary mask for the lung area
+is generated. The gaps in the binary mask -- which represent nodules in the lung
+area and nodules hidden in the lung wall -- are closed by dilation. This mask is
+then exported to Python for further processing of the images.
 
 An alternative way of performing a lung segmentation in Python would be
 calculating the body mask at the fixed threshold of 1600 and subtracting this
@@ -130,47 +147,27 @@ to include the nodules hidden in the lung wall.
 
 \subsection{Training of the classifier}
 \subsubsection{Preparation of the training dataset}
-Based on the associated annotations the center of gravity, the minimum and
-maximum radius of each nodule was calculated. With this information a sphere
-was constructed which comprised the whole nodule. To select the central volume
-of the nodule, one third of the radius was taken as an artificial boundary. Only
-the voxels in this center were considered further in the process as voxels
-belonging to a nodule. Reducing the amount of positive voxels -- voxels
-comprised by a nodule -- was done to avoid taking into account the ambiguous
-edges of the nodules. These edges might confuse the classifier. As the aim of
-this project was not to delineate entire nodules but assigning nodule
-probabilities to the voxels in the image, this reduction in order to provide
-clear training data for the classifier was justified.
+Training a classifier requires us to supply it with examples of both positive
+and negative features. The positive features were extracted from voxels inside
+two thirds of the minimum radius of the nodule. Other voxels near the edge of
+the nodule were ignore due to possible ambiguity. These voxels might confuse the
+classifier. As the aim of this project was not to delineate entire nodules but
+assigning nodule probabilities to the voxels in the image, this reduction in
+order to provide clear training data for the classifier was justified.
 
-However, instead of a sphere -- which defines the nodules in 3D -- this concept
-was applied per slice as it was noticed that the delineation of the nodules was
-not always done properly so a lot of nodules showed a flattened shape
-(\autoref{fig:flatNodule}).
-Therefore, the minimum radii of the nodule in each slice were separately
-determined and two third of these radii was taken to select the central volume
-of the nodule. A list of positive voxels per scan was constructed this way.
-\begin{figure}[ht]
- \begin{center}
-    \includegraphics[width=\linewidth, trim=150 0 0 0]{img/NoduleSphereTest_0001.pdf}
-    \caption{Flattened shape of nodule (LIDC scan 0001)}
-    \label{fig:flatNodule}
- \end{center}
-\end{figure}
+Next, a second list of negative voxels was constructed. The amount of voxels was
+taken the same as in the list of positive voxels to obtain a balanced training
+dataset. The positions of the negative voxels were selected at random over the
+entire image. The only constraint was that they were not allowed the be situated
+within two times the maximum radius of each nodule. This constraint was again
+imposed to avoid ambiguous training data.
 
-To train a classifier, a list of positive and negative
-examples are necessary. Therefore, a second list of voxels was constructed. The
-amount of voxels was taken the same as in the list of positive voxels to obtain
-a balanced training dataset. The positions of the negative voxels were selected
-at random over the entire image. The only constraint was that they were not
-allowed the be situated within two times the maximum radius of each nodule. This
-constraint was imposed to avoid ambigous training data.
-
-Then features were calculated for both the positive and the negative voxels. The
-features that were used are discussed in section \ref{sec:featureExtraction}.
+Finally, features were calculated for both the positive and the negative voxels.
+The features that were used are discussed in section \ref{sec:featureExtraction}.
 This resulted in a list of features and a class (nodule or non-nodule) per
 voxel. This whole process was repeated for all scans and the results were then
-concatenated to obtain a dataset to train the ensemble classifier. We summarized
-it using pseudocode in algorithm \ref{alg:train}.
+concatenated to feed into the ensemble classifier. We summarized
+this procedure using pseudocode in algorithm \ref{alg:train}.
 
 \begin{algorithm}[ht]
 	\DontPrintSemicolon
@@ -192,9 +189,9 @@ it using pseudocode in algorithm \ref{alg:train}.
 	}
 	\For{level from 1 to max}{
 		\ForEach{selected pixel}{
-			generate feature vectors up to level\;
+			generate feature vectors up to $level$\;
 		}
-		train classifier\;
+		train \& cross-validate classifier\;
 		save classifier model\;
 	}
 \end{algorithm}
@@ -348,12 +345,14 @@ score metric).
 
 This cross validation can also be used to determine the optimal hyperparameters
 of the classifier. By generating a grid of parameters and corresponding value
-ranges, all combinations can be tested, and the one with the highest score can
-be retained. In case of RF, it is important to configure it in such a way that
+ranges, all combinations can be tested. The one with the highest score is
+retained. In case of RF, it is important to configure it in such a way that
 overfitting does not occur. This can be done by increasing either the tree
 depth, the minimum number of samples per leaf or the minimum number of samples
 before a split occurs. The minimum number of samples per leaf was chosen to
-perform the optimalisation with.
+perform the optimisation with. A small number of samples per leaf corresponds to
+deeper trees and a more complex classifier, whereas a large number corresponds
+to shallow trees and less complexity.
 
 \subsection{Testing and validation of the classifier}
 From the previous section, we obtained a trained RF model that can be used to
@@ -367,7 +366,7 @@ the start.
 
 To assess feature effectiveness, we ask ourselves the following question. Is a
 substantial amount of non-nodule voxels removed from the dataset without
-removing the nodule voxels as well, i.e. did the specificity increase without
+removing the nodule voxels as well, i.e. did the precision increase without
 affecting the sensitivity? If this is the case the feature is kept at that
 level, otherwise another feature is implemented. The assessment is performed
 based on a probability image that is generated by combining the resulting
@@ -404,8 +403,10 @@ probability output from all feature vectors. The first section of algorithm
 		\ForEach{remaining cluster}{
 			$FP{+}{+}$\tcp*[r]{spurious cluster}
 		}
-		calculate statistics
 	}
+	calculate statistics
 \end{algorithm}
 
-When all features were decided upon, we validated the entire algorithm.
+When all features were decided upon, we validated the entire algorithm by 
+calculating the aforementioned statistics based on TP, FP and FN. This is 
+shown in part two of algorithm \ref{alg:test}.

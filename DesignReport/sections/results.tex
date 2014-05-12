@@ -1,25 +1,100 @@
 \section{Results and discussion}
-\subsection{Optimalisation of the classifier parameters}
-By performing a five fould crossvalidation during the trainingstage the most
-optimal parameterset for the RF algorithm was searched for.  It was found that
+\subsection{Optimisation of the classifier parameters}
+By performing a five fold cross validation during the training stage the most
+optimal parameter set for the RF algorithm was searched for. It was found that
 for all levels except the first, a value of 5 yields optimal results for the
 minimum samples per leaf parameter. For level 1, this optimal value was
-significantly higher at 55. %TODO why? 
-The accuray that was reached was respectively 80,5\%, 97,9\%, 98,1\% and 98,2\% for the
-first, second, third and fourth level. This shows that the first two levels in
-the cascade contributed more in the process of removing negative voxels the the
-two last levels. The latter however were not useless as they still increased the
+significantly higher at 55. That makes sense as higher values correspond to less
+complex classifiers.
+
+The accuracy that was reached was respectively 80,5\%, 97,9\%, 98,1\% and 98,2\%
+for the four consecutive levels. This shows that the first two levels in the
+cascade contributed more in the process of removing negative voxels the the two
+last levels. The latter however were not useless as they still increased the
 level of accuracy. The fourth level for example still eliminated about 600
-voxels per scan.
+voxels per scan. Though, as mentioned before, the accuracy metric should be taken
+with a grain of salt in highly unbalanced classification tasks.
 
 For each level of the classifier a threshold was set to determine which voxels
 would be allowed to the next level (i.e. which voxels showed a higher nodule
-probability). In order to avoid discarding nodulevoxels of small nodules
-a rather low threshold had to be set. These were empirically determined at 20\%,
-40\%, 40\% and 70\% for the four levels respectively.
+probability). In order to avoid discarding nodule voxels of small nodules a
+rather low threshold had to be set. These were empirically determined at 20\%,
+40\%, 40\% and 70\% for the four levels respectively, although more rigorous
+testing might yield even better values.
 
 \subsection{Validation results}
-%TODO inleiding images + images
+In this section, we will illustrate our results based on two slices from the
+fiftieth LIDC dataset. As figure \ref{fig:d50} shows, slice 50 contains no
+nodules while slice 95 contains exactly one.
+
+\begin{figure}[ht]
+\begin{center}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50S50.png}
+		\caption{Slice 50}
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50S95.png}
+  		\caption{Slice 95}
+	\end{subfigure}
+	\caption{Example of two slices in dataset 50, one without and one with a
+	nodule.}
+	\label{fig:d50}
+\end{center}
+\end{figure}
+
+%TODO explain
+
+\begin{figure}[p] %TODO add percentage start/left, bigger threshold at end
+\begin{center}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50L1S50.png}
+		\caption{Level 1 -- Threshold: xx\% -- xx\% remaining}
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50L2S50.png}
+		\caption{Level 2 -- Threshold: xx\% -- xx\% remaining}
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50L3S50.png}
+		\caption{Level 3 -- Threshold: xx\% -- xx\% remaining}
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50L4S50.png}
+		\caption{Level 4 -- Threshold: xx\% -- xx\% remaining}
+	\end{subfigure}
+  \caption{Processed versions of slice 50 in dataset 50. Left: probability
+  image. Right: threshold of probability image showing the voxels that continue
+  to the next level in the cascade.}
+  \label{fig:d50s50}
+\end{center}
+\end{figure}
+
+\begin{figure}[p]
+\begin{center}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50L1S95.png}
+		\caption{Level 1}
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50L2S95.png}
+		\caption{Level 2}
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50L3S95.png}
+		\caption{Level 3}
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50L4S95.png}
+		\caption{Level 4}
+	\end{subfigure}
+  \caption{Processed versions of slice 95 in dataset 50. Left: probability
+  image. Right: threshold of probability image showing the voxels that continue
+  to the next level in the cascade. The same thresholds and remaining counts
+  apply as in figure \ref{fig:d50s50}.}
+  \label{fig:d50s95}
+\end{center}
+\end{figure}
 
 The obtained sensitivity of the algorithm was 100\% with an average of 2,17 TP
 per scan and an average of 4357 FP per scan. Training the algorithm on 30 scans
@@ -75,95 +150,3 @@ assume that different nodule types are represented in our testset, it is clear
 the algorithm is able to detect several types of nodules except for extremely
 small ones as we removed these from the annotations in the training and
 validation phase.
-
-\begin{figure}[ht]
-\begin{center}
-	\begin{subfigure}[b]{\linewidth}
-		\includegraphics[width=\linewidth]{img/cascades/D50S50.png}
-		\caption{Slice 50}
-	\end{subfigure}
-	\begin{subfigure}[b]{\linewidth}
-		\includegraphics[width=\linewidth]{img/cascades/D50S95.png}
-  		\caption{Slice 95}
-	\end{subfigure}
-	\caption{Example of two slices in dataset 50, one without and one with a
-	nodule.}
-	\label{fig:d50}
-\end{center}
-\end{figure}
-
-\begin{figure*}[p] %TODO add percentage start/left, bigger threshold at end
-\begin{center}
-	\begin{subfigure}[b]{0.45\linewidth}
-		\begin{subfigure}[b]{\linewidth}
-			\includegraphics[width=\linewidth]{img/cascades/D50L1S50.png}
-			\caption{Level 1 -- Threshold: xx\% -- xx\% remaining}
-		\end{subfigure}
-		\begin{subfigure}[b]{\linewidth}
-			\includegraphics[width=\linewidth]{img/cascades/D50L2S50.png}
-			\caption{Level 2 -- Threshold: xx\% -- xx\% remaining}
-		\end{subfigure}
-		\begin{subfigure}[b]{\linewidth}
-			\includegraphics[width=\linewidth]{img/cascades/D50L3S50.png}
-			\caption{Level 3 -- Threshold: xx\% -- xx\% remaining}
-		\end{subfigure}
-		\begin{subfigure}[b]{\linewidth}
-			\includegraphics[width=\linewidth]{img/cascades/D50L4S50.png}
-			\caption{Level 4 -- Threshold: xx\% -- xx\% remaining}
-		\end{subfigure}
-	  \caption{Processed versions of slice 50 in dataset 50. Left: probability
-	  image. Right: threshold of probability image showing the voxels that continue
-	  to the next level in the cascade.}
-	  \label{fig:d50s50}
-  \end{subfigure}
-  \begin{subfigure}[b]{0.45\linewidth}
-  		\begin{subfigure}[b]{\linewidth}
-			\includegraphics[width=\linewidth]{img/cascades/D50L1S95.png}
-			\caption{Level 1}
-		\end{subfigure}
-		\begin{subfigure}[b]{\linewidth}
-			\includegraphics[width=\linewidth]{img/cascades/D50L2S95.png}
-			\caption{Level 2}
-		\end{subfigure}
-		\begin{subfigure}[b]{\linewidth}
-			\includegraphics[width=\linewidth]{img/cascades/D50L3S95.png}
-			\caption{Level 3}
-		\end{subfigure}
-		\begin{subfigure}[b]{\linewidth}
-			\includegraphics[width=\linewidth]{img/cascades/D50L4S95.png}
-			\caption{Level 4}
-		\end{subfigure}
-	  \caption{Processed versions of slice 95 in dataset 50. Left: probability
-	  image. Right: threshold of probability image showing the voxels that continue
-	  to the next level in the cascade. The same thresholds and remaining counts
-	  apply as in figure \ref{fig:d50s50}.}
-	  \label{fig:d50s95}
-  \end{subfigure}
-\end{center}
-\end{figure*}
-
-% \begin{figure}[p]
-% \begin{center}
-% 	\begin{subfigure}[b]{\linewidth}
-% 		\includegraphics[width=\linewidth]{img/cascades/D50L1S95.png}
-% 		\caption{Level 1}
-% 	\end{subfigure}
-% 	\begin{subfigure}[b]{\linewidth}
-% 		\includegraphics[width=\linewidth]{img/cascades/D50L2S95.png}
-% 		\caption{Level 2}
-% 	\end{subfigure}
-% 	\begin{subfigure}[b]{\linewidth}
-% 		\includegraphics[width=\linewidth]{img/cascades/D50L3S95.png}
-% 		\caption{Level 3}
-% 	\end{subfigure}
-% 	\begin{subfigure}[b]{\linewidth}
-% 		\includegraphics[width=\linewidth]{img/cascades/D50L4S95.png}
-% 		\caption{Level 4}
-% 	\end{subfigure}
-%   \caption{Processed versions of slice 95 in dataset 50. Left: probability
-%   image. Right: threshold of probability image showing the voxels that continue
-%   to the next level in the cascade. The same thresholds and remaining counts
-%   apply as in figure \ref{fig:d50s50}.}
-%   \label{fig:d50s95}
-% \end{center}
-% \end{figure}

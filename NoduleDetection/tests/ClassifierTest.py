@@ -1,4 +1,5 @@
 import datetime
+import numpy as np
 import pylab as pl
 from matplotlib.widgets import Slider
 from DicomFolderReader import DicomFolderReader
@@ -9,6 +10,7 @@ from Validator import Validator
 from Constants import CASCADE_THRESHOLD, MAX_LEVEL
 from XmlAnnotationReader import XmlAnnotationReader
 
+#TODO delete set 48 (too big -> memory errors)
 #TODO check wall nodules
 
 class Main:
@@ -20,12 +22,13 @@ class Main:
         else:
             self.MaxLevel = maxLevel
         
-    def main(self):    
+    def main(self):
+        print datetime.datetime.now()
         trainer = Trainer(self.RootPath, 0, maxPaths=self.MaxPaths)
         print("Phase 1: training all datasets up to level {}.".format(self.MaxLevel))
         #models = trainer.trainAll(self.MaxLevel, save=False)
-        models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
-        #models = Trainer.loadAll(self.MaxLevel)
+        #models = trainer.trainAndValidateAll(self.MaxLevel, save=True)
+        models = Trainer.loadAll(self.MaxLevel)
         del trainer
         print("Training phase completed, start testing phase.")
         
@@ -45,6 +48,8 @@ class Main:
             dfr.printInfo(prefix="\t")
             data = dfr.getVolumeData()
             vshape = dfr.getVoxelShape()
+            reader = dfr.getAnnotationReader()
+            noduleMask3D = reader.getNodulesMask(data.shape, max, 1.5)
             mask3D = Preprocessor.loadThresholdMask(testSet) #getThresholdMask(data)
             clf = Classifier(testSet, data, vshape)
             
@@ -66,17 +71,17 @@ class Main:
                 ratio = 100.0 * nbVoxels / totalVoxels
                 print("\t{0} voxels ({1:.3f}%) remaining after level {2}.".format(nbVoxels, ratio, level))
         
-                show = False
+                show = True
                 if show:
                     fig, _ = pl.subplots()
                     pl.subplots_adjust(bottom=0.20)
-                     
-                    sp1 = pl.subplot(131)
-                    sp2 = pl.subplot(132)
-                    sp3 = pl.subplot(133)
+                    sp1 = pl.subplot(221)
+                    sp2 = pl.subplot(222)
+                    sp3 = pl.subplot(223)
+                    sp4 = pl.subplot(224)
                      
                     #axes: left, bottom, width, height
-                    sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, dfr.getNbSlices()-1, 50, valfmt='%1.0f')
+                    sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, dfr.getNbSlices()-1, 50, valfmt='%d')
                     tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, CASCADE_THRESHOLD)
                     
                     def update(val):
@@ -85,14 +90,28 @@ class Main:
                         _data = dfr.getSliceDataRescaled(_mySlice)
                         _probImg = probImg3D[:,:,_mySlice]
                         _mask = _probImg >= _threshold
+                        _nodMask = noduleMask3D[:,:,_mySlice]
+                        _nodMasked = np.ma.array(_data, mask=~_nodMask)
                         
                         sp1.clear()
                         sp2.clear()
                         sp3.clear()
+                        sp4.clear()
                         
-                        sp1.imshow(_data, cmap=pl.gray())
-                        sp2.imshow(_probImg, cmap=pl.cm.jet)  # @UndefinedVariable ignore
-                        sp3.imshow(_mask, cmap=pl.gray())
+                        sp1.imshow(_data, cmap='bone')
+                        sp2.imshow(_probImg, cmap='jet')
+                        sp3.imshow(_nodMasked, cmap='bone')
+                        sp4.imshow(_mask, cmap='gray')
+                        
+                        sp1.set_title('Slice {}'.format(_mySlice))
+                        sp2.set_title('Probability Image')
+                        sp3.set_title('Nodules')
+                        sp4.set_title('Thresholded ProbImg')
+                        
+                        sp1.axis('off')
+                        sp2.axis('off')
+                        sp3.axis('off')
+                        sp4.axis('off')
                         
                         fig.canvas.draw_idle()
                      

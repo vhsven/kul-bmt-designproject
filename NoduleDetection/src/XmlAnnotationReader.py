@@ -58,4 +58,11 @@ class XmlAnnotationReader:
             for pixelZ in nodule.Regions.getSortedZIndices():
                 if int(pixelZ) == int(mySlice):
                     yield regionCenters[pixelZ], regionRs[pixelZ]
+                    
+    def getNodulesMask(self, shape, minOrMax, radiusFactor=1.0):
+        mask3D = np.zeros(shape, dtype=np.bool)
+        for nodule in self.Nodules:
+            np.bitwise_or(mask3D, nodule.Regions.getRegionMask3D(shape, minOrMax, radiusFactor), out=mask3D)
+            
+        return mask3D
             

@@ -53,15 +53,13 @@ on average. The minimum and maximum radii of the annotated nodules was 2 mm and
 18 mm respectively. The testdataset contained 19 nodules.
 
 
-\subsection{Preprocessing of the data} %TODO this isn't preprocessing..
+\subsection{Preprocessing of the data}
 The initial exploration of the data and the generation of a mask to perform a
 lung segmentation were done in MeVisLab 2.5.1 (VC11-64) (MeVis Medical Solutions
 AG, Bremen, Germany). Further processing of the data and the implementation of
 the RF algorithm were carried out in Python 2.7.6 (Python Software Foundation,
 Delaware, U.S.A).  The training and testing of the RF based algorithm was
 performed on a computer with Intel Core2 DUO CPU (2,27 GHz) and 3 GB of RAM.
-Training the algorithm on 30 scans took 1 hour and 50 minutes. The processing of
-a new medium large dataset (136 slices) takes about 10 minutes.
 
 \subsubsection{Processing of the annotations}
 %convention: x,y,z = pixel, X,Y,Z = world
@@ -113,7 +111,6 @@ of the entire body was obtained. As this body segmentation already eliminated
 55\% of all voxels and no complex calculations had to be done to obtain the
 binary image, this result was found satisfying enough.
 
-% TODO tabel met experimenten om vaste threshold te bepalen er nog inzetten?
 Despite the reduced amount of voxels, applying the algorithm still raised memory
 errors depending on the dimensions of the scan.
 In order to reduce the amount of voxels even further in the pre-processing
@@ -411,12 +408,4 @@ probability output from all feature vectors. The first section of algorithm
 	}
 \end{algorithm}
 
-When all features are decided upon, we validate the entire algorithm by
-calculating some statistics and comparing them to the state of the art in the
-literature. %TODO continue
-
-\begin{enumerate}
-\item stappen die doorlopen worden + fig
-\item welke algorithmes gebruikt + wat doen ze + waarom die keuze?
-\item vergelijken keuzes met literatuur/commerciele systemen?
-\end{enumerate}
+When all features were decided upon, we validated the entire algorithm.

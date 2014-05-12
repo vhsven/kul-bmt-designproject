@@ -1,16 +1,14 @@
-from Constants import PROBABILITY_THRESHOLD
 from scipy import ndimage
 
 class Validator:
     def __init__(self, nodules):
         self.Nodules = nodules
     
-    def searchNodules(self, probImg):
+    def searchNodules(self, positives):
         nbTP = 0
         nbFN = 0
-        positives = probImg > PROBABILITY_THRESHOLD #TODO figure out how high we can raise this without having FNs
         for nodule in self.Nodules:
-            mask3D = nodule.Regions.getRegionMask3D(probImg.shape, max, radiusFactor=1.5)
+            mask3D = nodule.Regions.getRegionMask3D(positives.shape, max, radiusFactor=1.5)
             nbPositiveVoxels = positives[mask3D].sum()
             positives[mask3D] = 0 #clear this area
             print nbPositiveVoxels

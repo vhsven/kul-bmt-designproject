@@ -38,7 +38,7 @@ class Main:
         totalFN = 0
         nbTestSets = 0
         print datetime.datetime.now()
-        for testSet in range(50,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
+        for testSet in range(46,47): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
             try:
                 dfr = DicomFolderReader.create(self.RootPath, testSet)
                 nbTestSets += 1
@@ -63,7 +63,7 @@ class Main:
                 print("\tTesting cascade level {}".format(level))
                 clf.setLevel(level, models[level])
 
-                probImg3D, mask3D = clf.generateProbabilityVolume(mask3D, threshold=CASCADE_THRESHOLD)
+                probImg3D, mask3D = clf.generateProbabilityVolume(mask3D, threshold=CASCADE_THRESHOLD[level])
 
                 nbVoxels = mask3D.sum()
                 h,w,d = mask3D.shape
@@ -124,7 +124,7 @@ class Main:
             
             reader = XmlAnnotationReader(dfr.Path, dfr.getCoordinateConverter())
             val = Validator(reader.Nodules)
-            nbTP, nbFN, positives = val.searchNodules(probImg3D)
+            nbTP, nbFN, positives = val.searchNodules(mask3D)
             nbFP = val.searchFPs(positives)
             #_, nbTP, nbFP, nbFN = val.ValidateData(clusteredData)
             print "TP={}, FP={}, FN={}".format(nbTP, nbFP, nbFN)

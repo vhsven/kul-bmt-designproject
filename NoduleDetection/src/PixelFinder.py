@@ -48,15 +48,20 @@ class PixelFinder:
             x = random.randint(MAX_FEAT_WINDOW,maxXsize-MAX_FEAT_WINDOW-1)
             y = random.randint(MAX_FEAT_WINDOW,maxYsize-MAX_FEAT_WINDOW-1)
             z = random.randint(MAX_FEAT_WINDOW,maxZsize-MAX_FEAT_WINDOW-1)
-            v = np.array([x,y])
             
+            p = np.array([x,y,z])
             IsBadPixel = False
-            #for c,r in reader.getNodulePositions(): #this only works if we use world coordinates, and the nodules are nice spheres
-            for c,r in self.Reader.getNodulePositionsInSlice(z):
-                if sum((v-c)**2) < (2*r)**2:
+            for nodule in self.Reader.Nodules:
+                if nodule.Regions.isPointInsideCircles(p, max, radiusFactor=2.0):
                     IsBadPixel = True
-                    #print("Found a bad pixel at {},{},{}".format(x,y,z))
                     break
+                
+#             v = np.array([x,y])
+#             for c,r in self.Reader.getNodulePositionsInSlice(z, max):
+#                 if sum((v-c)**2) < (2*r)**2:
+#                     IsBadPixel = True
+#                     #print("Found a bad pixel at {},{},{}".format(x,y,z))
+#                     break
                 
             if IsBadPixel: #find another random pixel
                 continue
@@ -78,7 +83,7 @@ class PixelFinder:
         m,n,_ = shape
         for nodule in self.Reader.Nodules:
             if method == 'circle':
-                masks, _, _ = nodule.Regions.getRegionMasksCircle(m,n, radiusFactor)
+                masks, _, _ = nodule.Regions.getRegionMasksCircle(m, n, min, radiusFactor)
             elif method == 'polygon':
                 _, masks = nodule.Regions.getRegionMasksPolygon(m,n)
             else:
@@ -93,7 +98,7 @@ class PixelFinder:
         m,n,_ = shape
         for nodule in self.Reader.Nodules:
             if method == 'circle':
-                masks, _, _ = nodule.Regions.getRegionMasksCircle(m,n, radiusFactor)
+                masks, _, _ = nodule.Regions.getRegionMasksCircle(m,n, min, radiusFactor)
             elif method == 'polygon':
                 _, masks = nodule.Regions.getRegionMasksPolygon(m,n)
             else:

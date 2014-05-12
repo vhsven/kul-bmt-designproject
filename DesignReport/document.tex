@@ -1,29 +1,30 @@
-\documentclass[titlepage, 10pt]{article}
+\documentclass[twoside, 10pt, draft]{article}
 
+\usepackage{amsmath}
 \usepackage{graphicx} %[pdftex]
 \usepackage[hidelinks]{hyperref}
-\usepackage{titlepic}
-\usepackage{fullpage}
+\usepackage[inner=3cm,outer=2cm]{geometry}
+\usepackage{fancyhdr}
 \usepackage{pdfpages}
 \usepackage[lined,ruled]{algorithm2e}
 
-\titlepic{\includegraphics[width=0.30\textwidth]{img/sedes.jpg}}
 \title
 {
 	[H03I7A] Design in Medical Technology\\
-	Shape-based feature analysis\\
-	for nodule detection in lung images
+	Shape-based feature analysis for\\
+	nodule detection in lung images
 }
 \author{Kim Nuyts \and Sven Van Hove}
 \date{\today}
 
+\setlength{\headheight}{15.2pt}
+\pagestyle{fancy}
+\numberwithin{equation}{section}
+
 \begin{document}
 
-\pagenumbering{roman} %i, ii, iii
+\onecolumn
 \maketitle
-
-\clearpage
-\pagenumbering{Roman} %I, II, III
 \tableofcontents
 \clearpage
 
@@ -33,7 +34,7 @@
 
 \input{sections/summary.tex}
 \clearpage
-\pagenumbering{arabic} %1, 2, 3
+\twocolumn
 
 \input{sections/introduction.tex}
 
@@ -41,27 +42,31 @@
 %voeg hier extra sections toe
 \input{sections/theory.tex}
 
-\input{sections/architecture.tex}
+\input{sections/architecture.tex} %methodology
 
 \input{sections/results.tex}
 
 \input{sections/conclusions.tex}
 
 \clearpage
+\onecolumn
 \appendix
 \section{Appendix}
+\subsection{Mission definition}
+\includepdf[pages={-}]{appendix/mission.pdf}
+
+\subsection{Logbook} %TODO include logbook
+
 \subsection{Meetings}
-\includepdf[pages={-}]{meetings/1.pdf}
-\includepdf[pages={-}]{meetings/2.pdf}
-\includepdf[pages={-}]{meetings/3.pdf}
-\includepdf[pages={-}]{meetings/4.pdf}
-\includepdf[pages={-}]{meetings/5.pdf}
-\includepdf[pages={-}]{meetings/6.pdf}
-\includepdf[pages={-}]{meetings/7.pdf}
-%TODO include logbook
-%TODO include mission definition
+\includepdf[pages={-}]{appendix/1.pdf}
+\includepdf[pages={-}]{appendix/2.pdf}
+\includepdf[pages={-}]{appendix/3.pdf}
+\includepdf[pages={-}]{appendix/4.pdf}
+\includepdf[pages={-}]{appendix/5.pdf}
+\includepdf[pages={-}]{appendix/6.pdf}
+\includepdf[pages={-}]{appendix/7.pdf}
 
 \clearpage
-\bibliographystyle{alpha} %plain,unsrt,alpha,abbrv,acm,apalike,siam,ieeetr,..
-\bibliography{references}
+\bibliographystyle{alpha}
+\bibliography{references} \addcontentsline{toc}{section}{References}
 \end{document}

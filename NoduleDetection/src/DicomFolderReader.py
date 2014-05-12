@@ -6,6 +6,7 @@ from os.path import isfile, join
 from CoordinateConverter import CoordinateConverter
 from collections import deque
 from XmlAnnotationReader import XmlAnnotationReader
+from PixelFinder import PixelFinder
 
 class DicomFolderReader:
     @staticmethod
@@ -45,8 +46,14 @@ class DicomFolderReader:
         return int(m.group(1))
         
     def __init__(self, myPath, compress=False):
-        myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".dcm") ]
+        self.Path = myPath
+        self.Data = None
         self.Slices = deque()
+        self.RescaleSlope = 1
+        self.RescaleIntercept = 0
+        self.IsCompressed = False
+        
+        myFiles = [ join(myPath, f) for f in listdir(myPath) if isfile(join(myPath, f)) and f.lower().endswith(".dcm") ]
         try:
             for myFile in myFiles:
                 self.Slices.append(dicom.read_file(myFile))
@@ -54,13 +61,11 @@ class DicomFolderReader:
             print("DICOM parsing failed for file '{1}': {0}".format(e, myFile))
             exit(1)
         
-        self.Path = myPath
         #if you get an error here, make sure the data folder only contains CT scans, not RX.
         self.Slices = sorted(self.Slices, key=lambda s: s.SliceLocation) #silly slices are not sorted yet
         self.RescaleSlope = int(self.Slices[0].RescaleSlope)
         self.RescaleIntercept = int(self.Slices[0].RescaleIntercept)
-        self.Data = None
-        self.IsCompressed = False
+        
         
         #assuming properties are the same for all slices
         if self.Slices[0].ImageOrientationPatient != [1, 0, 0, 0, 1, 0]:
@@ -126,6 +131,12 @@ class DicomFolderReader:
     def getCoordinateConverter(self):    
         return CoordinateConverter(self.getWorldMatrix())
     
+    def getAnnotationReader(self):
+        return XmlAnnotationReader(self.Path, self.getCoordinateConverter())
+    
+    def getPixelFinder(self):
+        return PixelFinder(self.Path, self.getCoordinateConverter())
+    
     def getNbSlices(self):
         return len(self.Slices)
     
@@ -155,11 +166,12 @@ class DicomFolderReader:
          
         return self.Data
     
-    def printInfo(self):
-        cc = self.getCoordinateConverter()
-        reader = XmlAnnotationReader(self.Path, cc)
-        print "Voxel shape:", self.getVoxelShape()
-        print("Nodule positions and radii in dataset {}: ".format(self.getSetID()))
-        for c, r in reader.getNodulePositions():
-            print c, r
+    def printInfo(self, prefix=""):
+        reader = self.getAnnotationReader()
+        print("")
+        print prefix, "Volume shape:", self.getVolumeShape()
+        print prefix, "Voxel shape:", self.getVoxelShape()
+        print prefix, "Nodule positions and radii:"
+        for c, r in reader.getNodulePositions(max):
+            print "{}{} -> {}".format(prefix, c, r)
         print("")

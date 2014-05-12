@@ -38,7 +38,7 @@ class Main:
         totalFN = 0
         nbTestSets = 0
         print datetime.datetime.now()
-        for testSet in range(46,47): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
+        for testSet in range(50,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
             try:
                 dfr = DicomFolderReader.create(self.RootPath, testSet)
                 nbTestSets += 1
@@ -71,7 +71,7 @@ class Main:
                 ratio = 100.0 * nbVoxels / totalVoxels
                 print("\t{0} voxels ({1:.3f}%) remaining after level {2}.".format(nbVoxels, ratio, level))
         
-                show = False
+                show = True
                 if show:
                     fig, _ = pl.subplots()
                     pl.subplots_adjust(bottom=0.20)
@@ -82,7 +82,7 @@ class Main:
                      
                     #axes: left, bottom, width, height
                     sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, dfr.getNbSlices()-1, 50, valfmt='%d')
-                    tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, CASCADE_THRESHOLD)
+                    tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, CASCADE_THRESHOLD[level])
                     
                     def update(val):
                         _threshold = tSlider.val
@@ -136,8 +136,9 @@ class Main:
         meanFP = totalFP / float(nbTestSets)
         meanFN = totalFN / float(nbTestSets)
         sensitivity = totalTP / float(totalTP + totalFN)
-        #specificity = totalTN / float(totalTN + totalFN)
-        print "Means: TP={}, FP={}, FN={}, Sensitivity: {}".format(meanTP, meanFP, meanFN, sensitivity)
+        precision = totalTP / float(totalTP + totalFP)
+        print "Means: TP={}, FP={}, FN={}".format(meanTP, meanFP, meanFN)
+        print "Sensitivity={}, Precision={}".format(sensitivity, precision)
         print datetime.datetime.now()
     
 if __name__ == "__main__":

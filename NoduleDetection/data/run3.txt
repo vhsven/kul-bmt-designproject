@@ -1,0 +1,227 @@
+Enter # training datasets: 0
+Enter max training level: -1
+2014-05-12 18:59:56.928000
+Phase 1: training all datasets up to level 4.
+	Loaded models up to level 4.
+Training phase completed, start testing phase.
+2014-05-12 18:59:57.334000
+Processing test set 41: '../data/LIDC-IDRI\LIDC-IDRI-0041\1.3.6.1.4.1.14519.5.2.1.6279.6001.212292046142156223429795319169\000000'
+
+	Volume shape: (512, 512, 149)
+	Voxel shape: ('0.820312', '0.820312', '2.500000')
+	Nodule positions and radii:
+	[ 321.96610169  338.52542373   46.5       ] -> 11.3192171468
+	[ 321.54761905  337.78571429   47.5       ] -> 15.2053591817
+	[ 321.12987013  336.55844156   48.5       ] -> 14.3871839109
+	[ 320.49275362  336.57971014   49.5       ] -> 14.1523501551
+	[ 318.859375  336.         50.5     ] -> 13.0007605697
+	[ 320.09803922  333.8627451    51.5       ] -> 10.3217369913
+
+	6856515 voxels (17.554%) remaining after lung segmentation.
+	Testing cascade level 1
+	2543956 voxels (6.513%) remaining after level 1.
+	Testing cascade level 2
+	911640 voxels (2.334%) remaining after level 2.
+	Testing cascade level 3
+	782075 voxels (2.002%) remaining after level 3.
+	Testing cascade level 4
+	274923 voxels (0.704%) remaining after level 4.
+Finished classifying test set 41.
+1953
+Discarded 6640 1px clusters.
+TP=1, FP=4699, FN=0
+Processing test set 42: '../data/LIDC-IDRI\LIDC-IDRI-0042\1.3.6.1.4.1.14519.5.2.1.6279.6001.284028192986684647771628933377\000000'
+
+	Volume shape: (512, 512, 123)
+	Voxel shape: ('0.703125', '0.703125', '2.500000')
+	Nodule positions and radii:
+	[ 177.03225806  267.58064516   48.5       ] -> 7.43679576979
+	[ 177.61290323  266.32258065   49.5       ] -> 6.15884092505
+	[ 288.16666667  365.05555556   77.5       ] -> 4.03151167923
+	[ 288.04347826  366.17391304   78.5       ] -> 4.43670035262
+	[ 287.77272727  366.45454545   79.5       ] -> 4.50091817997
+
+	5239419 voxels (16.249%) remaining after lung segmentation.
+	Testing cascade level 1
+	2367546 voxels (7.343%) remaining after level 1.
+	Testing cascade level 2
+	845093 voxels (2.621%) remaining after level 2.
+	Testing cascade level 3
+	734215 voxels (2.277%) remaining after level 3.
+	Testing cascade level 4
+	281388 voxels (0.873%) remaining after level 4.
+Finished classifying test set 42.
+136
+137
+Discarded 6275 1px clusters.
+TP=2, FP=4448, FN=0
+Processing test set 44: '../data/LIDC-IDRI\LIDC-IDRI-0044\1.3.6.1.4.1.14519.5.2.1.6279.6001.211592828197214585826096300114\000000'
+
+	Volume shape: (512, 512, 147)
+	Voxel shape: ('0.703125', '0.703125', '2.500000')
+	Nodule positions and radii:
+	[ 348.7260274   384.65753425   62.5       ] -> 13.9269331537
+	[ 347.3   382.45   63.5 ] -> 15.7096308041
+	[ 347.09782609  384.79347826   64.5       ] -> 17.6434506718
+	[ 347.44329897  384.93814433   65.5       ] -> 18.0672948784
+	[ 346.61682243  382.1588785    66.5       ] -> 20.3711843431
+	[ 346.88888889  383.06481481   67.5       ] -> 20.5259066288
+	[ 344.14754098  382.2704918    68.5       ] -> 23.567061963
+	[ 343.46491228  382.77192982   69.5       ] -> 22.3705967294
+	[ 342.09243697  382.16806723   70.5       ] -> 25.187261378
+	[ 341.39130435  380.89130435   71.5       ] -> 18.0504046423
+	[ 339.37931034  379.59770115   72.5       ] -> 16.0127814254
+	[ 137.48275862  314.82758621   63.5       ] -> 6.34801269379
+	[ 136.60869565  313.41304348   64.5       ] -> 9.93554368695
+	[ 136.80952381  314.47619048   65.5       ] -> 8.03125978828
+	[ 137.51351351  313.59459459   66.5       ] -> 7.30575085924
+	[ 138.3   309.75   67.5 ] -> 4.7066442398
+	[ 105.15217391  222.47826087   72.5       ] -> 9.05728982946
+	[ 104.35416667  222.60416667   73.5       ] -> 9.70989794259
+	[ 104.27083333  222.5          74.5       ] -> 8.92739327544
+	[ 103.94871795  223.23076923   75.5       ] -> 7.88893981889
+
+	7288019 voxels (18.913%) remaining after lung segmentation.
+	Testing cascade level 1
+	2972104 voxels (7.713%) remaining after level 1.
+	Testing cascade level 2
+	1026919 voxels (2.665%) remaining after level 2.
+	Testing cascade level 3
+	870070 voxels (2.258%) remaining after level 3.
+	Testing cascade level 4
+	334895 voxels (0.869%) remaining after level 4.
+Finished classifying test set 44.
+7201
+527
+503
+Discarded 6218 1px clusters.
+TP=3, FP=4473, FN=0
+Processing test set 46: '../data/LIDC-IDRI\LIDC-IDRI-0046\1.3.6.1.4.1.14519.5.2.1.6279.6001.181398349112343043834924846577\000000'
+
+	Volume shape: (512, 512, 128)
+	Voxel shape: ('0.742188', '0.742188', '2.500000')
+	Nodule positions and radii:
+	[  81.78571429  345.           32.5       ] -> 3.10118476373
+	[  83.93103448  346.06896552   33.5       ] -> 6.36877041689
+	[  82.85185185  346.44444444   34.5       ] -> 6.34188290163
+	[  82.09090909  345.95454545   35.5       ] -> 4.41190163456
+	[ 146.94444444  234.5          36.5       ] -> 4.05897876836
+	[ 147.375  235.125   37.5  ] -> 5.13870119777
+	[ 147.7  234.5   38.5] -> 2.35372045919
+	[  82.23809524  338.76190476   37.5       ] -> 4.58974505144
+	[  82.58333333  338.5          38.5       ] -> 5.10786430691
+	[  77.6875  219.5      40.5   ] -> 3.63629705195
+	[  78.59090909  220.36363636   41.5       ] -> 4.67386791879
+	[  78.64516129  220.12903226   42.5       ] -> 6.08387438853
+	[  80.41176471  219.05882353   43.5       ] -> 3.7096153001
+	[  81.90909091  219.36363636   44.5       ] -> 2.18560277821
+	[ 429.32  330.64   40.5 ] -> 5.1178120325
+	[ 428.4   329.24   41.5 ] -> 5.42379940632
+	[ 375.34782609  366.17391304   47.5       ] -> 4.72494886501
+	[ 375.40740741  365.92592593   48.5       ] -> 5.44545216172
+	[ 376.22727273  367.45454545   49.5       ] -> 4.93448817546
+
+	6128310 voxels (18.264%) remaining after lung segmentation.
+	Testing cascade level 1
+	2511141 voxels (7.484%) remaining after level 1.
+	Testing cascade level 2
+	850070 voxels (2.533%) remaining after level 2.
+	Testing cascade level 3
+	708733 voxels (2.112%) remaining after level 3.
+	Testing cascade level 4
+	249848 voxels (0.745%) remaining after level 4.
+Finished classifying test set 46.
+214
+11
+19
+111
+83
+116
+Discarded 6174 1px clusters.
+TP=6, FP=4357, FN=0
+Processing test set 47: '../data/LIDC-IDRI\LIDC-IDRI-0047\1.3.6.1.4.1.14519.5.2.1.6279.6001.262595324886254011362748468025\000000'
+
+	Volume shape: (512, 512, 133)
+	Voxel shape: ('0.781250', '0.781250', '2.500000')
+	Nodule positions and radii:
+	[ 138.5         288.46428571   75.5       ] -> 6.51656053639
+	[ 141.1641791   282.74626866   76.5       ] -> 11.9639504551
+	[ 142.08196721  281.63934426   77.5       ] -> 11.0745197596
+	[ 141.08163265  284.42857143   78.5       ] -> 9.70727323639
+
+	4763506 voxels (13.663%) remaining after lung segmentation.
+	Testing cascade level 1
+	2221400 voxels (6.371%) remaining after level 1.
+	Testing cascade level 2
+	764476 voxels (2.193%) remaining after level 2.
+	Testing cascade level 3
+	649533 voxels (1.863%) remaining after level 3.
+	Testing cascade level 4
+	250927 voxels (0.720%) remaining after level 4.
+Finished classifying test set 47.
+715
+Discarded 6070 1px clusters.
+TP=1, FP=4121, FN=0
+Processing test set 49: '../data/LIDC-IDRI\LIDC-IDRI-0049\1.3.6.1.4.1.14519.5.2.1.6279.6001.289514702605693988808674635347\000000'
+
+	Volume shape: (512, 512, 133)
+	Voxel shape: ('0.644531', '0.644531', '2.500000')
+	Nodule positions and radii:
+	[ 360.7826087   144.30434783   63.5       ] -> 4.83293677621
+	[ 361.11111111  144.14814815   64.5       ] -> 5.76363416067
+	[ 117.86363636  228.18181818   66.5       ] -> 4.30188311639
+	[ 117.5         226.46428571   67.5       ] -> 5.66642906665
+	[ 175.42857143  367.46428571   67.5       ] -> 6.44531549552
+	[ 179.9   362.95   68.5 ] -> 8.17389136214
+	[ 335.13636364  143.95454545   68.5       ] -> 4.4540816085
+	[ 336.875  144.375   69.5  ] -> 6.71984002786
+	[ 169.79411765  200.38235294   72.5       ] -> 7.59723588416
+	[ 169.46875  199.78125   73.5    ] -> 7.23827176369
+
+	6665190 voxels (19.117%) remaining after lung segmentation.
+	Testing cascade level 1
+	2580077 voxels (7.400%) remaining after level 1.
+	Testing cascade level 2
+	907920 voxels (2.604%) remaining after level 2.
+	Testing cascade level 3
+	751683 voxels (2.156%) remaining after level 3.
+	Testing cascade level 4
+	277188 voxels (0.795%) remaining after level 4.
+Finished classifying test set 49.
+87
+39
+286
+100
+176
+Discarded 5293 1px clusters.
+TP=5, FP=3994, FN=0
+Processing test set 50: '../data/LIDC-IDRI\LIDC-IDRI-0050\1.3.6.1.4.1.14519.5.2.1.6279.6001.255763746952382642554143442493\000000'
+
+	Volume shape: (512, 512, 139)
+	Voxel shape: ('0.781250', '0.781250', '2.500000')
+	Nodule positions and radii:
+	[ 172.16161616  322.60606061   90.5       ] -> 18.9101943259
+	[ 171.31481481  323.05555556   91.5       ] -> 17.7750962484
+	[ 171.91089109  325.65346535   92.5       ] -> 17.8308695204
+	[ 172.00884956  324.60176991   93.5       ] -> 19.7410065114
+	[ 177.1119403   323.58208955   94.5       ] -> 21.4136729388
+	[ 173.93129771  327.10687023   95.5       ] -> 22.2590773153
+	[ 169.53982301  331.23893805   96.5       ] -> 18.7235076632
+	[ 170.26582278  328.48101266   97.5       ] -> 15.32097956
+	[ 168.06  327.22   98.5 ] -> 9.99459854121
+
+	4951470 voxels (13.589%) remaining after lung segmentation.
+	Testing cascade level 1
+	2089910 voxels (5.736%) remaining after level 1.
+	Testing cascade level 2
+	677739 voxels (1.860%) remaining after level 2.
+	Testing cascade level 3
+	564285 voxels (1.549%) remaining after level 3.
+	Testing cascade level 4
+	197393 voxels (0.542%) remaining after level 4.
+Finished classifying test set 50.
+6119
+Discarded 5370 1px clusters.
+TP=1, FP=3864, FN=0
+Means: TP=2.71428571429, FP=4279.42857143, FN=0.0, Sensitivity: 1.0
+2014-05-12 19:28:48.874000

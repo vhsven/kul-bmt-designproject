@@ -50,13 +50,98 @@ small ones as we removed these from the annotations in the training and
 validation phase.
 
 
+\begin{figure}[ht]
+\begin{center}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50S50.png}
+		\caption{Slice 50}
+	\end{subfigure}
+	\begin{subfigure}[b]{\linewidth}
+		\includegraphics[width=\linewidth]{img/cascades/D50S95.png}
+  		\caption{Slice 95}
+	\end{subfigure}
+	\caption{Example of two slices in dataset 50, one without and one with a
+	nodule.}
+	\label{fig:d50}
+\end{center}
+\end{figure}
 
+\begin{figure*}[p] %TODO add percentage start/left, bigger threshold at end
+\begin{center}
+	\begin{subfigure}[b]{0.5\linewidth}
+		\begin{subfigure}[b]{\linewidth}
+			\includegraphics[width=\linewidth]{img/cascades/D50L1S50.png}
+			\caption{Level 1 -- Threshold: xx\% -- xx\% remaining}
+		\end{subfigure}
+		\begin{subfigure}[b]{\linewidth}
+			\includegraphics[width=\linewidth]{img/cascades/D50L2S50.png}
+			\caption{Level 2 -- Threshold: xx\% -- xx\% remaining}
+		\end{subfigure}
+		\begin{subfigure}[b]{\linewidth}
+			\includegraphics[width=\linewidth]{img/cascades/D50L3S50.png}
+			\caption{Level 3 -- Threshold: xx\% -- xx\% remaining}
+		\end{subfigure}
+		\begin{subfigure}[b]{\linewidth}
+			\includegraphics[width=\linewidth]{img/cascades/D50L4S50.png}
+			\caption{Level 4 -- Threshold: xx\% -- xx\% remaining}
+		\end{subfigure}
+	  \caption{Processed versions of slice 50 in dataset 50. Left: probability
+	  image. Right: threshold of probability image showing the voxels that continue
+	  to the next level in the cascade.}
+	  \label{fig:d50s50}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.5\linewidth}
+  		\begin{subfigure}[b]{\linewidth}
+			\includegraphics[width=\linewidth]{img/cascades/D50L1S95.png}
+			\caption{Level 1}
+		\end{subfigure}
+		\begin{subfigure}[b]{\linewidth}
+			\includegraphics[width=\linewidth]{img/cascades/D50L2S95.png}
+			\caption{Level 2}
+		\end{subfigure}
+		\begin{subfigure}[b]{\linewidth}
+			\includegraphics[width=\linewidth]{img/cascades/D50L3S95.png}
+			\caption{Level 3}
+		\end{subfigure}
+		\begin{subfigure}[b]{\linewidth}
+			\includegraphics[width=\linewidth]{img/cascades/D50L4S95.png}
+			\caption{Level 4}
+		\end{subfigure}
+	  \caption{Processed versions of slice 95 in dataset 50. Left: probability
+	  image. Right: threshold of probability image showing the voxels that continue
+	  to the next level in the cascade. The same thresholds and remaining counts
+	  apply as in figure \ref{fig:d50s50}.}
+	  \label{fig:d50s95}
+  \end{subfigure}
+\end{center}
+\end{figure*}
 
+% \begin{figure}[p]
+% \begin{center}
+% 	\begin{subfigure}[b]{\linewidth}
+% 		\includegraphics[width=\linewidth]{img/cascades/D50L1S95.png}
+% 		\caption{Level 1}
+% 	\end{subfigure}
+% 	\begin{subfigure}[b]{\linewidth}
+% 		\includegraphics[width=\linewidth]{img/cascades/D50L2S95.png}
+% 		\caption{Level 2}
+% 	\end{subfigure}
+% 	\begin{subfigure}[b]{\linewidth}
+% 		\includegraphics[width=\linewidth]{img/cascades/D50L3S95.png}
+% 		\caption{Level 3}
+% 	\end{subfigure}
+% 	\begin{subfigure}[b]{\linewidth}
+% 		\includegraphics[width=\linewidth]{img/cascades/D50L4S95.png}
+% 		\caption{Level 4}
+% 	\end{subfigure}
+%   \caption{Processed versions of slice 95 in dataset 50. Left: probability
+%   image. Right: threshold of probability image showing the voxels that continue
+%   to the next level in the cascade. The same thresholds and remaining counts
+%   apply as in figure \ref{fig:d50s50}.}
+%   \label{fig:d50s95}
+% \end{center}
+% \end{figure}
 
-
-
-
-images
 \subsection{Suggestions for improvements}
 % TODO However, the annotations assign a probability of malignancy for each
 % nodule.

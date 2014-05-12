@@ -17,6 +17,7 @@ detection, detection of lines and circles by means of a Hough transform, etc.
 Once certain objects are detected in the image, their area, curvature, size,
 etc. can be determined.
 
+%TODO does this belong under extraction?
 We will now highlight some of the most relevant features for our purpose.
 
 \paragraph{Distance Map}
@@ -29,7 +30,7 @@ exanple of a distance map can be found in \autoref{fig:distmap}.
 
 \begin{figure}[htp]
 \begin{center}
-  \includegraphics[width=0.5\textwidth]{img/distmap.png}
+  \includegraphics[width=\linewidth]{img/distmap.png}
   \caption{Example of a distance map}
   \label{fig:distmap}
 \end{center}
@@ -91,7 +92,7 @@ To make this computationally expensive operation more bearable, the laplacian is
 often approximated by the difference between two levels in a gaussian scale
 pyramid. The result is called the Difference-of-Gaussians (DoG).
 
-There is one last technicality we must address. The above formulas all assumed
+There is one last technicality we must address. The above formulas assumed
 that the blobs were isotropic and thus that the LoG could be so as well.
 However, because we perform most of our calculations in voxel space and voxels
 are not perfect cubes, this assumption does not hold. To compensate for this
@@ -105,7 +106,7 @@ complete, but also much more computationally expensive. For this reason, we
 stick with the laplacian operator.
 
 \paragraph{3D Averaging}\label{sec:3davg} 
-The 3D averaging method \cite{keshani} is based on the fact that nodules are
+This method \cite{keshani} is based on the fact that nodules are
 more or less spherical while bronchi and bronchioles are oblong. This might not be
 visible in a 2D image where both appear as spheres depending on the
 orientation of the bronchioles, but it certainly is if a 3D volume around a
@@ -155,10 +156,10 @@ overfit the training data and will not be able to generalise anymore.
 Therefore, a range of dimension reduction techniques can be applied to extract
 the uncorrelated and most important features of a list. Examples of these
 reduction techniques are principal component analysis and partial least squares
-regression.
+regression. %TODO relevant?
 
 \subsubsection{Features in nodule detection} \label{sec:featureselection}
-A non-exhaustive literature review revealed commonly used features used in
+A non-exhaustive literature review revealed some commonly used features used in
 automatic nodule detection. \cite{tartar} primarily used morphological features:
 area, perimeter, diameter, solidity, eccentricity, aspect ratio, compactness,
 roundness, circularity and ellipticity. To select these features the minimum
@@ -286,19 +287,19 @@ negatives is acceptable is to be decided by the user.
 
 The reason for using a cascaded classifier is that both memory and CPU time are
 often limited. By discarding a certain amount of non-nodules at each level of
-the classifier, it is not necessary to calculate all features for all nodules which saves memory and CPU time.
+the classifier, it is not necessary to calculate all features for all nodules
+which saves memory and CPU time.
 
 The performance of the classifier depends on the features that are implemented
-on each level.
-For datamining the general rule is the more the better. If a lot a features are
-provided for each voxel the classifier can set more thresholds and is therefore
-better able to separate different classes. We started off from this concept, but
-very soon we had to deal with memory errors in Python. The code was therefore
-optimised, but still we had to cut in the amount of features that were used in
-the final version of the classifier as the amount of memory available remained a
-problem during the whole project.
+on each level. For data mining the general rule is the more the better. If a lot
+a features are provided for each voxel the classifier can set more thresholds
+and is therefore better able to separate different classes. We started off from
+this concept, but very soon we had to deal with memory errors in Python. The
+code was therefore optimised, but still we had to cut in the amount of features
+that were used in the final version of the classifier as the amount of memory
+available remained a problem during the whole project.
 
-\subsection{Validation: statistical measurements}
+\subsection{Validation metrics}
 In order to evaluate the performance of a binary classifier, we introduce some
 statistical concepts. The reader should be familiar with Type I and Type II
 errors. A Type I error occurs when the model predicts something to be there

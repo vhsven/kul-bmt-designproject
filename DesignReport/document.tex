@@ -1,14 +1,13 @@
-\documentclass[titlepage, 10pt]{article} %TODO two-sided
+\documentclass[twoside, 10pt, draft]{article}
 
+\usepackage{amsmath}
 \usepackage{graphicx} %[pdftex]
 \usepackage[hidelinks]{hyperref}
-\usepackage{titlepic}
-\usepackage{fullpage}
+\usepackage[inner=3cm,outer=2cm]{geometry}
+\usepackage{fancyhdr}
 \usepackage{pdfpages}
-\usepackage{amsmath}
 \usepackage[lined,ruled]{algorithm2e}
 
-\titlepic{\includegraphics[width=0.30\textwidth]{img/sedes.jpg}}
 \title
 {
 	[H03I7A] Design in Medical Technology\\
@@ -18,14 +17,14 @@
 \author{Kim Nuyts \and Sven Van Hove}
 \date{\today}
 
+\setlength{\headheight}{15.2pt}
+\pagestyle{fancy}
 \numberwithin{equation}{section}
+
 \begin{document}
 
-\pagenumbering{roman} %i, ii, iii
+\onecolumn
 \maketitle
-
-\clearpage
-\pagenumbering{Roman} %I, II, III
 \tableofcontents
 \clearpage
 
@@ -35,7 +34,7 @@
 
 \input{sections/summary.tex}
 \clearpage
-\pagenumbering{arabic} %1, 2, 3
+\twocolumn
 
 \input{sections/introduction.tex}
 
@@ -50,6 +49,7 @@
 \input{sections/conclusions.tex}
 
 \clearpage
+\onecolumn
 \appendix
 \section{Appendix}
 \subsection{Mission definition}
@@ -67,6 +67,6 @@
 \includepdf[pages={-}]{appendix/7.pdf}
 
 \clearpage
-\bibliographystyle{alpha} %plain,unsrt,alpha,abbrv,acm,apalike,siam,ieeetr,..
-\bibliography{references}
+\bibliographystyle{alpha}
+\bibliography{references} \addcontentsline{toc}{section}{References}
 \end{document}

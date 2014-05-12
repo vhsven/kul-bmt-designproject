@@ -93,7 +93,7 @@ often approximated by the difference between two levels in a gaussian scale
 pyramid. The result is called the Difference-of-Gaussians (DoG).
 
 There is one last technicality we must address. The above formulas assumed
-that the blobs were isotropic and thus that the LoG could be so as well.
+that the blobs were isotropic and thus that the LoG could be as well.
 However, because we perform most of our calculations in voxel space and voxels
 are not perfect cubes, this assumption does not hold. To compensate for this
 fact, we define a unique sigma per dimension that is a rescaled variant of the
@@ -337,17 +337,17 @@ Synonyms include the true positive rate or the recall rate. Specificity does the
 same for the negatives. It is sometimes also called true negative rate.
 
 \begin{equation}
-	\text{sensitivity} = \frac{TP}{TP + FP}
+	\text{sensitivity} = \frac{TP}{TP + FN}
 \end{equation}
 
 \begin{equation}
-	\text{specificity} = \frac{TN}{TN + FN}
+	\text{specificity} = \frac{TN}{TN + FP}
 \end{equation}
 
 Ideally both measures should be 100\% but that is an unrealistic expectation.
-There is also an inherent trade-off between the two: when the sensitivity is
+There is also an inherent trade-off between the two: when the specificity is
 increased to make sure no false positives are detected, this will also increase
-the false negatives, which in turn lowers specificity. In our case there is a
+the false negatives, which in turn lowers sensitivity. In our case there is a
 clear preference for a higher sensitivity, even though it may cost us some
 specificity.
 

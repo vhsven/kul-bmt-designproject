@@ -3,36 +3,60 @@
 By performing a five fould crossvalidation during the trainingstage the most
 optimal parameterset for the RF algorithm was searched for.  It was found that
 for all levels except the first, a value of 5 yields optimal results for the
-parameter minimum samples per leaf. For level 1, this optimal value was
-significantly higher at 55. %TODO why?
+minimum samples per leaf parameter. For level 1, this optimal value was
+significantly higher at 55. %TODO why? The accuray that was reached per
+increasing level was respectively 80,5\%, 97,9\%, 98,1\% and 98,2\% for the
+first, second, third and fourth level. This shows that the first two levels in
+the cascade contributed more in the process of removing negative voxels the the
+two last levels. The latter however were not useless as they still increased the
+level of accuracy. The fourth level for example still eliminated about 600
+voxels per scan.
 
 For each level of the classifier a threshold was set to determine which voxels
-would be allowed to the next level (i.e. which voxels showed a high nodule
-probability). In order to avoid discarding nodulevoxels of rather small nodules
-a rather low threshold had to be set. It was empirically set at 0,1 for all
-levels except for the last one. At the final level a treshold of 0,9 was set to
-determine which voxels would be taken into account into our final list of
-detected nodules.
+would be allowed to the next level (i.e. which voxels showed a higher nodule
+probability). In order to avoid discarding nodulevoxels of small nodules
+a rather low threshold had to be set. These were empirically determined at 20\%,
+40\%, 40\% and 70\% for the four levels respectively.
+
  
 \subsection{Validation results}
 The obtained sensitivity of the algorithm was 100\% with an average of 2,17 TP
-per scan and an average of 1787 FP per scan. %accuracy
-% TODO mss duidelijk als je scans bekijkt welke FP zijn? TODO FPs of FP?
-The algorithm shows to perform well concerning the detection of the nodules, but
-by setting the thresholds at a higher value the amount of FP will probably be
-reduced. Due to a lack of time the optimal thresholds were not determined
-anymore. Another improvement that could be made is training the algorithm on
-more datasets. To determine the optimal amount of datasets a comparison should
-be made between the time it takes to train the algorithm on a certain amount of
-scans and the improvements that are obtained in the performances of the
-algorithm by increasing the amount of scans.
+per scan and an average of 4357 FP per scan. %TODO
+% TODO FPs of FP?
+Keeping in mind that comparing different studies is difficult (see
+\ref{sec:performance}), some relevant results from literature are presented
+here. \cite{teramoto} used a cylindrical nodule-enhancement filter and performed
+a FP reduction using a SVM classifier. This method reached a sensitivity of 80\%
+and 4,2 FP per LIDC/IDRI scan. The detection speed was 25-34 seconds per scan.
+\cite{elbaz} applied template matching and found a sensitivity of 82,3\% and a
+specificity of 9,2\%. The time to process 1 scan in C++ was about 5 minutes.
+\cite{lee2010} tested an ensemble classification aided by clustering (CAC)
+method on a set of nodules and non-nodule examples and they obtained a
+classification accuracy of 97,72\%. An execution time of 190 seconds was
+registered.
 
-Although comparing the performances of different studies in a meaningful way is
-rather difficult due to the reasons mentioned before in \ref{sec:performance}.
-\cite{teramoto} showed a sensitivity of 80\% and 4,2 FP per LIDC/IDRI scan.
-The detection speed was 25-34 seconds per scan. This study performed a FP reduction
-by using a SVM classifier. \cite{elbaz} showed a sensitivity of 82,3\% and a
-specificity of 9,2\%. The time to process 1 scan was about 5 minutes.
+These results indicate our algorithm performed well concerning detecting all
+nodules, but the amount of FP has to be reduced. The amount of FP can be reduced
+in a first stage by determining the optimal value for each threshold.
+Another way of improving the algorithm is increasing the amount of trainingdata.
+To determine the optimal amount of datasets a comparison should be made between
+the time it takes to train the algorithm on a certain amount of scans and the
+improvements that are obtained in the performances of the algorithm by
+increasing the amount of scans. A third possibility is implementing more
+features (e.g. haar features), especially features focussing on removing edges
+and eliminating the bronchioles. On the other hand, implementing more features
+will increase the processing time. However, by optimising the thresholds in the
+existing algorithm these things can also be (partially) achieved. The threshold
+on level can be set higher which will remove more edges. For eliminating the
+bronchioles the parameters of the 3D averaging features should be optimised. The
+results from literature also show that we have a long processing time. However,
+one has to take into account that the implementation of this algorithm was done
+in Python -- an interpreted language -- which makes it inherently slower than
+compiled languages such as C++. Nevertheless, Python was chosen for its rapid
+prototyping abilities. Future work may implement our algorithm in C++ or another
+compiled language to speed up the computational process.
+
+
 \cite{ginneken} compared the performances of six nodule detection CAD algorithms
 on the same validation dataset. The sensitivities at seven levels of false
 positive detection were calculated and then averaged. The best performing method
@@ -48,28 +72,8 @@ assume that different nodule types are represented in our testset, it is clear
 the algorithm is able to detect several types of nodules except for extremely
 small ones as we removed these from the annotations in the training and
 validation phase.
+% TODO images
 
-
-
-
-
-
-
-
-images
-\subsection{Suggestions for improvements}
-% TODO However, the annotations assign a probability of malignancy for each
-% nodule.
-Separating the detected nodules into a malignancy or benignancy class is not the
-main aim of this project, but this might be implemented as an extra feature.
-In the ideal case, the algorithm would be able to do the processing in a couple
-of minutes. This would be very interesting for a commercial software product.
-However, considering the available computational power (a laptop) and the
-scripting language that is used, this would not be feasible. Python is an
-interpreted language which makes it inherently slower than compiled languages
-such as C++. Nevertheless, Python was chosen for its rapid prototyping
-abilities. Future work may implement our algorithm in C++ or another compiled
-language to speed up the computational process.
 
 
 

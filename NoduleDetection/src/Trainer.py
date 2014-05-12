@@ -111,7 +111,6 @@ class Trainer:
     def trainAll(self, maxLevel, save=False):
         allFeatures, allClasses = self.calculateAllTrainingFeatures(maxLevel)
         
-        #TODO set params
         n_estimators = 30
         
         models = {}
@@ -135,7 +134,6 @@ class Trainer:
 #         allFeatures, allClasses = self.calculateAllTrainingFeatures(level)
 #         
 #         print("Training level {} classifier...".format(level))
-#         #TODO set params
 #         #input, trainset=30 (1-40), testset=50
 #         
 #         n_estimators = 30

@@ -381,3 +381,12 @@ Discarded 5766 1px clusters.
 TP=1, FP=3999, FN=0
 Means: TP=3.0, FP=4047.0, FN=0.0, Sensitivity: 1.0
 2014-05-12 01:25:07.482000
+
+41	TP=1, FP=5154, FN=0
+42	TP=2, FP=4195, FN=0
+44	TP=3, FP=4733, FN=0
+46	TP=6, FP=4623, FN=0	
+47	TP=1, FP=4190, FN=0
+49	TP=5, FP=4095, FN=0
+50	TP=1, FP=3999, FN=0
+-----------------------

@@ -38,7 +38,7 @@ class Main:
         totalFN = 0
         nbTestSets = 0
         print datetime.datetime.now()
-        for testSet in range(41,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
+        for testSet in range(50,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
             try:
                 dfr = DicomFolderReader.create(self.RootPath, testSet)
                 nbTestSets += 1
@@ -71,7 +71,7 @@ class Main:
                 ratio = 100.0 * nbVoxels / totalVoxels
                 print("\t{0} voxels ({1:.3f}%) remaining after level {2}.".format(nbVoxels, ratio, level))
         
-                show = True
+                show = False
                 if show:
                     fig, _ = pl.subplots()
                     pl.subplots_adjust(bottom=0.20)
@@ -99,13 +99,13 @@ class Main:
                         sp4.clear()
                         
                         sp1.imshow(_data, cmap='bone')
-                        sp2.imshow(_probImg, cmap='jet')
-                        sp3.imshow(_nodMasked, cmap='bone')
+                        sp2.imshow(_nodMasked, cmap='bone')
+                        sp3.imshow(_probImg, cmap='jet')
                         sp4.imshow(_mask, cmap='gray')
                         
                         sp1.set_title('Slice {}'.format(_mySlice))
-                        sp2.set_title('Probability Image')
-                        sp3.set_title('Nodules')
+                        sp2.set_title('Nodules')
+                        sp3.set_title('Probability Image')
                         sp4.set_title('Thresholded ProbImg')
                         
                         sp1.axis('off')

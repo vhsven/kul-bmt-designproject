@@ -50,10 +50,8 @@ found: region, subtlety, spiculation, internal structure, lobulation, shape
 (sphericity), solidity, margin, and likelihood of malignancy \cite{lidcbase}.
 The trainingsdataset contained 64 nodules with each nodule containing 150 voxels
 on average. The minimum and maximum radii of the annotated nodules was 2 mm and
-18 mm respectively.
+18 mm respectively. The testdataset contained 19 nodules.
 
-% TODO AANTAL NODULES IN SCAns test
-% TODO processing time: for training, testing and for 1 average dataset
 
 \subsection{Preprocessing of the data} %TODO this isn't preprocessing..
 The initial exploration of the data and the generation of a mask to perform a
@@ -61,8 +59,9 @@ lung segmentation were done in MeVisLab 2.5.1 (VC11-64) (MeVis Medical Solutions
 AG, Bremen, Germany). Further processing of the data and the implementation of
 the RF algorithm were carried out in Python 2.7.6 (Python Software Foundation,
 Delaware, U.S.A).  The training and testing of the RF based algorithm was
-performed on a computer with Intel Core i5 CPU (1,8 GHz) and 8 GB of RAM. The
-processing of a medium large dataset (\ldots slices) takes \ldots minutes.
+performed on a computer with Intel Core2 DUO CPU (2,27 GHz) and 3 GB of RAM.
+Training the algorithm on 30 scans took 1 hour and 50 minutes. The processing of
+a new medium large dataset (136 slices) takes about 10 minutes.
 
 \subsubsection{Processing of the annotations}
 %convention: x,y,z = pixel, X,Y,Z = world
@@ -115,7 +114,6 @@ of the entire body was obtained. As this body segmentation already eliminated
 binary image, this result was found satisfying enough.
 
 % TODO tabel met experimenten om vaste threshold te bepalen er nog inzetten?
-% TODO duidelijker maken vanaf welk punt we afgeweken hebben van het paper?
 Despite the reduced amount of voxels, applying the algorithm still raised memory
 errors depending on the dimensions of the scan.
 In order to reduce the amount of voxels even further in the pre-processing
@@ -205,6 +203,7 @@ it using pseudocode in algorithm \ref{alg:train}.
 \end{algorithm}
 
 \subsubsection{Feature extraction and selection} \label{sec:featureExtraction}
+\paragraph{Features implemented in final algorithm}
 The \textbf{grey value} of each voxel is the only feature of the cascaded
 classifier at level one. From this, the classifier learns that nodules are
 always part of the soft tissue window. When asked to identify nodules with this
@@ -246,15 +245,18 @@ distance map over this approach because it simply contained more information. Of
 course we can't blindly discard any voxels too close to the edges, because
 nodules can be closeby as well. That is why a distance map alone is not enough.
 
-% TODO Sven: nodule r range.
-
 At the third and fourth level \textbf{3D averaging} was implemented to get rid
 of the bronchi and bronchioles that were still present. See section
 \ref{sec:3davg} for more information. With the help of all the features above,
 the classifier should have enough information to separate the nodules from other
 structures in and around the lung.
 
-At a fifth level the \textbf{skewness and kurtosis} of a 3D window around each
+\paragraph{Experimental features}
+This paragraph provides an overview of other features that were
+tested but that were not implemented in the final classifier because of several
+reasons.
+
+The \textbf{skewness and kurtosis} of a 3D window around each
 voxel was calculated as a measure for the texture of a certain part of the image. The
 skewness is a measure of the asymmetry of the probability distribution
 distribution of a real-valued random variable (grey value) about its mean. The
@@ -262,11 +264,6 @@ kurtosis is a measure of the peakedness of the probability distribution of a
 real-valued random variable. However, the implementation of these first order
 statistics in the final classifier was prohibited by the time needed (hours) to
 calculate these features for every voxel in the image.
-
-% TODO subsectie
-The rest of this paragraph provides an overview of other features that were
-tested but that were not implemented in the final classifier because of several
-reasons.
 
 Another obvious feature, apart from the grey value of each voxel, is the
 \textbf{position} $(X, Y, Z)$ of each voxel in the 3D image. An even better
@@ -344,12 +341,8 @@ ranges, all combinations can be tested, and the one with the highest score can
 be retained. In case of RF, it is important to configure it in such a way that
 overfitting does not occur. This can be done by increasing either the tree
 depth, the minimum number of samples per leaf or the minimum number of samples
-before a split occurs.
-
-%We chose the former and found that for all levels except
-%the first, a value of 5 yields optimal results. For level 1, this optimal value
-%was significantly higher at 55.
-%TODO explain optimal params
+before a split occurs. The minimum number of samples per leaf was chosen to
+perform the optimalisation with.
 
 \subsection{Testing and validation of the classifier}
 From the previous section, we obtained a trained RF model that can be used to

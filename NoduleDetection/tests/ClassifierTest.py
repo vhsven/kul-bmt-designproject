@@ -1,4 +1,5 @@
 import datetime
+import numpy as np
 import pylab as pl
 from matplotlib.widgets import Slider
 from DicomFolderReader import DicomFolderReader
@@ -37,7 +38,7 @@ class Main:
         totalFN = 0
         nbTestSets = 0
         print datetime.datetime.now()
-        for testSet in range(48,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
+        for testSet in range(41,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
             try:
                 dfr = DicomFolderReader.create(self.RootPath, testSet)
                 nbTestSets += 1
@@ -47,7 +48,8 @@ class Main:
             dfr.printInfo(prefix="\t")
             data = dfr.getVolumeData()
             vshape = dfr.getVoxelShape()
-            #dfr.getAnnotationReader()
+            reader = dfr.getAnnotationReader()
+            noduleMask3D = reader.getNodulesMask(data.shape, max, 1.5)
             mask3D = Preprocessor.loadThresholdMask(testSet) #getThresholdMask(data)
             clf = Classifier(testSet, data, vshape)
             
@@ -73,13 +75,13 @@ class Main:
                 if show:
                     fig, _ = pl.subplots()
                     pl.subplots_adjust(bottom=0.20)
-                     
-                    sp1 = pl.subplot(131)
-                    sp2 = pl.subplot(132)
-                    sp3 = pl.subplot(133)
+                    sp1 = pl.subplot(221)
+                    sp2 = pl.subplot(222)
+                    sp3 = pl.subplot(223)
+                    sp4 = pl.subplot(224)
                      
                     #axes: left, bottom, width, height
-                    sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, dfr.getNbSlices()-1, 50, valfmt='%1.0f')
+                    sSlider = Slider(pl.axes([0.1, 0.10, 0.8, 0.03]), 'Slice', 0, dfr.getNbSlices()-1, 50, valfmt='%d')
                     tSlider = Slider(pl.axes([0.1, 0.05, 0.8, 0.03]), 'Threshold', 0.0, 1.0, CASCADE_THRESHOLD)
                     
                     def update(val):
@@ -88,14 +90,28 @@ class Main:
                         _data = dfr.getSliceDataRescaled(_mySlice)
                         _probImg = probImg3D[:,:,_mySlice]
                         _mask = _probImg >= _threshold
+                        _nodMask = noduleMask3D[:,:,_mySlice]
+                        _nodMasked = np.ma.array(_data, mask=~_nodMask)
                         
                         sp1.clear()
                         sp2.clear()
                         sp3.clear()
+                        sp4.clear()
                         
-                        sp1.imshow(_data, cmap=pl.gray())
-                        sp2.imshow(_probImg, cmap=pl.cm.jet)  # @UndefinedVariable ignore
-                        sp3.imshow(_mask, cmap=pl.gray())
+                        sp1.imshow(_data, cmap='bone')
+                        sp2.imshow(_probImg, cmap='jet')
+                        sp3.imshow(_nodMasked, cmap='bone')
+                        sp4.imshow(_mask, cmap='gray')
+                        
+                        sp1.set_title('Slice {}'.format(_mySlice))
+                        sp2.set_title('Probability Image')
+                        sp3.set_title('Nodules')
+                        sp4.set_title('Thresholded ProbImg')
+                        
+                        sp1.axis('off')
+                        sp2.axis('off')
+                        sp3.axis('off')
+                        sp4.axis('off')
                         
                         fig.canvas.draw_idle()
                      

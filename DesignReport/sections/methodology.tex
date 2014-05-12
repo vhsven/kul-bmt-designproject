@@ -64,7 +64,7 @@ performed on a computer with Intel Core 2 Duo CPU (2,27 GHz) and 3 GB of RAM.
 \subsubsection{Processing of the annotations}
 %convention: x,y,z = pixel, X,Y,Z = world
 
-The annotations contain a list of readings by different radiologist. For
+The annotations contain a list of readings by different radiologists. For
 convenience, we always worked with the first reading in the annotations. Each
 reading contains a list of nodules, defined using contour points per slice.
 These contour points were provided in pixel coordinates (x,y), while the slice
@@ -136,8 +136,11 @@ performed in a semiautomatic way in MeVisLab. After the scans were loaded in
 MeVisLab, the user manually indicates three points inside the lung area. Based
 on these points region growing is performed and a binary mask for the lung area
 is generated. The gaps in the binary mask -- which represent nodules in the lung
-area and nodules hidden in the lung wall -- are closed by dilation. This mask is
-then exported to Python for further processing of the images.
+area and nodules hidden in the lung wall -- are closed by dilation. Note that
+this causes part the lung walls to be included. We could get rid of this by
+performing an extra erosion operation, but we chose to keep it to make sure
+nodules attached to the wall are not lost. This mask is then exported to
+Python for further processing of the images.
 
 An alternative way of performing a lung segmentation in Python would be
 calculating the body mask at the fixed threshold of 1600 and subtracting this
@@ -263,13 +266,13 @@ Another obvious feature, apart from the grey value of each voxel, is the
 feature is the \textbf{relative position} $(\tfrac{X}{X_{max}},
 \tfrac{Y}{Y_{max}}, \tfrac{Z}{Z_{max}})$ as it takes into account that the size
 of the datasets might change. These features could be useful when lung
-segmentation is not performed, because they could limit the search area.
+segmentation is not performed, because they would limit the search area.
 However, after testing it showed that these features would only be useful if a
 very large amount of training data was used. Figure \ref{fig:posFeature} shows
 what happens when only 10 datasets are used to train such a classifier. The
 training set had to be large enough so almost every possible nodule position
 inside the lungs was covered by the training data. This would not only be very
-inefficient, but interpersonal differences in lungmorphology would make it even
+inefficient, but interpatient differences in lungmorphology would make it even
 more difficult. Hence the features 'position' and 'relative position' were
 exluded from the feature set.
 Instead a distance map based on the lung mask was implemented as a feature.
@@ -296,12 +299,12 @@ neighbouring edges had to be calculated. However, due to a lack of time this was
 not feasible anymore. Instead, the distance map mentioned above was used as a
 substitute.
 
-The \textbf{entropy} of an image is a measure for the chaos of the image in a
+The \textbf{entropy} of an image is a measurement for the chaos of the image in a
 certain neighbourhood. Low entropy images are images where vast areas of pixels
 have the same grey values. Images with high entropy show a large contrast
 between neighbouring pixels. Therefore, it is a measure for the texture of an
 image. The entropy of the entire 3D image was calculated and then the values for
-each voxel were extracted. However, the time demand for these calculations were
+each voxel were extracted. However, the time demand for these calculations was
 far from negligible and as a consequence this feature was eliminated again.
 
 A feature \textbf{neighbours} calculated the sum, the subtraction, the
@@ -336,7 +339,7 @@ would not tell us much about the predictive power of the classifier on new data.
 That is why it is important to reserve a fraction of the feature vectors for
 cross validation. A strategy called stratified K-fold is used to repeatedly
 split the feature set randomly in a train and a test fraction.
-The stratified adjective means that the proportion of nodules to non-nodules are
+The stratified adjective means that the proportion of nodules to non-nodules is
 similar in both fractions. Each time -- also called \textit{fold} -- the
 classifier is trained with the train fraction and performance is checked with
 the test fraction. After a number of folds, these results are combined to give a
@@ -377,7 +380,7 @@ probability output from all feature vectors. The first section of algorithm
 	\DontPrintSemicolon
 	\caption{Testing \& Validation Phase\label{alg:test}}
 	\ForEach{$dataset \in testsets$}{
-		load DICOM files\;
+		load DICOM files \tcp*[r]{testing}
 		mask $\longleftarrow$ load lung mask\;
 		\For{level from 1 to max}{
 			load classifier model\;
@@ -389,8 +392,7 @@ probability output from all feature vectors. The first section of algorithm
 			mask $\longleftarrow$ (prob. image $>$ threshold)\;
 		}
 		result = mask\;
-		discard non-nodule voxels ($p < 50$\%)\;
-		cluster remaining voxels\;
+		cluster remaining voxels \tcp*[r]{validation}
 		load XML annotations\;
 		\ForEach{$nodule \in annotations$}{
 			\eIf{any cluster $\in$ nodule ($d < 1.5R_{max}$)}{

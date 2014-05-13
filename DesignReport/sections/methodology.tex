@@ -14,13 +14,17 @@ range of 3 to 30 mm and nodules smaller than 3 mm (if not clearly benign).
 In the subsequent unblinded read phase the anonymized blinded read results of
 all radiologists were revealed to each of the radiologists who then
 independently reviewed their marks along with the anonymous marks of their
-colleagues. The delineation of the nodules was done completely manually or in a
+colleagues. The delineation of the nodules was done manually or in a
 semiautomated way. This was allowed as a study on this topic showed that the
 variation in nodule delineation done by different radiologists substantially
 exceeded the variation derived from different software tools \cite{lidcbase}.
 
-50 CT scans were obtained from the LIDC database \footnote{Freely available
-at \url{http://cancerimagingarchive.net}.}. 12 scans were removed as they only
+50 CT scans were obtained from the LIDC database \footnote{Freely available at
+\url{http://cancerimagingarchive.net}.}. Together with the original DICOM images
+the associated XML files were obtained. These XML files provided a set of
+characteristics for each nodule found: region, subtlety, spiculation, internal
+structure, lobulation, shape (sphericity), solidity, margin, and likelihood of
+malignancy \cite{lidcbase}. From the 50 scans 12 scans were removed as they only
 contained 1-voxel nodules. The pixel size of the scans varied between 0,586 and
 0,963 mm and the slice thickness varied between 1,25 or 2,50 mm. This means the
 diameter of the annotated 1-voxel nodules was less than 1 mm (micronodules).
@@ -40,17 +44,13 @@ only 1-voxel micronodules and the annotations of 1-voxel nodules in the
 remaining datasets were removed. Furthermore, focussing on the detection of
 these micronodules limits the level of thresholding that can be performed during
 the classification of the datasets. Retaining these micronodules would prevent
-us from eliminating a substantial part of the false positive findings. So
-after eliminating these 38 scans remained for training and testing.
+us from eliminating a substantial part of the false positive findings. So after
+eliminating these, 38 scans remained for training and testing.
 The RF algorithm was trained and validated on 30 and 8 CT scans respectively,
 consisting of 5168 and 1249 slices with a average of 172 and 156 slices per
-scan. Together with the original DICOM images the associated XML files
-were obtained. These XML files provided a set of characteristics for each nodule
-found: region, subtlety, spiculation, internal structure, lobulation, shape
-(sphericity), solidity, margin, and likelihood of malignancy \cite{lidcbase}.
-The trainingsdataset contained 64 nodules with each nodule containing 150 voxels
-on average. The minimum and maximum radii of the annotated nodules was 2 mm and
-18 mm respectively. The testdataset contained 19 nodules.
+scan. The trainingsdataset contained 64 nodules with each nodule containing 150
+voxels on average. The minimum and maximum radii of the annotated nodules was 2
+mm and 18 mm respectively. The testdataset contained 19 nodules.
 
 
 \subsection{Preprocessing of the data}
@@ -58,31 +58,29 @@ The initial exploration of the data and the generation of a mask to perform a
 lung segmentation were done in MeVisLab 2.5.1 (VC11-64) (MeVis Medical Solutions
 AG, Bremen, Germany). Further processing of the data and the implementation of
 the RF algorithm were carried out in Python 2.7.6 (Python Software Foundation,
-Delaware, U.S.A).  The training and testing of the RF based algorithm was
+Delaware, U.S.A). The training and testing of the RF based algorithm was
 performed on a computer with Intel Core 2 Duo CPU (2,27 GHz) and 3 GB of RAM.
 
 \subsubsection{Processing of the annotations}
-%convention: x,y,z = pixel, X,Y,Z = world
-
-The annotations contain a list of readings by different radiologists. For
+% convention: x,y,z = pixel, X,Y,Z = world
+The annotations contained a list of readings by different radiologists. For
 convenience, we always worked with the first reading in the annotations. Each
 reading contains a list of nodules, defined using contour points per slice.
 These contour points were provided in pixel coordinates (x,y), while the slice
-index was provided in word coordinates (Z). By reconstructing the world matrix
+index was provided in world coordinates (Z). By reconstructing the world matrix
 from the DICOM header, we converted the world Z-value back to its pixel
-z-coordinate counterpart.
-
-From these (x,y,z) coordinates the center of gravity plus the minimum and
-maximum radius of each nodule was calculated per slice. The 1-voxel nodules were
-ignored. In the rest of the algorithm each nodule was represented by its center
-of gravity and either its minimum or maximum radius per slice.
+z-coordinate counterpart. From these (x,y,z) coordinates the center of gravity
+plus the minimum and maximum radius of each nodule was calculated per slice. The
+1-voxel nodules were ignored. In the rest of the algorithm each nodule was
+represented by its center of gravity and either its minimum or maximum radius
+per slice.
 
 We also considered modeling the nodules as perfect spheres in 3D, but this
 turned out to be more complicated than expected. The nodules can only be
 represented by spheres in world coordinates, as they instead form ellipsoids in
-pixel coordinates. However, we perform the bulk of our calculations in the
+pixel coordinates. However, we performed the bulk of our calculations in the
 latter frame of reference. Even when all slices are converted to a world frame
-of reference, the nodules are not always perfect spheres. Figure
+of reference, the nodules were not always perfect spheres. Figure
 \ref{fig:flatNodule} illustrates this.
 
 \begin{figure}[ht]
@@ -131,16 +129,16 @@ binary image, this result was found satisfying enough.
 
 Despite the reduced amount of voxels, applying the algorithm still raised memory
 errors depending on the dimensions of the scan. In order to reduce the amount of
-voxels even further in the pre-processing phase, a full lung segmentation was
+voxels even further in the preprocessing phase, a full lung segmentation was
 performed in a semiautomatic way in MeVisLab. After the scans were loaded in
-MeVisLab, the user manually indicates three points inside the lung area. Based
+MeVisLab, the user manually indicated three points inside the lung area. Based
 on these points region growing is performed and a binary mask for the lung area
 is generated. The gaps in the binary mask -- which represent nodules in the lung
-area and nodules hidden in the lung wall -- are closed by dilation. Note that
-this causes part the lung walls to be included. We could get rid of this by
-performing an extra erosion operation, but we chose to keep it to make sure
-nodules attached to the wall are not lost. This mask is then exported to
-Python for further processing of the images.
+area and nodules hidden in the lung wall -- are closed by dilation. We could get
+rid of the extra layer of voxels on the outside by performing an extra erosion
+operation, but we chose to keep it to make sure nodules attached to the wall are
+not lost. This mask is then exported to Python for further processing of the
+images.
 
 An alternative way of performing a lung segmentation in Python would be
 calculating the body mask at the fixed threshold of 1600 and subtracting this
@@ -217,14 +215,14 @@ with a \textbf{distance map}. As explained in section \ref{sec:laplace_theory},
 the LoG operator is very good in detecting light blobs on a darker background
 such as nodules. The remaining lung edges in contrast do not fit this
 description at all. To find out which sigma would work best, we performed a
-couple of tests. First, we know that larger sigmas work better on larger nodules
-and vice versa. To that end, we searched for the smallest and largest nodule
+couple of tests. First, we knew that larger sigmas would work better on larger
+nodules and vice versa. To that end, we searched for the smallest and largest nodule
 over all our datasets. Next, we empirically established the sigmas that yielded
-the best results for each. Because we do not know ahead of time how big the
-nodule we have to detect will be, we calculate the LoG for all intermediary
-values. The results of our test (see figure \ref{fig:radii}) show that nodules
+the best results for each. Because we did not know ahead of time how big the
+nodule we had to detect would be, we calculated the LoG for all intermediary
+values. The results of our test (see figure \ref{fig:radii}) showed that nodules
 radii lie between 2.68 mm and 18.39 mm with a mean of 6.32 mm and that
-we need sigmas between 2mm and 10mm to cover this range.
+we needed sigmas between 2mm and 10mm to cover this range.
 
 \begin{figure}[ht]
 \begin{center}
@@ -239,7 +237,7 @@ calculated based on the original lung mask. Alternatively, one could also work
 with an ordinary edge detector, e.g. sobel. By blurring that output with a
 Gaussian, we get a similar distance-to-edge feature. However, we chose the
 distance map over this approach because it simply contained more information. Of
-course we can't blindly discard any voxels too close to the edges, because
+course we can not blindly discard any voxels too close to the edges, because
 nodules can be closeby as well. That is why a distance map alone is not enough.
 
 At the third and fourth level \textbf{3D averaging} was implemented to get rid
@@ -331,7 +329,7 @@ voxel in an image took too much time (hours).
 
 %\subsubsection{Training of the classifier}
 \subsubsection{Cross validation}
-During the training phase, we already want to get an idea about the future
+During the training phase, we already wanted to get an idea about the future
 performance of our classifier. Of course we could use the whole feature set in
 the training, and use the same features afterwards to check if our classifier is
 performing well. However, this is considered a form of cheating, and the test
@@ -359,12 +357,12 @@ to shallow trees and less complexity.
 
 \subsection{Testing and validation of the classifier}
 From the previous section, we obtained a trained RF model that can be used to
-predict the class of new image features with a certain probability. We use this
+predict the class of new image features with a certain probability. We used this
 facility for two purposes: feature effectiveness testing and output validation.
-But before any of that can be done, features must be calculated for all
-remaining voxels in the new dataset. A cascading approach allows us to do this
+But before any of that could be done, features had to be calculated for all
+remaining voxels in the new dataset. A cascading approach allowed us to do this
 while keeping computational en memory cost acceptable. Additionally, a lung mask
-is applied to the whole volume, allowing us to ignore any outside voxels from
+was applied to the whole volume, allowing us to ignore any outside voxels from
 the start.
 
 To assess feature effectiveness, we ask ourselves the following question. Is a

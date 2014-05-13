@@ -95,7 +95,6 @@ algorithm faster an more robust. This nodule segmentation step would allow to
 use a wider range of features, but could also introduce errors in the algorithm.
 Furthermore, developing a nodule segmentation is not a trivial thing to do.
 
-%ook niet overdrijven, 64bit doet geen wonderen..
 Although the use of the features and the code of the cascaded classifier were
 optimised considerably, one of the largest problems we encountered were the
 recurring out-of-memory errors. In the beginning of the project we decided to
@@ -105,7 +104,7 @@ of time and efforts on the optimisation of the code concerning memory storage
 and computational power. This also prevented us from implementing a lot of
 features as we intended to do. The first concept was to calculate a range of
 features and let the Random Forest algorithm then decide on which and how many
-features to use in the final classifier. Because of the memory errors we had to
+features to use in the final classifier. Because of the memory errors, we had to
 carefully select the features ourselves by visual assessment of the probability
 images that were generated at each level in the classifier, rather than letting
 RF figure out the most interesting features from a large pool.

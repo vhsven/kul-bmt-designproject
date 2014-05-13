@@ -65,25 +65,6 @@ each level in the classifier a threshold was set to determine which voxels were
 taken to the next level and which were to be discarded. These thresholds were
 empirically determined, but can still be optimised. The training and the
 validation of the algorithm were performed on 30 and 8 datasets respectively.
-% te veel details voor conclusie? en liefst niet te veel aandacht naar trekken
-% These scans remained from the original 50 after eliminating the annotations
-% which only contained 1-voxel nodules. The pixel size of the scans varied
-% between 0,586 and 0,963 mm and the slice thickness varied between 1,25 or 2,50
-% mm. This means the diameter of the annotated 1-voxel micronodules was less
-% than 1 mm.
-% These nodules are difficult to detect for a radiologist, especially if they
-% are hidden in a maze of vessels of the same magnitude. Therefore, some
-% databases do not even require the radiologist to mark such small findings. In
-% the LIDC/IDRI database there were no limitations set on the diameters of the
-% nodules to be marked. However, the chance the radiologists marked every single
-% micronodule is very small. The training of the CAD algorithm could therefore
-% be ruined due to these incomplete annotations. Therefore, the datasets
-% containing only 1-voxel micronodules and the annotations of 1-voxel nodules in
-% the remaining datasets were removed. Furthermore, focussing on the detection
-% of these micronodules would have put a limit to the level of thresholding that
-% could be performed during the classification of the datasets and would have
-% prevented us from eliminating a substantial part of the false positive
-% findings.
 
 During the training of the algorithm a five-fold crossvalidation was performed
 to determine the optimal set of parameters for the Random Forest algorithm. It

@@ -7,42 +7,40 @@ features for all the voxels in an image are used to describe the entire image.
 
 \subsubsection{Feature extraction}
 Feature extraction involves obtaining a list of feature from a resource -- an
-image or another dataset -- to describe that dataset in an accurate way which
+image or another dataset -- to describe that dataset in an accurate way that
 allows it to be analysed by proper software.
 
 In image processing a wide range of features can be extracted. Some features are
-very trivial: the grey value or colour of pixels, the position of pixel, etc.
-Features also can be shape based: template matching, blob detection, edge
-detection, detection of lines and circles by means of a Hough transform, etc.
-Once certain objects are detected in the image, their area, curvature, size,
-etc. can be determined.
-
-On the other hand, the shape based features mentioned above need an a priori
+very trivial: the grey value or colour of pixels, the position of pixels, etc.
+Features can be shape based: template matching, blob detection, edge detection,
+detection of lines and circles by means of a Hough transform, etc.
+Once certain objects are detected in the image, their area, curvature and size
+can be determined. On the other hand, the shape based features need an a priori
 nodule segmentation. Performing such a segmentation is not trivial and
-error-prone. Therefore, the features should be selected in a way there is no
-need for performing a nodule selection in advance.
+error-prone. Therefore, the features in this project will be selected in a way
+there is no need for performing a nodule selection in advance.
 
 We will now highlight some of the most relevant features for our purpose.
 
 \paragraph{Distance Map}
 A binary image containing either foreground (1) or background (0) voxels can be
 transformed into a distance map. In this process, every foreground voxel is
-assigned the distance to nearest background voxel, while the background voxels
-are simply set to zero. In that regard, distance maps can be seen as
+assigned the distance to the nearest background voxel, while the background
+voxels are simply set to zero. In that regard, distance maps can be seen as
 generalisations of edges: they contain the same information, and more. An
-exanple of a distance map can be found in \autoref{fig:distmap}.
+example of a distance map can be found in \autoref{fig:distmap}.
 
 \begin{figure}[htp] \begin{center}  
 \includegraphics[width=\linewidth]{img/distmap.png}   \caption{Example of a
 distance map}   \label{fig:distmap} \end{center} \end{figure}
 
 The distance metric must not necessarily be the Euclidean distance. Other
-metrics such as the Manhattan distance are also acceptable and easier to compute
-on top of that.
+metrics such as the Manhattan distance are also acceptable and easier to compute.
 
-\paragraph{Laplacian}\label{sec:laplace_theory} One common feature in nodule
-detection is the laplacian -- also called blob detector. The laplacian operator
-applied to a continuous 3D function is defined as:
+\paragraph{Laplacian}\label{sec:laplace_theory}
+One common feature in nodule detection is the laplacian -- also called blob
+detector. The laplacian operator applied to a continuous 3D function is defined
+as:
 
 \begin{equation}
 	\nabla^2f(x,y,z) = \left(\frac{\partial^2 f}{\partial x^2} + \frac{\partial^2
@@ -51,12 +49,10 @@ applied to a continuous 3D function is defined as:
 
 To be applied to images, it must first be discretized into a 3D convolution
 mask. That mask typically has a large negative number in the center, surrounded
-by positive ones.
-
-Because we are dealing with second derivatives, this operation is very sensitive
-to noise. One solution to this problem is to convolve the image with a gaussian
-kernel of scale $t$ first. Because this kernel has a low-pass effect, noise will
-be reduced.
+by positive ones. As we are dealing with second derivatives, this operation
+is very sensitive to noise. One solution to this problem is to convolve the
+image with a gaussian kernel of scale $t$ first. Because this kernel has a
+low-pass effect, noise will be reduced.
 
 \begin{equation}
 	G_t(x,y,z) = \frac{1}{(\sqrt{2\pi} t)^3}e^{-\frac{x^2+y^2+z^2}{2t^2}}
@@ -64,10 +60,8 @@ be reduced.
 
 It can be represented by bionomial filters -- repeated convolutions of [1 1]
 with itself -- in the discrete domain, making it rather cheap operation
-computation-wise.
-
-Convolution has some interesting properties, which allow this calculation to be
-further optimized:
+computation-wise. Convolution also has some interesting properties, which allow
+this calculation to be further optimized:
 
 \begin{equation}
 	\nabla^2[G_t(x,y,z) * f(x,y,z)] = \nabla^2 G_t(x,y,z) * f(x,y,z)
@@ -85,18 +79,17 @@ to the nodule radius. However, because nodules come in different sizes, $t$ will
 likewise have to range over different values. In general, larger $t$ values
 yield lower filter responses. This makes finding minima and maxima in
 scale-space difficult. Using the scale-normalised laplacian operator solves this
-problem by multiplying the response with $t$.
+problem by multiplying the response with $t$. To make this computationally
+expensive operation more bearable, the laplacian is often approximated by the
+difference between two levels in a gaussian scale pyramid. The result is called
+the Difference-of-Gaussians (DoG).
 
-To make this computationally expensive operation more bearable, the laplacian is
-often approximated by the difference between two levels in a gaussian scale
-pyramid. The result is called the Difference-of-Gaussians (DoG).
-
-There is one last technicality we must address. The above formulas assumed
-that the blobs were isotropic and thus that the LoG could be as well.
-However, because we perform most of our calculations in voxel space and voxels
-are not perfect cubes, this assumption does not hold. To compensate for this
-fact, we define a unique sigma per dimension that is a rescaled variant of the
-original based on the corresponding voxel dimension.
+Then there is one last technicality we must address. The above formulas assumed
+that the blobs were isotropic and thus that the LoG could be as well. However,
+because we perform most of our calculations in voxel space and voxels are not
+perfect cubes, this assumption does not hold. To compensate for this fact, we
+define a unique sigma per dimension that is a rescaled variant of the original
+based on the corresponding voxel dimension.
 
 Alternatively to the laplacian, one can also use the Hessian matrix of second
 partial derivatives as a feature. The laplacian is simply the sum of the

@@ -9,8 +9,8 @@ from any image part that is at a safe distance from all nodules. For each of
 these voxels, a feature vector is generated and fed into the classifier.
 Five-fold cross validation combined with an optimal parameter grid search shows
 accuracy increases to 98,2\% in the last cascade level while at the same time
-making sure the classifier's hyperparameters are properly calibrated to prevent
-overfitting.
+it makes sure the classifier's hyperparameters are properly calibrated to
+prevent overfitting.
 
 Once the classifier is trained, we use 8 different datasets from the LIDC/IDRI
 database to perform tests and validation. For performance reasons, a lung mask
@@ -19,7 +19,7 @@ segmentation algorithms, one based on thresholds and morphological operations
 and another based on region growing. Either of these will provide us with the
 initial mask to start the calculations on.
 
-Our cascaded classifier comprises of four levels. In the first level, intensity
+The cascaded classifier comprises of four levels. In the first level, intensity
 is used as a feature as it is readily available. This teaches the classifier
 that nodules belong to the soft tissue window, allowing it to discard any voxel
 outside of that range. The second level feature is a laplacian blob detector

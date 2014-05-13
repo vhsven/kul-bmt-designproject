@@ -10,8 +10,7 @@ from Validator import Validator
 from Constants import CASCADE_THRESHOLD, MAX_LEVEL
 from XmlAnnotationReader import XmlAnnotationReader
 
-#TODO delete set 48 (too big -> memory errors)
-#TODO check wall nodules
+#TODO mention wall nodules more explicitely?
 
 class Main:
     def __init__(self, rootPath, maxPaths=999999, maxLevel=-1):

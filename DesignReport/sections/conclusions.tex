@@ -37,16 +37,15 @@ Random Forests have many advantages. As an ensemble classifier it combines
 decisions of multiple classifiers to form an integrated output. This way of
 working has the advantage that a better predictive performance is obtained
 compared to the predictive performance demonstrated by each individual learning
-algorithm separately. Furthermore, Random Forests are rather robust against
-noise compared with other classifier such as Support Vector Machines. Random
-Forests also allow to use a lot of features, even if they have different orders
-of magnitude, without increasing the time complexity too much. The features also
-do not have to be known in advance. At the same time, the method does not
-require a lot of parameter tuning. The only thing that has to be taken into
-consideration is the depth of the trees as overfitting must be avoided in order
-to maintain an algorithm that is able to generalise across datasets. The use of
-a cascaded classifier is preferred as it limits the amount of CPU time and
-memory storage.
+algorithm separately. Furthermore, RF is rather robust against noise compared
+with other classifier such as Support Vector Machines. Random Forests also allow
+to use a lot of features, even if they have different orders of magnitude,
+without increasing the time complexity too much. The features also do not have
+to be known in advance. At the same time, the method does not require a lot of
+parameter tuning. The only thing that has to be taken into consideration is the
+depth of the trees as overfitting must be avoided in order to maintain an
+algorithm that is able to generalise across datasets. The use of a cascaded
+classifier is preferred as it limits the amount of CPU time and memory storage.
  
 The higher the level in the cascaded classifier, the more complex the features.
 On the first level the grey values of the voxels were used to detect soft

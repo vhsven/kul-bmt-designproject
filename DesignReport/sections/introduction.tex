@@ -1,12 +1,12 @@
 \section{Introduction}
 In Belgium, one man in three and one woman in four face cancer before their 75th
 birthday \cite{kanker} In 2010, 62.017 new cases of cancer were diagnosed
-accroding to \cite{kankerliga}. Moreover, the World Health Organisation
+according to \cite{kankerliga}. Moreover, the World Health Organisation
 estimates the worldwide death toll from lung cancer will be 10.000.000 by 2030,
 which makes it one of the deadliest cancers \cite{gu, zheng}. Fortunately, an
 early detection can increase the survival rate up to 70-80\% \cite{swensen} and
 will broaden the amount of treatment options \cite{greenlee}. Therefore, a wide
-range of studies have focussed on this topic. The only way to detect lung cancer
+range of studies have focused on this topic. The only way to detect lung cancer
 in an early stage is by examining a patient's scan carefully. Currently, expert
 radiologists perform the investigation of the computed tomography (CT) scans.
 They use the shape, the texture, the location and the growth rate of the volume
@@ -31,12 +31,12 @@ a maze of vessels is shown in \autoref{nodmaze}.
   \label{nodmaze}
 \end{center}
 \end{figure}
-The downside of these recent developtments towards high resolution images is
+The downside of these recent developments towards high resolution images is
 that enormous amounts of data are generated which increase the work load of radiologists.
 Especially since low-dose CT scans are more and more implemented in routine
 screenings. Still, this is no idle measure. Long nodules are very commonly
 detected on CT scans. Research shows that up to 51\% of smokers aged 50 years or
-older have pulmonary lung nodules on CT scans \cite{mahon}. Therefore, the
+older have pulmonary lung nodules in CT scans \cite{mahon}. Therefore, the
 United States Preventive Services Task Force stated that it ``recommends annual
 screening for lung cancer with low-dose computed tomography in adults
 aged 55 to 80 years who have a 30 pack-year smoking history and currently smoke
@@ -53,30 +53,26 @@ a cascaded classifier which is a robust and fast machine learning algorithm.
 This algorithm will classify each voxel of the 3D images by assigning a
 nodule-probability to each of them. One of the challenges is the selection of
 the features that will be extracted from the image. The fact that some nodules
-are embedded in surrounding tissue (e.g.
-lung wall, blood vessel, etc.) and the fact that some nodules demonstrate very
-irregular shapes prevents us from using simple spherical template matching which
-might seem an obvious choice at first for pulmonary lung detection. In order to
-select the right classifier and list of features, a non-exhaustive literature
-review is performed. Commercial and non-commercial CAD systems for nodule
-detection and their performances are discussed. Of course, in order to design an
-accurate and efficient CAD system, one needs to understand the biology of lung
-nodules so that topic is also briefly touched. Then a short theoretical
-background on image processing, with a focus on feature extraction and
-selection, and machine learning is provided. Both topics will be related to
-findings in the literature. The statistical measures used for assessing the
-performance of classifiers are also briefly discussed as they might not be
-trivial in this project. Subsequently, the methodology that was established in
-this project is explained from the acquisition of the datasets and the
-preprocessing of the data till the training, testing and validating of the
-algorithm. The advantages and disadvantages of every step are discussed and the
-final results are presented. Finally, the main conclusions from the project were
-summarized and suggestions for future research are made. In the appendix the
-reader can find the reports of the weekly meetings with the supervisors, the
-Ganttchart and the timeschedule which present together the logbook of the
-project.
-
-%TODO gantt chart en logboek
+are embedded in surrounding tissue (e.g. lung wall, blood vessel, etc.) and the
+fact that some nodules demonstrate very irregular shapes prevents us from using
+simple spherical template matching which might seem an obvious choice at first
+for pulmonary lung detection. In order to select the right classifier and list
+of features, a non-exhaustive literature review is performed. Commercial and
+non-commercial CAD systems for nodule detection and their performances are
+discussed. Of course, in order to design an accurate and efficient CAD system,
+one needs to understand the biology of lung nodules so that topic is also
+briefly touched. Next, a short theoretical background on image processing, with
+a focus on feature extraction and selection, and machine learning is provided.
+Both topics will be related to findings in the literature. The statistical
+measures used for assessing the performance of classifiers are also briefly
+discussed as they might not be trivial in this project. Subsequently, the
+methodology that was established in this project is explained from the
+acquisition of the datasets and the preprocessing of the data to the training,
+testing and validating of the algorithm. The advantages and disadvantages of
+every step are discussed and the final results are presented. Finally, the main
+conclusions from the project are summarized and suggestions for future research
+are made. In the appendix the reader can find the reports of the weekly meetings
+with the supervisors, the Gantt chart and the logbook.
 
 
 

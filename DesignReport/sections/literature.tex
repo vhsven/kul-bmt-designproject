@@ -47,12 +47,12 @@ as nodules, but in fact they are no nodules \cite{ginneken}.}
 \end{center}
 \end{figure}
 A number of nodule segmentation algorithms perform well in detecting specific
-types of nodules. However, these
-CAD systems show large limitations in detecting e.g. non-isolated nodules that
-are connected to the pulmonary wall \cite{keshani}. These algorithms can be
-usefull in particular situations, but if a detection algorithms really aims at
-being an asset for the radiologist, it should be able to detect all nodules
-while refusing as much false positives (\autoref{fig:Nonnodules}) as possible.
+types of nodules. However, these CAD systems show large limitations in detecting 
+for example non-isolated nodules that are connected to the pulmonary wall \cite{keshani}. 
+These algorithms can be useful in particular situations, but if a detection 
+algorithms really aims at being an asset for the radiologist, it should be able 
+to detect all nodules while rejecting as much false positives (\autoref{fig:Nonnodules}) 
+as possible.
 
 \subsection{Overview of existing lung nodule detection systems}
 As the demand for a reliable CAD system to detect pulmonary nodules is urgent, a
@@ -65,10 +65,10 @@ in the various studies are rather diverse.
 \subsubsection{Commercial systems}
 In 2004 iCAD, Inc., provided lung cancer detection, analysis and tracking
 software for the TeraRecon's Aquarius product line. The latter licensed several
-software modules from iCAD. The iCAD QuickCue\texttrademark automatically
-detects cancerous lung nodules. The iCAD QuickMatch\texttrademark locates,
+software modules from iCAD. The iCAD QuickCue\texttrademark{} automatically
+detects cancerous lung nodules. The iCAD QuickMatch\texttrademark{} locates,
 compares and tracks nodules in previous or subsequent patient studies
-\cite{tera}. However, the ImageChecker CT\texttrademark, launched by R2
+\cite{tera}. However, the ImageChecker CT{}\texttrademark{}, launched by R2
 Technology Inc., was the first CAD system approved by the US Food and Drug
 Administration (FDA) for the detection of lung nodules during the examination of CT scans
 \cite{Mevis}. In 2005 R2 Technology introduced the second-generation
@@ -88,14 +88,14 @@ was granted a medical device license from the Therapeutic Products Directorate
 of Health in Canada to introduce Medicsight LungCAD API\texttrademark \cite{HI}.
 Another company, Median Technologies Inc., offers the LMS-Lung and LMS-Lung /
 CAD modules which provide quantification and detection functionalities for
-pulmonary (solid) nodules and micronodules \cite{median}. And Siemens has
-developed the syngo.CT Lung CAD\texttrademark. They claim it is ``a fully
-automated computer assisted second reader tool'' that is designed to assist
-radiologists in the detection of solid pulmonary nodules \cite{siemens}.
+pulmonary (solid) nodules and micronodules \cite{median}. Siemens on the other
+hand has developed the syngo.CT Lung CAD\texttrademark{}. They claim it is ``a
+fully automated computer assisted second reader tool'' that is designed to
+assist radiologists in the detection of solid pulmonary nodules \cite{siemens}.
 
 \subsubsection{Publications of automated lung detection systems}
-Apart from these numerous commercial systems also a lot of academic research
-centra have tried to come up with a successful pulmonary nodule detection
+Apart from these numerous commercial systems many academic research
+centers have tried to come up with a successful pulmonary nodule detection
 system. \cite{review} suggest that most CAD systems for the automated detection
 of lung nodules proceed according to a number of steps of which the first one is
 the acquisition of data. The detection of lung nodules is preferably performed
@@ -165,8 +165,8 @@ has the potential to equalise performance among readers by reducing individual
 detection errors.
 
 \cite{elbaz} proposed a three step algorithm to isolate lung nodules from spiral
-chest low-dose CT scans. In the first step the lung tissues were isolated
-by applying an iterative Markov-Gibbs random field (MGRF) based segmentation
+chest low-dose CT scans. In the first step the lung tissues were isolated by
+applying an iterative Markov-Gibbs random field (MGRF) based segmentation
 framework. To retain the nodules attached to the pulmonary walls, the
 segmentation was refined by the iterative conditional mode relaxation that
 maximizes a MGRF energy. Then the lung nodules, arteries, veins, bronchi and
@@ -177,15 +177,15 @@ nodules of the same type. Four template shapes were used: solid sphere, hollow
 sphere, solid circle and solid semicircle. The radius and the greyscale
 intensity of the templates were made adaptable. The detection combined the
 normalized cross-correlation template matching and a genetic optimization
-algorithm. The third step eliminated the FP using three
-textural and geometric features that were calculated for each detected nodule.
+algorithm. The third step eliminated the FP using three textural and geometric
+features that were calculated for each detected nodule.
 To distuingish between FP and true positives (TP) Bayesian supervised classifier
-statistical characteristics from a training set (20 FP, 20 lung TP, 20
-lung wall TP nodules) were selected from 50 separate subjects. CT scans
-from 200 subjects were tested in this study and a sensitivity of 82,3\% and a
-FP rate of 9,2\% were reached. The algorithm, that was implemented in C++ on an Intel dual
-processor with 16 GB memory, took about 5 minutes to process
-182 CT slices of size 512 x 512.
+statistical characteristics from a training set (20 FP, 20 lung TP, 20 lung wall
+TP nodules) were selected from 50 separate subjects. CT scans from 200 subjects
+were tested in this study and a sensitivity of 82,3\% and a FP rate of 9,2\%
+were reached. The algorithm, that was implemented in C++ on an Intel Dual Core
+processor with 16 GB memory, took about 5 minutes to process 182 CT slices of
+size 512 x 512.
 
 Other studies rely on a nodule segmentation method to detect lung abnormalities.
 \cite{kuh} applies morphological opening, erosion, thresholding, seed
@@ -216,15 +216,15 @@ SVM classifier was able to detect the lung nodules. Then the contours of these
 nodules were extracted by active contour modelling. In a last step the lung tissues in
 the original image were classified into four classes: lung wall, parenchyma,
 bronchioles and nodules. The results from this classification were used to
-distuingish solitary nodules from attached ones. When this algorithm was used to
+distinguish solitary nodules from attached ones. When this algorithm was used to
 detect nodules in the ANODE09 dataset an average detection rate of 37,8\% was
 obtained while the best performing method yielded a detection rate of 63,2\%.
 The latter algorithm, ISI-CAD, was developed by \cite{mur} and used the local
-image features -- shape index and curvedness -- to detect candidate nodules. Two
+image features -- shape index and curvature -- to detect candidate nodules. Two
 successive k-nearest-neighbour (K-NN) classifiers were applied to reduce the
 number of FP. This yielded a sensitivity of 80\% with an average of 4,2 FP per
 scan. \cite{sluimer2003} also used k-NN for developing an algorithm which
-automatically distuinguishes between normal and abnormal lung tissue.
+automatically distinguishes between normal and abnormal lung tissue.
 Before the k-NN was applied, a principal texture analysis was performed in this
 study to determine local features.
 
@@ -252,19 +252,19 @@ This method recorded the lowest execution time (10 seconds).
 
 
 \subsubsection{Performance of existing systems} \label{sec:performance}
- The algorithms presented in a wide range of papers report varying successes in
- the automated detection of nodules. However, it is very difficult to compare
- studies against one another in a meaningful way due to differences in the size
- of the datasets, the evaluation methods, the data selection criteria and the
- characteristics of the nodules under examination \cite{lee2010}. Especially
- comparing older and contemporary studies is difficult as older ones may have
- used scans with thicker sections (range 2.5 - 10 mm), on which small nodules
- are rather difficult to detect, than the scans nowadays (2,5 mm) \cite{lee2010,
- ginneken, mur}. Some studies focus on nodules below or above a certain size or
- on special types of nodules (e.g. solid nodules). \cite{mur} performed an
- extended literature review and found that the number of scans used for testing
- varied between 5 and 500 with a median number of 29,5. Many of the studies
- included multiple scans from individual patients, which means that the
+ The algorithms presented in a wide range of papers report varying degrees of
+ success in the automated detection of nodules. However, it is very difficult to
+ compare studies against one another in a meaningful way due to differences in
+ the size of the datasets, the evaluation methods, the data selection criteria
+ and the characteristics of the nodules under examination \cite{lee2010}.
+ Especially comparing older and contemporary studies is difficult as older ones
+ may have used scans with thicker sections (range 2.5 - 10 mm), on which small
+ nodules are rather difficult to detect, than the scans nowadays (2,5 mm)
+ \cite{lee2010, ginneken, mur}. Some studies focus on nodules below or above a
+ certain size or on special types of nodules (e.g. solid nodules). \cite{mur}
+ performed an extended literature review and found that the number of scans used
+ for testing varied between 5 and 500 with a median number of 29,5. Many of the
+ studies included multiple scans from individual patients, which means that the
  diversity of the available nodules was reduced. Furthermore, the results of
  publications are often presented in diverse ways.
  

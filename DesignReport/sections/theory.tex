@@ -11,7 +11,7 @@ image or another dataset -- to describe that dataset in an accurate way that
 allows it to be analysed by proper software.
 
 In image processing a wide range of features can be extracted. Some features are
-very trivial: the grey value or colour of pixels, the position of pixels, etc.
+very trivial: the grey value or colour of voxels, the position of voxels, etc.
 Features can be shape based: template matching, blob detection, edge detection,
 detection of lines and circles by means of a Hough transform, etc.
 Once certain objects are detected in the image, their area, curvature and size
@@ -89,7 +89,7 @@ that the blobs were isotropic and thus that the LoG could be as well. However,
 because we perform most of our calculations in voxel space and voxels are not
 perfect cubes, this assumption does not hold. To compensate for this fact, we
 define a unique sigma per dimension that is a rescaled variant of the original
-based on the corresponding voxel dimension.
+sigma based on the corresponding voxel dimension.
 
 Alternatively to the laplacian, one can also use the Hessian matrix of second
 partial derivatives as a feature. The laplacian is simply the sum of the
@@ -100,13 +100,13 @@ stick with the laplacian operator.
 \paragraph{3D Averaging}\label{sec:3davg} 
 This method \cite{keshani} is based on the fact that nodules are more or less
 spherical while bronchi and bronchioles are oblong. This might not be visible in
-a 2D image where both appear as spheres depending on the orientation of the
-bronchioles, but it certainly is if a 3D volume around a finding is taken into
+a 2D image where both appear as circles depending on the orientation of the
+bronchioles, but it certainly is if a 3D window around a finding is taken into
 account. Nodules will repeat themselves in the preceeding and/or succeeding
 slices at the same place while the smaller bronchi and bronchioles will not. The
 comparison between slices was made by calculating the mean value of a window in
 the target slice and the average of the mean values of the same window in the
-succeeding and preceeding slices:
+succeeding and preceding slices:
 \begin{equation}
 M_{ij}^p = \frac{1}{9} \sum_{k,l = -1}^{+1} L^p(i+k,j+l)
 \end{equation}
@@ -233,9 +233,9 @@ the algorithm itself will decide on using them or not. The time complexity of RF
 is $O(n \log n)$ \cite{RFcompex} which makes it more suitable than e.g. SVM for
 large datasets.
 
-However, although the RF classifier might be a good choice for analysing large
-datasets, the amount of memory and computational power can still be a problem.
-Hence, an optimisation of the implementation of the RF classifier is
+Although the RF classifier might be a good choice for analysing large datasets,
+the required amount of memory and computational power can still be a problem.
+Consequently, an optimisation of the implementation of the RF classifier is
 desirable. A possible optimisation is the use of a cascaded classifier.
 
 \subsubsection{Cascaded classifiers}
@@ -244,12 +244,12 @@ concatenated. Consequently, it is a special case of an ensemble classifier. The
 cascaded classifier uses all the information that is obtained in a previous
 level to provide the classifier in the next level with additional info on the
 data. On a lower level in a cascaded classifier the amount of features and the
-complexity of the features that are used are lower. For example, the classifier
-at the first level may determine a threshold to separate nodule voxels from
-non-nodule voxels based on their grey values. Using this trivial feature a large
-part of the voxels can already be eliminated as their grey value is too high or
-too low to be a nodule voxel. The features on the second level are more complex
-and therefore require more computational power. However, this is not a problem
+complexity of those features are lower. For example, at the first level our
+classifier may determine a threshold to separate nodule voxels from non-nodule
+voxels based on their grey values. Using this trivial feature a large part of
+the voxels can already be eliminated as their grey value is too high or too low
+to be a nodule voxel. The features on the second level are more complex and
+therefore require more computational power. However, this is not a problem
 anymore as the amount of voxels to be processed was reduced after the first
 level. At the second level again a number of voxels are eliminated. The number
 of levels, and therefore the number of features, can be increased until the end
@@ -263,25 +263,25 @@ on each level. For data mining the general rule is the more the better. If a lot
 a features are provided for each voxel the classifier can set more thresholds
 and is therefore better able to separate different classes. We started off from
 this concept, but very soon we had to deal with memory errors in Python. The
-code was therefore optimised, but still we had to cut in the amount of features
+code was further optimised, but still we had to cut in the amount of features
 that were used in the final version of the classifier as the amount of memory
 available remained a problem during the whole project.
 
 \subsection{Validation metrics}
-In order to evaluate the performance of a binary classifier, we introduce some
-statistical concepts. The reader should be familiar with Type I and Type II
-errors. A Type I error occurs when the model predicts something to be there
-while in reality it is not. In this text we call these occurrences false
-positives (FP). In our scenario, this corresponds with a classifier indicating
-that a nodule is present when there is really none.
+In order to formally evaluate the performance of a binary classifier, we
+introduce some statistical concepts. The reader should be familiar with Type I
+and Type II errors. A Type I error occurs when the model predicts something to
+be there while in reality it is not. In this text we call these occurrences
+false positives (FP). In our scenario, this corresponds with a classifier
+indicating that a nodule is present when there is really none.
 
 Vice versa, a Type II error occurs when the model predicts something to be absent
 when in reality it present. We call them false negatives (FN). False negatives
 in our scenario represent nodules not detected by the classifier.
 
 On the other hand, true positives (TP) and true negatives (TN) represent the
-cases where the classifier properly detected the presence or absence of the
-nodule respectively.
+cases where the classifier detected the presence or absence of the
+nodule correctly.
 
 \begin{table}[ht]
 \begin{center}

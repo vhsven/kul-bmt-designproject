@@ -1,4 +1,4 @@
-\documentclass[twoside, 10pt, twoside]{article} %, draft
+\documentclass[twoside, 10pt, twoside]{article}
 
 \usepackage{amsmath}
 \usepackage{graphicx} %[pdftex]
@@ -9,6 +9,7 @@
 \usepackage[lined,ruled]{algorithm2e}
 \usepackage{caption}
 \usepackage{subcaption}
+\usepackage{pdflscape}
 
 \title
 {
@@ -28,7 +29,17 @@
 
 \numberwithin{equation}{section}
 
+\hyphenation{iso-tropic}
+\hyphenation{data-base}
+\hyphenation{data-set}
+\hyphenation{pleu-ral}
+\hyphenation{no-du-les}
+\hyphenation{an-noun-ced}
+\hyphenation{Ca-na-da}
+
 \begin{document}
+
+%\includepdf[pages=1]{coverpage.pdf}
 
 \onecolumn
 %\maketitle
@@ -62,11 +73,20 @@
 
 \clearpage
 \appendix
+\begin{landscape}
 \section{Appendix}
-\subsection{Mission definition}
-\includepdf[pages={-}]{appendix/mission.pdf}
+%\subsection{Mission definition}
+%\includepdf[pages={-}]{appendix/mission.pdf}
 
-\subsection{Logbook} %TODO include logbook
+\subsection{Gantt chart \& logbook}
+\begin{figure}[htp]
+  \includegraphics[width=\linewidth]{appendix/gantt.png}
+  \caption{Gantt chart}
+  \label{fig:gantt}
+\end{figure}
+
+\includepdf[pages={-}, landscape]{appendix/logbook.pdf}
+\end{landscape}
 
 \subsection{Meetings}
 \includepdf[pages={-}]{appendix/1.pdf}

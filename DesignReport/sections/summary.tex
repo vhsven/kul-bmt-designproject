@@ -1,16 +1,16 @@
-\section*{Summary} %\addcontentsline{toc}{section}{Summary}
+\section*{Summary} \addcontentsline{toc}{section}{Summary}
 
 The goal of this project is to develop a fully automated algorithm for the
 detection of pulmonary nodules in CT scans. A cascaded Random Forests classifier
 will be used to assign nodule probabilities to individual voxels. To train the
-classifier, 30 datasets from the LIDC/IDRI are used. Voxels in the center of the
-nodule are used as positives samples, while negative voxels are randomly sampled
-from any image part that is at a safe distance from all nodules. For each of
-these voxels, a feature vector is generated and fed into the classifier.
-Five-fold cross validation combined with an optimal parameter grid search shows
-accuracy increases to 98,2\% in the last cascade level while at the same time
-it makes sure the classifier's hyperparameters are properly calibrated to
-prevent overfitting.
+classifier, 30 datasets from the LIDC/IDRI database are used. Voxels in the
+center of the nodules are used as positives samples, while negative voxels are
+randomly sampled from any image part that is at a safe distance from all
+nodules. For each of these voxels, a feature vector is generated and fed into
+the classifier. Five-fold cross validation combined with an optimal parameter
+grid search shows accuracy increases to 98,2\% after the last cascade level while
+at the same time it makes sure the classifier's hyperparameters are properly
+calibrated to prevent overfitting.
 
 Once the classifier is trained, we use 8 different datasets from the LIDC/IDRI
 database to perform tests and validation. For performance reasons, a lung mask
@@ -26,7 +26,7 @@ outside of that range. The second level feature is a laplacian blob detector
 over several scales in addition to a distance map. This allows the classifier to
 specifically detect nodule-sized blobs in the 3D image while staying clear of
 the lung walls. At the third and fourth level a 3D averaging effect is used to
-distinguish between small nodules and other structures such as bronchioli or
+distinguish between small nodules and other structures such as bronchioli and
 blood vessels by taking into account the structures extent in previous and
 following slices. Many other features were implemented and tested, but
 ultimately did not make the cut.
@@ -40,8 +40,6 @@ positives reduction method. On top of that, our number of false positives is
 expressed in number of voxelclusters (or ``potential nodules'') while the other
 two metrics are expressed in proper nodules. This discrepancy makes comparison
 between both metrics very difficult.
-
-%TODO hoe deze resultaten zich verhouden tot de literatuur. Daar weet ik ni zo veel van.. :/
 
 To improve these results, future work will have to continue fine-tuning the
 parameters of our algorithms and improve the effectiveness of the features. In

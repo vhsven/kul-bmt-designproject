@@ -7,7 +7,7 @@ Emotion, and Sensation scanner models and one Toshiba Aquilion scanner model).
 The database includes only one scan per patient so the scans are not correlated.
 The nodules in the scans were delineated by at least four different expert
 radiologists to identify as much nodules as possible. For this purpose the
-indentification process was also subdivided into two phases: a blinded read
+identification process was also subdivided into two phases: a blinded read
 phase and an unblinded read phase. During the initial blinded read phase each
 radiologist independently reviewed all scans and indicated the nodules in the
 range of 3 to 30 mm and nodules smaller than 3 mm (if not clearly benign).
@@ -15,11 +15,11 @@ In the subsequent unblinded read phase the anonymized blinded read results of
 all radiologists were revealed to each of the radiologists who then
 independently reviewed their marks along with the anonymous marks of their
 colleagues. The delineation of the nodules was done manually or in a
-semiautomated way. This was allowed as a study on this topic showed that the
+semi-automated way. This was allowed as a study on this topic showed that the
 variation in nodule delineation done by different radiologists substantially
 exceeded the variation derived from different software tools \cite{lidcbase}.
 
-50 CT scans were obtained from the LIDC database \footnote{Freely available at
+Fifty CT scans were obtained from the LIDC database\footnote{Freely available at
 \url{http://cancerimagingarchive.net}.}. Together with the original DICOM images
 the associated XML files were obtained. These XML files provided a set of
 characteristics for each nodule found: region, subtlety, spiculation, internal
@@ -48,10 +48,9 @@ us from eliminating a substantial part of the false positive findings. So after
 eliminating these, 38 scans remained for training and testing.
 The RF algorithm was trained and validated on 30 and 8 CT scans respectively,
 consisting of 5168 and 1249 slices with a average of 172 and 156 slices per
-scan. The trainingsdataset contained 64 nodules with each nodule containing 150
+scan. The training set contained 64 nodules with each nodule containing 150
 voxels on average. The minimum and maximum radii of the annotated nodules was 2
-mm and 18 mm respectively. The testdataset contained 19 nodules.
-
+mm and 18 mm respectively. The test set contained 19 nodules.
 
 \subsection{Preprocessing of the data}
 The initial exploration of the data and the generation of a mask to perform a
@@ -66,9 +65,9 @@ performed on a computer with Intel Core 2 Duo CPU (2,27 GHz) and 3 GB of RAM.
 The annotations contained a list of readings by different radiologists. For
 convenience, we always worked with the first reading in the annotations. Each
 reading contains a list of nodules, defined using contour points per slice.
-These contour points were provided in pixel coordinates (x,y), while the slice
+These contour points were provided in voxel coordinates (x,y), while the slice
 index was provided in world coordinates (Z). By reconstructing the world matrix
-from the DICOM header, we converted the world Z-value back to its pixel
+from the DICOM header, we converted the world Z-value back to its voxel
 z-coordinate counterpart. From these (x,y,z) coordinates the center of gravity
 plus the minimum and maximum radius of each nodule was calculated per slice. The
 1-voxel nodules were ignored. In the rest of the algorithm each nodule was
@@ -78,7 +77,7 @@ per slice.
 We also considered modeling the nodules as perfect spheres in 3D, but this
 turned out to be more complicated than expected. The nodules can only be
 represented by spheres in world coordinates, as they instead form ellipsoids in
-pixel coordinates. However, we performed the bulk of our calculations in the
+voxel coordinates. However, we performed the bulk of our calculations in the
 latter frame of reference. Even when all slices are converted to a world frame
 of reference, the nodules were not always perfect spheres. Figure
 \ref{fig:flatNodule} illustrates this.
@@ -151,17 +150,17 @@ to include the nodules hidden in the lung wall.
 Training a classifier requires us to supply it with examples of both positive
 and negative features. The positive features were extracted from voxels inside
 two thirds of the minimum radius of the nodule. Other voxels near the edge of
-the nodule were ignore due to possible ambiguity. These voxels might confuse the
+the nodule were ignored due to possible ambiguity. These voxels might confuse the
 classifier. As the aim of this project was not to delineate entire nodules but
 assigning nodule probabilities to the voxels in the image, this reduction in
 order to provide clear training data for the classifier was justified.
 
-Next, a second list of negative voxels was constructed. The amount of voxels was
-taken the same as in the list of positive voxels to obtain a balanced training
-dataset. The positions of the negative voxels were selected at random over the
-entire image. The only constraint was that they were not allowed the be situated
-within two times the maximum radius of each nodule. This constraint was again
-imposed to avoid ambiguous training data.
+Next, a second list of negative voxels was constructed. The amount of these
+voxels was taken the same as in the list of positive voxels to obtain a balanced
+training dataset. The positions of the negative voxels were selected at random
+over the entire image. The only constraint was that they were not allowed the be
+situated within two times the maximum radius of any nodule. This constraint was
+again imposed to avoid ambiguity in training data.
 
 Finally, features were calculated for both the positive and the negative voxels.
 The features that were used are discussed in section \ref{sec:featureExtraction}.
@@ -181,15 +180,15 @@ this procedure using pseudocode in algorithm \ref{alg:train}.
 				select positive voxels ($d < 0.66R_{min}$)
 			}
 		}
-		\While {negative pixels $<$ positive pixels}
-		{	select random pixel in volume\;
+		\While {negative voxels $<$ positive voxels}
+		{	select random voxel in volume\;
 			\If{not near nodules ($d > 2R_{max}$)}{
 				select negative voxel
 			}
 		}
 	}
 	\For{level from 1 to max}{
-		\ForEach{selected pixel}{
+		\ForEach{selected voxel}{
 			generate feature vectors up to $level$\;
 		}
 		train \& cross-validate classifier\;
@@ -203,11 +202,12 @@ The \textbf{grey value} of each voxel is the only feature of the cascaded
 classifier at level one. From this, the classifier learns that nodules are
 always part of the soft tissue window. When asked to identify nodules with this
 information alone, the classifier will simply highlight all soft tissue in the
-image. Remember that during the preprocessing we applied a lung mask. Hence all
-soft tissue outside of the lungs -- save for a thin edge caused by dilation --
-is already discarded. By combining the two results, we are left only with thin
-lung edges, nodules and bronchi/bronchioli. The task of the next classifiers in
-the cascade will be to further distinguish between these different structures.
+image. Remember that during the preprocessing phase we applied a lung mask.
+Hence all soft tissue outside of the lungs -- save for a thin edge caused by
+dilation -- is already discarded. By combining the two results, we are left only
+with thin lung edges, nodules and bronchi/bronchioli. The task of the next
+classifiers in the cascade will be to further distinguish between these
+different structures.
 
 In level two, our focus goes to discarding the remaining lung edges and
 highlighting the nodules. We do this by combining a LoG \textbf{blob detector}
@@ -218,8 +218,8 @@ description at all. To find out which sigma would work best, we performed a
 couple of tests. First, we knew that larger sigmas would work better on larger
 nodules and vice versa. To that end, we searched for the smallest and largest nodule
 over all our datasets. Next, we empirically established the sigmas that yielded
-the best results for each. Because we did not know ahead of time how big the
-nodule we had to detect would be, we calculated the LoG for all intermediary
+the best results for each. Because we do not know ahead of time how big the
+nodules we have to detect will be, we calculate the LoG for all intermediary
 values. The results of our test (see figure \ref{fig:radii}) showed that nodules
 radii lie between 2.68 mm and 18.39 mm with a mean of 6.32 mm and that
 we needed sigmas between 2mm and 10mm to cover this range.
@@ -260,20 +260,20 @@ statistics in the final classifier was prohibited by the time needed (hours) to
 calculate these features for every voxel in the image.
 
 Another obvious feature, apart from the grey value of each voxel, is the
-\textbf{position} $(X, Y, Z)$ of each voxel in the 3D image. An even better
-feature is the \textbf{relative position} $(\tfrac{X}{X_{max}},
-\tfrac{Y}{Y_{max}}, \tfrac{Z}{Z_{max}})$ as it takes into account that the size
+\textbf{position} $(x, y, z)$ of each voxel in the 3D image. An even better
+feature is the \textbf{relative position} $(\tfrac{x}{x_{max}},
+\tfrac{y}{y_{max}}, \tfrac{z}{z_{max}})$ as it takes into account that the size
 of the datasets might change. These features could be useful when lung
 segmentation is not performed, because they would limit the search area.
 However, after testing it showed that these features would only be useful if a
 very large amount of training data was used. Figure \ref{fig:posFeature} shows
 what happens when only 10 datasets are used to train such a classifier. The
-training set had to be large enough so almost every possible nodule position
-inside the lungs was covered by the training data. This would not only be very
-inefficient, but interpatient differences in lungmorphology would make it even
-more difficult. Hence the features 'position' and 'relative position' were
-exluded from the feature set.
-Instead a distance map based on the lung mask was implemented as a feature.
+training set should be large enough so that almost every possible nodule
+position inside the lungs was uniformly covered by the training data. This would
+not only be very inefficient, but interpatient differences in body and lung
+morphology would make it even more difficult. Hence these features were excluded
+from the feature set. Instead a distance map based on the lung mask was
+implemented as a feature.
 
 \begin{figure}[ht]
 \begin{center}
@@ -289,7 +289,7 @@ Instead a distance map based on the lung mask was implemented as a feature.
 A \textbf{3D Sobel filter} for edge detection was implemented as well. A Sobel
 filter is typically a $3 \times 3$ convolution mask that approximates the
 partial derivative of an image along an axis. The results of multiple sobel
-filters can be combined to calculate the gradient magnitude of each pixel. A
+filters can be combined to calculate the gradient magnitude of each voxel. A
 high magnitude usually corresponds with an edge in the original image.
 
 To be really useful in nodule detection, the distance from each voxel to
@@ -298,16 +298,16 @@ not feasible anymore. Instead, the distance map mentioned above was used as a
 substitute.
 
 The \textbf{entropy} of an image is a measurement for the chaos of the image in a
-certain neighbourhood. Low entropy images are images where vast areas of pixels
+certain neighbourhood. Low entropy images are images where vast areas of voxels
 have the same grey values. Images with high entropy show a large contrast
-between neighbouring pixels. Therefore, it is a measure for the texture of an
+between neighbouring voxels. Therefore, it is a measure for the texture of an
 image. The entropy of the entire 3D image was calculated and then the values for
 each voxel were extracted. However, the time demand for these calculations was
-far from negligible and as a consequence this feature was eliminated again.
+far from negligible and as a consequence this feature was eliminated.
 
 A feature \textbf{neighbours} calculated the sum, the subtraction, the
 multiplication and the quotient of the voxel in front and behind, left and right
-and above and below a target voxel. Each of these operations where also
+and above and below a target voxel. Each of these operations were also
 performed with the target voxel itself and the neighbouring voxel. Another
 substantial amount of features were based on calculations within \textbf{3D
 windows} that were swept over the lung mask of the image. The same operations
@@ -361,18 +361,18 @@ predict the class of new image features with a certain probability. We used this
 facility for two purposes: feature effectiveness testing and output validation.
 But before any of that could be done, features had to be calculated for all
 remaining voxels in the new dataset. A cascading approach allowed us to do this
-while keeping computational en memory cost acceptable. Additionally, a lung mask
+while keeping computational and memory cost acceptable. Additionally, a lung mask
 was applied to the whole volume, allowing us to ignore any outside voxels from
 the start.
 
 To assess feature effectiveness, we ask ourselves the following question. Is a
 substantial amount of non-nodule voxels removed from the dataset without
-removing the nodule voxels as well, i.e. did the precision increase without
-affecting the sensitivity? If this is the case the feature is kept at that
-level, otherwise another feature is implemented. The assessment is performed
-based on a probability image that is generated by combining the resulting
-probability output from all feature vectors. The first section of algorithm
-\ref{alg:test} summarizes this procedure.
+removing the nodule voxels as well, i.e. did the precision increase
+significantly without affecting the sensitivity? If this is the case the feature
+is kept at that level, otherwise another feature is implemented. The assessment
+is performed based on a probability image that is generated by combining the
+resulting probability output from all feature vectors. The first section of
+algorithm \ref{alg:test} summarizes this procedure.
 
 \begin{algorithm}[ht]
 	\DontPrintSemicolon
@@ -382,7 +382,7 @@ probability output from all feature vectors. The first section of algorithm
 		mask $\longleftarrow$ load lung mask\;
 		\For{level from 1 to max}{
 			load classifier model\;
-			\ForEach{$pixel \in mask$}{
+			\ForEach{$voxel \in mask$}{
 				generate feature vector\;
 				probability $\longleftarrow$ classify\;
 			}

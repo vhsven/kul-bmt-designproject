@@ -1,4 +1,5 @@
 import numpy as np
+import datetime
 from FeatureGenerator import FeatureGenerator
 from PixelFinder import PixelFinder
 from DicomFolderReader import DicomFolderReader
@@ -21,6 +22,7 @@ class Trainer:
         dfr.compress()
         setID = dfr.getSetID()
         print("Processing training set {}: '{}'".format(setID, myPath))
+        print datetime.datetime.now()
         cc = dfr.getCoordinateConverter()
         finder = PixelFinder(myPath, cc)
         data = dfr.getVolumeData()
@@ -75,7 +77,8 @@ class Trainer:
         allFeatures, allClasses = self.calculateAllTrainingFeatures(maxLevel)
         
         models = {}
-        levelSlices = [0, 1, 1+9, 1+9+1, 1+9+1+1, 1+9+1+1+6]
+        levelSlices = [0, 1, 8, 1, 1, 6]
+        levelSlices = np.cumsum(levelSlices)
         for level in range(1, maxLevel+1):
             levelSlice = levelSlices[level]
             features = allFeatures[:, 0:levelSlice]
@@ -114,7 +117,8 @@ class Trainer:
         n_estimators = 30
         
         models = {}
-        levelSlices = [0, 1, 1+9, 1+9+1, 1+9+1+1, 1+9+1+1+6]
+        levelSlices = [0, 1, 8, 1, 1, 6]
+        levelSlices = np.cumsum(levelSlices)
         for level in range(1, maxLevel+1):
             if level == 1:
                 min_samples_leaf = 55

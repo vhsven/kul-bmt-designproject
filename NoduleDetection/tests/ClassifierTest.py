@@ -10,11 +10,10 @@ from Validator import Validator
 from Constants import CASCADE_THRESHOLD, MAX_LEVEL
 from XmlAnnotationReader import XmlAnnotationReader
 
-#TODO mention wall nodules more explicitely?
-
 class Main:
-    def __init__(self, rootPath, maxPaths=999999, maxLevel=-1):
+    def __init__(self, rootPath, maxPaths=999999, maxTests=10, maxLevel=-1):
         self.RootPath = rootPath
+        self.MaxTests = maxTests
         self.MaxPaths = maxPaths
         if maxLevel == -1:
             self.MaxLevel = MAX_LEVEL
@@ -35,12 +34,11 @@ class Main:
         totalTP = 0
         totalFP = 0
         totalFN = 0
-        nbTestSets = 0
+        ratios = list()
         print datetime.datetime.now()
-        for testSet in range(50,51): #DicomFolderReader.findPathsByID(self.RootPath, range(31,51)):
+        for testSet in range(41,41+self.MaxTests):
             try:
                 dfr = DicomFolderReader.create(self.RootPath, testSet)
-                nbTestSets += 1
             except:
                 continue
             print("Processing test set {}: '{}'".format(testSet, dfr.Path))
@@ -56,6 +54,7 @@ class Main:
             h,w,d = mask3D.shape
             totalVoxels = h*w*d
             ratio = 100.0 * nbVoxels / totalVoxels
+            ratios.append(ratio)
             print("\t{0} voxels ({1:.3f}%) remaining after lung segmentation.".format(nbVoxels, ratio))
                 
             for level in range(1, self.MaxLevel+1):
@@ -68,9 +67,10 @@ class Main:
                 h,w,d = mask3D.shape
                 totalVoxels = h*w*d
                 ratio = 100.0 * nbVoxels / totalVoxels
+                ratios.append(ratio)
                 print("\t{0} voxels ({1:.3f}%) remaining after level {2}.".format(nbVoxels, ratio, level))
         
-                show = True
+                show = False
                 if show:
                     fig, _ = pl.subplots()
                     pl.subplots_adjust(bottom=0.20)
@@ -131,6 +131,10 @@ class Main:
             totalFP += nbFP
             totalFN += nbFN
         
+        ratios = np.array(ratios).reshape((-1, self.MaxLevel+1))
+        avgRatios = ratios.mean(axis=0)
+        print "Average fraction of voxels remaining after each level:", avgRatios
+        nbTestSets, _ = ratios.shape
         meanTP = totalTP / float(nbTestSets)
         meanFP = totalFP / float(nbTestSets)
         meanFN = totalFN / float(nbTestSets)
@@ -142,6 +146,7 @@ class Main:
     
 if __name__ == "__main__":
     maxPaths = int(raw_input("Enter # training datasets: "))
+    maxTests = int(raw_input("Enter # testing datasets: "))
     maxLevel = int(raw_input("Enter max training level: "))
-    m = Main("../data/LIDC-IDRI", maxPaths, maxLevel)
+    m = Main("../data/LIDC-IDRI", maxPaths, maxTests, maxLevel)
     m.main()

@@ -224,4 +224,9 @@ Finished classifying test set 50.
 Discarded 5370 1px clusters.
 TP=1, FP=3864, FN=0
 Means: TP=2.71428571429, FP=4279.42857143, FN=0.0, Sensitivity: 1.0
+16.764% on average remaining after lung segmentation 
+6.937% on average remaining after level 1
+2.401% on average remaining after level 2
+2.031% on average remaining after level 3
+0.750% on average remaining after level 4
 2014-05-12 19:28:48.874000

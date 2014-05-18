@@ -11,7 +11,6 @@ class FeatureGenerator:
         self.Data = data
         self.VoxelShape = vshape
         self.Level = level
-        self.PixelCount = None
         
     def __str__(self):
         return "Level {} Feature Generator".format(self.Level)
@@ -21,7 +20,6 @@ class FeatureGenerator:
         del self.Data
         del self.VoxelShape
         del self.Level
-        del self.PixelCount
         
     def getSlice(self, z):
         return self.Data[:,:,int(z)]
@@ -55,10 +53,10 @@ class FeatureGenerator:
         if level == 2:
             N = mask3D.sum()
             start,stop = 2,10
-            result = np.empty((N,stop-start+1))
+            result = np.empty((N,stop-start))
             for sigma in np.arange(start,stop):
                 result[:,sigma-start] = self.getLaplacianByMask(mask3D, sigma)
-            result[:,stop-start] = self.getEdgeDistByMask(mask3D, self.SetID, sigma=4.5)
+            #result[:,stop-start] = self.getEdgeDistByMask(mask3D, self.SetID, sigma=4.5)
             return result
         if level == 3:
             return self.averaging3DByMask(mask3D, windowSize=3, vesselSize=2.5)

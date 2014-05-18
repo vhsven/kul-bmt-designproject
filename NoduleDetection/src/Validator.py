@@ -11,7 +11,7 @@ class Validator:
             mask3D = nodule.Regions.getRegionMask3D(positives.shape, max, radiusFactor=1.5)
             nbPositiveVoxels = positives[mask3D].sum()
             positives[mask3D] = 0 #clear this area
-            print nbPositiveVoxels
+            #print nbPositiveVoxels
             if nbPositiveVoxels > 0:
                 nbTP += 1
             else:

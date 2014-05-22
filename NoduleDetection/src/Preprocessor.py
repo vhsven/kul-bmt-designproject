@@ -56,15 +56,18 @@ class Preprocessor:
     
     @staticmethod
     def loadThresholdMask(setID):
-        mask = dicom.read_file("../data/LIDC-Masks/img{}.dcm".format(setID)).pixel_array.astype(bool)
-        mask = np.rollaxis(mask, 0, 3)
-        z = mask.shape[2]
-        
-        #make sure mask is false at top and bottom to prevent out of bounds errors
-        mask[:,:,0:6] = False
-        mask[:,:,z-6:z] = False
-        #print("\tLoaded lung mask for dataset {}.".format(setID))
-        return mask
+        try:
+            mask = dicom.read_file("../data/LIDC-Masks/img{}.dcm".format(setID)).pixel_array.astype(bool)
+            mask = np.rollaxis(mask, 0, 3)
+            z = mask.shape[2]
+            
+            #make sure mask is false at top and bottom to prevent out of bounds errors
+            mask[:,:,0:6] = False
+            mask[:,:,z-6:z] = False
+            #print("\tLoaded lung mask for dataset {}.".format(setID))
+            return mask
+        except:
+            raise ValueError("Lung mask not available for given dataset.")
     
     @staticmethod
     def checkMask(setID, mySlice, rootPath="../data/LIDC-IDRI"):

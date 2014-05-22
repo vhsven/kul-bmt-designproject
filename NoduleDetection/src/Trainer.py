@@ -77,7 +77,7 @@ class Trainer:
         allFeatures, allClasses = self.calculateAllTrainingFeatures(maxLevel)
         
         models = {}
-        levelSlices = [0, 1, 8, 1, 1, 6]
+        levelSlices = [0, 1, 9, 1, 1, 6]
         levelSlices = np.cumsum(levelSlices)
         for level in range(1, maxLevel+1):
             levelSlice = levelSlices[level]
@@ -117,7 +117,7 @@ class Trainer:
         n_estimators = 30
         
         models = {}
-        levelSlices = [0, 1, 8, 1, 1, 6]
+        levelSlices = [0, 1, 9, 1, 1, 6]
         levelSlices = np.cumsum(levelSlices)
         for level in range(1, maxLevel+1):
             if level == 1:

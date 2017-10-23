@@ -1,6 +1,6 @@
-NoduleDetection/data/LIDC-IDRI
-NoduleDetection/data/LIDC-Masks
-NoduleDetection/data/models
+data/LIDC-IDRI
+data/LIDC-Masks
+data/models
 
 .vscode
 *.py[cod]
